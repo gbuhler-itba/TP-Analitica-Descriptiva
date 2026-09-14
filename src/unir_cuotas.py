@@ -26,6 +26,7 @@ if str(RAIZ) not in sys.path:
 import pandas as pd
 
 from src.configuracion import agregar_argumento_config, cargar_config, elegir
+from src.entorno import verificar_python
 from src.qc import ControlCalidad
 from src.rutas import asegurar_directorio, resolver, ruta_relativa
 
@@ -106,6 +107,7 @@ def unir_cuotas(cuotas_dir, salida, patron, clave, logs_dir, columnas_clave) -> 
 
 def main(argv=None) -> int:
     args = construir_parser().parse_args(argv)
+    verificar_python(avisar=False)
     cfg = cargar_config(args.config)
     return unir_cuotas(
         cuotas_dir=elegir(args.cuotas_dir, cfg["rutas"]["cuotas_dir"]),

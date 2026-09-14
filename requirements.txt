@@ -1,20 +1,18 @@
 # Dependencias del pipeline del TP 1 - Analítica Descriptiva (ITBA, 2026 C2)
 #
-# Con estas versiones el pipeline reproduce byte a byte los datasets
-# versionados en el repositorio (ver tests/verificar_offline.py y la
-# sección 15 del README).
+# Versiones del entorno donde se corrió el pipeline y se generaron los
+# datasets versionados en el repositorio. Todas verificadas contra PyPI y
+# todas con wheels para CPython 3.9.
 #
+# Requiere Python 3.9 o superior.
 # Instalación:  pip install -r requirements.txt
 
-requests==2.34.2
+requests==2.32.5
 beautifulsoup4==4.15.0
 pandas==2.3.3
-numpy==2.2.6
-PyYAML==6.0.3
-
-# scikit-learn solo lo usa la etapa 4 (KMeans para las sub-zonas). Se fija la
-# versión de la corrida original documentada. El smoke test offline se corrió
-# con 1.6.1 y con 1.7.2 y las dos reprodujeron las mismas 198 sub-zonas, así
-# que el resultado se mantuvo entre versiones; la versión fijada es igual la
-# de la corrida original.
+numpy==2.0.2
 scikit-learn==1.6.1
+
+# PyYAML no estaba en el pipeline original: se incorporó al parametrizar el
+# proyecto, para leer config/config.yaml. Es la única dependencia agregada.
+PyYAML==6.0.3

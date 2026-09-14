@@ -33,6 +33,7 @@ import requests
 from sklearn.cluster import KMeans
 
 from src.configuracion import agregar_argumento_config, cargar_config, elegir
+from src.entorno import verificar_python
 from src.qc import ControlCalidad
 from src.rutas import asegurar_directorio, resolver, ruta_relativa
 
@@ -235,6 +236,7 @@ def enriquecer(entrada, salida, logs_dir, cfg_enr, cache_subte, columnas_clave,
 
 def main(argv=None) -> int:
     args = construir_parser().parse_args(argv)
+    verificar_python(avisar=False)
     cfg = cargar_config(args.config)
     cfg_enr = dict(cfg["enriquecimiento"])
     cfg_enr["url_subte"] = elegir(args.url_subte, cfg_enr["url_subte"])

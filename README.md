@@ -336,7 +336,9 @@ Total versionado: unos 81 MB.
 
 ## 11. Instalación
 
-Requiere Python 3.10 o superior.
+Requiere **Python 3.9 o superior**. La corrida documentada se hizo con
+**Python 3.9**, que es la versión de referencia: es la que garantiza reproducir
+los datasets byte a byte.
 
 ```bash
 git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
@@ -350,6 +352,14 @@ pip install -r requirements.txt
 > Windows suele ser `python`. Todos los ejemplos de este README usan `python3`.
 > Dentro de un entorno virtual ya activado, `python` y `python3` apuntan al
 > mismo intérprete.
+
+`run_pipeline.py` chequea la versión al arrancar: corta con un mensaje claro si
+el intérprete es anterior a 3.9, y avisa (sin cortar) si no es 3.9, para que
+quede explícito cuándo la reproducción byte a byte no está garantizada. El
+mismo chequeo mínimo corre al invocar cualquier etapa por separado.
+
+Todas las versiones de `requirements.txt` están verificadas contra PyPI y
+todas tienen wheels para CPython 3.9.
 
 No hace falta editar ningún archivo. Todas las rutas se resuelven a partir de la
 ubicación del repositorio, así que los scripts se pueden invocar desde cualquier
@@ -486,17 +496,19 @@ a ningún servicio externo**. Tarda un par de minutos. Qué hace:
 | 4 | Se corre `enriquecimiento` con un GeoJSON **sintético** y se comparan las 92 columnas que no dependen de él | `dist_transporte_m` **no** queda verificada offline |
 | cadena | Se comprueba que la salida de cada etapa es la entrada de la siguiente y que no queda ninguna ruta absoluta en el código | Es justamente lo que estaba roto antes |
 
-Resultado de la última corrida: **24 de 24 controles OK**, con
-`pandas 2.3.3`, `numpy 2.2.6`, `beautifulsoup4 4.15.0`, `requests 2.34.2`,
-`PyYAML 6.0.3` y Python 3.10.12.
+Resultado de la última corrida: **24 de 24 controles OK**, sobre
+**Python 3.9.23** y con el entorno exacto de `requirements.txt` instalado
+desde cero: `requests 2.32.5`, `beautifulsoup4 4.15.0`, `pandas 2.3.3`,
+`numpy 2.0.2`, `scikit-learn 1.6.1`, `PyYAML 6.0.3`.
 
 > **Sobre scikit-learn.** `requirements.txt` fija **1.6.1**, la versión del
-> entorno donde se produjo la corrida original documentada. El smoke test se
-> corrió con las dos versiones, **1.6.1 y 1.7.2**, y ambas reprodujeron
-> exactamente las mismas **198 sub-zonas**: el resultado del clustering se
-> mantuvo entre versiones. Se fija igual 1.6.1, porque es la que garantiza
-> reproducir la corrida original y porque los labels de KMeans pueden cambiar
-> entre versiones aunque `random_state` esté fijado.
+> entorno donde se produjo la corrida original documentada, y con esa versión
+> se corrió la verificación de arriba. El smoke test se corrió además con
+> **scikit-learn 1.7.2** sobre Python 3.10, y también reprodujo exactamente las
+> mismas **198 sub-zonas**: el resultado del clustering se mantuvo entre
+> versiones. Se fija igual 1.6.1, porque es la que garantiza reproducir la
+> corrida original y porque los labels de KMeans pueden cambiar entre versiones
+> aunque `random_state` esté fijado.
 
 Las etapas 2 y 3 dan hash idéntico al dataset versionado. La etapa 4 reproduce
 exactamente `dist_centralidad_m`, las **198 sub-zonas** y las otras 92 columnas.
@@ -616,6 +628,6 @@ cortada, que en la corrida documentada no se activó.
   pueden variar entre versiones de scikit-learn aunque `random_state` esté fijado.
   Por eso `requirements.txt` fija `scikit-learn==1.6.1`, la versión del entorno
   donde se produjo la corrida documentada. En la práctica el resultado se mostró
-  estable: la verificación offline se corrió con `1.6.1` y con `1.7.2` y las dos
-  reprodujeron las mismas 198 sub-zonas. De todos modos, el dataset final
+  estable: la verificación offline se corrió con `1.6.1` sobre Python 3.9 y con
+  `1.7.2` sobre Python 3.10, y las dos reprodujeron las mismas 198 sub-zonas. De todos modos, el dataset final
   versionado congela las sub-zonas de la corrida original.

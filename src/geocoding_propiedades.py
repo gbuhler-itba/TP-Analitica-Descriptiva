@@ -34,6 +34,7 @@ import pandas as pd
 import requests
 
 from src.configuracion import agregar_argumento_config, cargar_config, elegir
+from src.entorno import verificar_python
 from src.qc import ControlCalidad
 from src.rutas import asegurar_directorio, resolver, ruta_relativa
 
@@ -239,6 +240,7 @@ def geocodificar(entrada, salida, parcial, logs_dir, cfg_geo, columnas_clave,
 
 def main(argv=None) -> int:
     args = construir_parser().parse_args(argv)
+    verificar_python(avisar=False)
     cfg = cargar_config(args.config)
     cfg_geo = dict(cfg["geocoding"])
     cfg_geo["url_usig"] = elegir(args.url_usig, cfg_geo["url_usig"])

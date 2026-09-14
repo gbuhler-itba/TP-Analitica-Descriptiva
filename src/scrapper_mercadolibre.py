@@ -42,6 +42,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from src.configuracion import agregar_argumento_config, cargar_config, elegir
+from src.entorno import verificar_python
 from src.qc import ControlCalidad
 from src.rutas import asegurar_directorio, resolver, ruta_relativa
 
@@ -380,6 +381,7 @@ def run_scrapper(nombre_cuota, barrios, salida_dir, logs_dir, cfg, columnas_clav
 
 def main(argv=None) -> int:
     args = construir_parser().parse_args(argv)
+    verificar_python(avisar=False)
     cfg_completa = cargar_config(args.config)
     cuotas = cfg_completa["scraping"]["cuotas"]
 

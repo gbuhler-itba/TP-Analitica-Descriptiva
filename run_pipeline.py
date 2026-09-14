@@ -18,8 +18,21 @@ Cada etapa cierra con su bloque de control de calidad, que se imprime y se
 escribe en outputs/logs/.
 """
 
-import argparse
 import sys
+
+# Chequeo de versión ANTES de importar nada del proyecto o de terceros, para
+# que un intérprete viejo falle con un mensaje claro y no con un SyntaxError
+# o un ImportError.
+if sys.version_info[:2] < (3, 9):
+    sys.stderr.write(
+        "[!] Python {}.{}.{} no alcanza: este pipeline requiere Python 3.9 o superior.\n"
+        "    Las dependencias de requirements.txt no instalan en versiones anteriores.\n".format(
+            *sys.version_info[:3]
+        )
+    )
+    raise SystemExit(1)
+
+import argparse
 import time
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +42,7 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from src import enriquecimiento, geocoding_propiedades, scrapper_mercadolibre, unir_cuotas
+from src.entorno import verificar_python, version_actual
 from src.configuracion import agregar_argumento_config, cargar_config
 from src.rutas import resolver
 
@@ -120,6 +134,7 @@ def correr_etapa_4(args) -> int:
 
 def main(argv=None) -> int:
     args = construir_parser().parse_args(argv)
+    verificar_python(avisar=True)
     cfg = cargar_config(args.config)
 
     desde = args.desde_etapa
@@ -143,6 +158,7 @@ def main(argv=None) -> int:
     print("=" * 70)
     print("PIPELINE TP 1 - FONDO DE INVERSIÓN INMOBILIARIO (CABA)")
     print("=" * 70)
+    print(f"Python:               {version_actual()}")
     print(f"Raíz del repositorio: {RAIZ}")
     print(f"Configuración:        {resolver(args.config) if args.config else 'config/config.yaml'}")
     print(f"Etapas a ejecutar:    {', '.join(f'{e} ({ETAPAS[e]})' for e in etapas)}")
