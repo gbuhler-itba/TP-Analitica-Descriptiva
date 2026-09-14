@@ -1,12 +1,43 @@
-# Salidas intermedias del pipeline (cuotas, parciales)
+# =============================================================================
+# .gitignore
+# =============================================================================
+# Los datasets del pipeline SÍ se versionan a propósito, para que cualquiera
+# pueda clonar el repo y correr la cadena sin rehacer 8-15 h de scraping.
+# Ver la sección "Qué viene versionado" del README.
+#
+# Lo que se ignora es todo lo que una corrida nueva regenera: parciales,
+# logs, caches y artefactos de entorno.
+# =============================================================================
+
+# Parciales de corridas cortadas (el pipeline los borra al terminar bien)
+data/raw/cuotas/*_parcial.tsv
+data/interim/geocoding_parcial.tsv
+**/*_parcial.tsv
+
+# Logs y reportes de control de calidad de corridas nuevas
+outputs/logs/*
+!outputs/logs/.gitkeep
+
+# Cache de fuentes externas (se rebaja solo si falta)
+data/external/*
+!data/external/.gitkeep
+
+# Directorio de salida de la estructura vieja, previo a la reorganización
 output/
 
 # Python
 __pycache__/
 *.py[cod]
+*.egg-info/
 .venv/
 venv/
+env/
 .ipynb_checkpoints/
+
+# Entornos y editores
+.env
+.vscode/
+.idea/
 
 # macOS
 .DS_Store

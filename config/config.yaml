@@ -1,0 +1,148 @@
+# =============================================================================
+# Configuración central del pipeline
+# TP 1 - Analítica Descriptiva (ITBA, 2026 C2)
+# =============================================================================
+# Todas las rutas son RELATIVAS A LA RAÍZ DEL REPOSITORIO. No hay rutas
+# absolutas en ningún lado del proyecto: los scripts resuelven la raíz a
+# partir de su propia ubicación, así que se los puede invocar desde
+# cualquier directorio de trabajo.
+#
+# Cualquier valor de este archivo puede pisarse por línea de comandos.
+# Ver `python3 run_pipeline.py --help` y el --help de cada script en src/.
+# =============================================================================
+
+rutas:
+  # Salida cruda del scraper: un TSV por cuota de barrios.
+  cuotas_dir: data/raw/cuotas
+  # Etapa 2: las cuotas unificadas y deduplicadas.
+  consolidado: data/interim/mercadolibre_CABA_completo.tsv
+  # Etapa 3: el consolidado más lat/lon/geo_status.
+  geocodificado: data/interim/propiedades_geocodificadas.tsv
+  # Etapa 4: dataset final, con distancias y sub-zonas.
+  enriquecido: data/processed/propiedades_enriquecidas.tsv
+  # Cache local del GeoJSON de estaciones de subte de BA Data.
+  subte_geojson: data/external/estaciones-de-subte.geojson
+  # Logs y reportes de control de calidad.
+  logs_dir: outputs/logs
+
+# -----------------------------------------------------------------------------
+# ETAPA 1 - Scraping
+# -----------------------------------------------------------------------------
+# ATENCIÓN: una corrida completa de las 5 cuotas con con_detalle=true son
+# entre 8 y 15 horas. Por eso las cuotas ya descargadas vienen versionadas
+# en data/raw/cuotas/ y el pipeline arranca por defecto en la etapa 2.
+scraping:
+  max_paginas_por_barrio: 42     # tope de la plataforma, ~2.000 avisos por barrio
+  avisos_por_pagina: 48          # define el offset de paginación de MercadoLibre
+  con_detalle: true              # entrar a cada ficha para extraer amenities
+  timeout: 15                    # segundos por request
+  guardar_cada: 100              # cada cuántos avisos se escribe el parcial
+  delay_pagina: [1.5, 3.0]       # pausa aleatoria entre páginas de listado
+  delay_detalle: [1.0, 2.0]      # pausa aleatoria entre fichas de detalle
+  delay_barrio: [2.0, 4.0]       # pausa aleatoria al cambiar de barrio
+  espera_reintento: 8            # pausa antes de reintentar una página con error
+
+  # Los 47 barrios de CABA repartidos en 5 cuotas sin solapamiento.
+  # Se dividen así para poder cortar el scraping en sesiones de 2-3 horas.
+  cuotas:
+    cuota1:                      # barrios de mayor oferta
+      - palermo
+      - belgrano
+      - caballito
+      - recoleta
+      - villa-urquiza
+      - almagro
+      - nunez
+      - flores
+    cuota2:
+      - villa-crespo
+      - barrio-norte
+      - puerto-madero
+      - san-telmo
+      - colegiales
+      - villa-devoto
+      - balvanera
+      - villa-del-parque
+      - saavedra
+      - boedo
+    cuota3:
+      - monserrat
+      - constitucion
+      - san-nicolas
+      - retiro
+      - chacarita
+      - parque-patricios
+      - villa-pueyrredon
+      - coghlan
+      - floresta
+      - villa-luro
+    cuota4:
+      - mataderos
+      - liniers
+      - villa-general-mitre
+      - parque-chacabuco
+      - villa-ortuzar
+      - agronomia
+      - paternal
+      - villa-santa-rita
+      - monte-castro
+      - velez-sarsfield
+    cuota5:                      # barrios chicos, la cuota más rápida
+      - versalles
+      - villa-real
+      - villa-riachuelo
+      - villa-soldati
+      - villa-lugano
+      - nueva-pompeya
+      - barracas
+      - la-boca
+      - parque-avellaneda
+
+# -----------------------------------------------------------------------------
+# ETAPA 2 - Consolidación
+# -----------------------------------------------------------------------------
+consolidacion:
+  patron_cuotas: "cuota*.tsv"    # se excluyen siempre los archivos "*parcial*"
+  clave_duplicados: link
+
+# -----------------------------------------------------------------------------
+# ETAPA 3 - Geocodificación (normalizador de direcciones de USIG, GCBA)
+# -----------------------------------------------------------------------------
+geocoding:
+  url_usig: "http://servicios.usig.buenosaires.gob.ar/normalizar/"
+  max_reintentos: 3
+  timeout: 10
+  guardar_cada: 500              # cada cuántas filas se escribe el parcial
+  reportar_cada: 100             # cada cuántas filas se imprime el progreso
+  delay: [0.15, 0.35]            # pausa entre llamadas (es un servicio público gratuito)
+  espera_http: 3                 # pausa tras una respuesta no 200
+  espera_conexion: 5             # pausa tras un error de conexión
+
+# -----------------------------------------------------------------------------
+# ETAPA 4 - Enriquecimiento
+# -----------------------------------------------------------------------------
+enriquecimiento:
+  url_subte: "https://cdn.buenosaires.gob.ar/datosabiertos/datasets/sbase/subte-estaciones/estaciones-de-subte.geojson"
+  timeout: 30
+  # Polos de centralidad de CABA (lat, lon). La distancia a centralidad es la
+  # mínima a cualquiera de los tres.
+  centralidades:
+    obelisco: [-34.6037, -58.3816]
+    puerto_madero: [-34.6083, -58.3625]
+    catalinas: [-34.5950, -58.3720]
+  subzonas_por_barrio: 5         # tope de clusters por barrio
+  min_propiedades_subzona: 30    # mínimo de propiedades para abrir un cluster
+  kmeans:
+    random_state: 42
+    n_init: 10
+
+# -----------------------------------------------------------------------------
+# Controles de calidad
+# -----------------------------------------------------------------------------
+qc:
+  columnas_clave:
+    - link
+    - precio
+    - m2
+    - ubicacion
+    - barrio
