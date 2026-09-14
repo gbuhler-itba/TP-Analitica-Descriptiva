@@ -1,0 +1,50 @@
+/Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+=== ETAPA 4: ENRIQUECIMIENTO ===
+Cargando /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/data/interim/propiedades_geocodificadas.tsv...
+  27922 propiedades.
+  Con coordenadas: 22912
+[subte] Descargando estaciones de subte de BA Data...
+  Cache guardado en data/external/estaciones-de-subte.geojson
+  90 estaciones de subte.
+Calculando distancias...
+  Distancia media a transporte: 925 m
+  Distancia media a centralidad: 5696 m
+Definiendo sub-zonas por clustering...
+  Sub-zonas creadas: 198 en total.
+
+Dataset enriquecido: /tmp/enriquecido_nuevo.tsv
+
+==============================================================
+CONTROL DE CALIDAD | etapa: 04_enriquecimiento | corrida: 2026-09-14 13:16:50
+==============================================================
+filas_entrada: 27922
+filas_salida: 27922
+columnas_salida: 93
+origen_geojson_subte: descarga
+estaciones_subte: 90
+geocoding_por_estado:
+    OK                 22912
+    SIN_RESULTADO      3406
+    NO_GEOCODIFICABLE  1584
+    SIN_COORDENADAS    20
+geocoding_ok: 22912
+geocoding_tasa_exito_pct: 82.06
+con_dist_transporte: 22912
+con_dist_centralidad: 22912
+subzonas_totales: 198
+dist_transporte_media_m: 925.0
+dist_centralidad_media_m: 5696.1
+duplicados_residuales: 0
+nulos_columnas_clave:
+    link       0
+    precio     0
+    m2         26
+    ubicacion  0
+    barrio     0
+archivo_salida: /tmp/enriquecido_nuevo.tsv
+==============================================================
+[qc] Log:  /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/outputs/logs/pipeline.log
+[qc] JSON: /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/outputs/logs/qc_04_enriquecimiento.json
+498328bdefbcbb8e2f7c1552688a4639de8dd32e4ede91f962653894a3e0d9d9  /tmp/enriquecido_nuevo.tsv
+498328bdefbcbb8e2f7c1552688a4639de8dd32e4ede91f962653894a3e0d9d9  data/processed/propiedades_enriquecidas.tsv

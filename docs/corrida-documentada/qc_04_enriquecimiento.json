@@ -1,0 +1,33 @@
+{
+  "etapa": "04_enriquecimiento",
+  "corrida": "2026-09-14 13:16:50",
+  "metricas": {
+    "filas_entrada": 27922,
+    "filas_salida": 27922,
+    "columnas_salida": 93,
+    "origen_geojson_subte": "descarga",
+    "estaciones_subte": 90,
+    "geocoding_por_estado": {
+      "OK": 22912,
+      "SIN_RESULTADO": 3406,
+      "NO_GEOCODIFICABLE": 1584,
+      "SIN_COORDENADAS": 20
+    },
+    "geocoding_ok": 22912,
+    "geocoding_tasa_exito_pct": 82.06,
+    "con_dist_transporte": 22912,
+    "con_dist_centralidad": 22912,
+    "subzonas_totales": 198,
+    "dist_transporte_media_m": 925.0,
+    "dist_centralidad_media_m": 5696.1,
+    "duplicados_residuales": 0,
+    "nulos_columnas_clave": {
+      "link": 0,
+      "precio": 0,
+      "m2": 26,
+      "ubicacion": 0,
+      "barrio": 0
+    },
+    "archivo_salida": "/tmp/enriquecido_nuevo.tsv"
+  }
+}

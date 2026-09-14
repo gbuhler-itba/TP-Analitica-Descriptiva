@@ -55,6 +55,12 @@ def construir_parser() -> argparse.ArgumentParser:
     parser.add_argument("--reportar-cada", type=int, default=None, help="Cada cuántas filas se imprime el progreso.")
     parser.add_argument("--limite", type=int, default=None, help="Procesar solo las primeras N filas (para pruebas).")
     parser.add_argument("--sin-resume", action="store_true", help="Ignorar el parcial previo y empezar de cero.")
+    parser.add_argument(
+        "--verificar",
+        action="store_true",
+        help="No geocodifica: valida el TSV geocodificado ya existente contra la entrada "
+             "y corre los controles de calidad. Cero llamadas a USIG.",
+    )
     return parser
 
 
@@ -133,6 +139,104 @@ def geocode_usig(direccion_limpia, url_usig, max_reintentos=3, timeout=10,
     return None, None, "FALLO_REINTENTOS"
 
 
+def verificar_geocodificado(entrada, salida, logs_dir, columnas_clave) -> int:
+    """
+    Valida el TSV geocodificado existente sin llamar a USIG.
+
+    Recalcula la limpieza de direcciones sobre la entrada y la contrasta con
+    la que quedó guardada, revisa la coherencia interna del resultado y corre
+    el mismo bloque de control de calidad que una corrida real. No escribe
+    ningún dataset: solo el log de QC.
+
+    Sirve para validar la etapa 3 de la cadena en segundos, en lugar de
+    repetir dos horas de consultas contra un servicio público.
+    """
+    entrada = resolver(entrada)
+    destino = resolver(salida)
+
+    print("=== ETAPA 3: VERIFICACIÓN (sin llamadas a USIG) ===")
+    for ruta, que in ((entrada, "la entrada"), (destino, "el geocodificado")):
+        if not ruta.exists():
+            print(f"[!] No se encontró {que}: {ruta}")
+            return 1
+
+    print(f"Entrada:       {ruta_relativa(entrada)}")
+    print(f"Geocodificado: {ruta_relativa(destino)}")
+
+    df_in = pd.read_csv(entrada, sep="\t", low_memory=False)
+    df_out = pd.read_csv(destino, sep="\t", low_memory=False)
+
+    controles = []
+
+    def control(nombre, ok, detalle=""):
+        controles.append((nombre, bool(ok)))
+        print(f"  [{'OK   ' if ok else 'FALLA'}] {nombre}{(' | ' + detalle) if detalle else ''}")
+
+    control("misma cantidad de filas que la entrada",
+            len(df_in) == len(df_out), f"{len(df_out)}")
+
+    nuevas = ["dir_limpia", "lat", "lon", "geo_status"]
+    faltantes = [c for c in nuevas if c not in df_out.columns]
+    control("columnas de geocodificación presentes", not faltantes,
+            "faltan: " + ", ".join(faltantes) if faltantes else ", ".join(nuevas))
+    if faltantes or len(df_in) != len(df_out):
+        print("\n[!] La verificación no puede continuar con esas diferencias.")
+        return 1
+
+    control("mismos links y en el mismo orden",
+            df_in["link"].equals(df_out["link"]))
+
+    recalculada = df_in["ubicacion"].apply(limpiar_direccion)
+    iguales = (recalculada.fillna("<NA>") == df_out["dir_limpia"].fillna("<NA>"))
+    control("dir_limpia se reproduce recalculándola desde ubicacion",
+            bool(iguales.all()), f"{int(iguales.sum())}/{len(df_out)} coinciden")
+
+    sin_estado = int(df_out["geo_status"].isna().sum())
+    control("ninguna fila quedó sin geo_status", sin_estado == 0,
+            f"{sin_estado} sin estado" if sin_estado else "0 pendientes")
+
+    ok_mask = df_out["geo_status"] == "OK"
+    con_coords = df_out["lat"].notna() & df_out["lon"].notna()
+    control("hay coordenadas exactamente en las filas con geo_status OK",
+            bool((ok_mask == con_coords).all()),
+            f"OK: {int(ok_mask.sum())} | con coordenadas: {int(con_coords.sum())}")
+
+    no_geo = df_out["dir_limpia"].isna()
+    coherente = bool((df_out.loc[no_geo, "geo_status"] == "NO_GEOCODIFICABLE").all())
+    control("las direcciones no geocodificables están marcadas como tales",
+            coherente, f"{int(no_geo.sum())} sin dirección limpia")
+
+    dups = int(df_out["link"].duplicated().sum())
+    control("sin duplicados por link", dups == 0, f"{dups}")
+
+    qc = ControlCalidad("03_geocoding_verificacion", logs_dir)
+    qc.metrica("modo", "verificacion (sin llamadas a USIG)")
+    qc.metrica("filas_entrada", len(df_in))
+    qc.metrica("filas_salida", len(df_out))
+    qc.metrica("columnas_salida", len(df_out.columns))
+    qc.metrica("direcciones_geocodificables", int(df_out["dir_limpia"].notna().sum()))
+    qc.metrica("direcciones_no_geocodificables", int(no_geo.sum()))
+    qc.metrica("dir_limpia_reproducida", int(iguales.sum()))
+    qc.tasa_geocoding(df_out)
+    qc.metrica("coordenadas_presentes", int(df_out["lat"].notna().sum()))
+    qc.duplicados(df_out, ["link"], "duplicados_residuales")
+    qc.nulos_por_columna(df_out, columnas_clave)
+    qc.metrica("llamadas_a_usig", 0)
+    qc.metrica("archivo_verificado", ruta_relativa(destino))
+    fallas = [n for n, ok in controles if not ok]
+    qc.metrica("controles_ok", f"{len(controles) - len(fallas)}/{len(controles)}")
+    qc.cerrar()
+
+    if fallas:
+        print("\n[!] Fallaron controles de verificación:")
+        for n in fallas:
+            print(f"    - {n}")
+        return 1
+
+    print(f"\nVerificación completa: {len(controles)}/{len(controles)} controles OK, 0 llamadas a USIG.")
+    return 0
+
+
 def geocodificar(entrada, salida, parcial, logs_dir, cfg_geo, columnas_clave,
                  limite=None, sin_resume=False) -> int:
     entrada = resolver(entrada)
@@ -143,6 +247,16 @@ def geocodificar(entrada, salida, parcial, logs_dir, cfg_geo, columnas_clave,
         print(f"[!] No se encontró la entrada: {entrada}")
         print("    Corré primero la etapa 2 (unir_cuotas).")
         return 1
+
+    # El archivo parcial se BORRA al terminar bien. Si apuntara a la entrada o
+    # a la salida, una corrida normal destruiría un dataset del repositorio.
+    for otra, nombre in ((entrada, "--entrada"), (destino, "--salida")):
+        if ruta_parcial == otra:
+            print(f"[!] --parcial no puede apuntar al mismo archivo que {nombre}:")
+            print(f"    {ruta_parcial}")
+            print("    El parcial se borra al terminar la corrida, así que perderías ese dataset.")
+            print("    Usá otra ruta para --parcial, o corré con --verificar si solo querés validar.")
+            return 2
 
     print("=== ETAPA 3: GEOCODIFICACIÓN ===")
     print(f"Cargando {entrada}...")
@@ -225,6 +339,15 @@ def geocodificar(entrada, salida, parcial, logs_dir, cfg_geo, columnas_clave,
     qc.metrica("direcciones_geocodificables", geocodificables)
     qc.metrica("direcciones_no_geocodificables", filas_entrada - geocodificables)
     qc.metrica("filas_procesadas_en_esta_corrida", total_pendientes)
+    corrida_parcial = total_pendientes < len(df)
+    qc.metrica("corrida_parcial", corrida_parcial)
+    if corrida_parcial:
+        # La tasa sobre el dataset entero no dice nada en una corrida con
+        # --limite o en un retome: la mayoría de las filas ni se tocaron.
+        qc.tasa_geocoding(df.loc[pendientes], sufijo="_de_esta_corrida")
+        qc.metrica("nota_alcance",
+                   "corrida parcial: la tasa _de_esta_corrida cubre las "
+                   f"{total_pendientes} filas procesadas; la global cubre las {len(df)} del dataset")
     qc.tasa_geocoding(df)
     qc.metrica("coordenadas_presentes", int(df["lat"].notna().sum()))
     qc.duplicados(df, ["link"], "duplicados_residuales")
@@ -248,6 +371,14 @@ def main(argv=None) -> int:
     cfg_geo["timeout"] = elegir(args.timeout, cfg_geo["timeout"])
     cfg_geo["guardar_cada"] = elegir(args.guardar_cada, cfg_geo["guardar_cada"])
     cfg_geo["reportar_cada"] = elegir(args.reportar_cada, cfg_geo["reportar_cada"])
+
+    if args.verificar:
+        return verificar_geocodificado(
+            entrada=elegir(args.entrada, cfg["rutas"]["consolidado"]),
+            salida=elegir(args.salida, cfg["rutas"]["geocodificado"]),
+            logs_dir=elegir(args.logs_dir, cfg["rutas"]["logs_dir"]),
+            columnas_clave=cfg["qc"]["columnas_clave"],
+        )
 
     parcial_default = str(Path(cfg["rutas"]["geocodificado"]).parent / "geocoding_parcial.tsv")
     return geocodificar(

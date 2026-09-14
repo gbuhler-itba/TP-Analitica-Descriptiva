@@ -19,10 +19,11 @@ Qué hace cada control:
            al servicio) y compara la salida por hash SHA256. La limpieza de
            direcciones (limpiar_direccion) sí se recalcula de verdad.
 
-  etapa 4  Corre enriquecimiento con un GeoJSON de estaciones SINTÉTICO,
-           porque el real requiere red. Compara contra el dataset versionado
-           todas las columnas salvo dist_transporte_m, que depende del
-           GeoJSON real y por lo tanto NO queda verificada offline.
+  etapa 4  Corre enriquecimiento con el GeoJSON de estaciones de subte
+           versionado en data/external/ y compara la salida por SHA256, así
+           que dist_transporte_m también queda verificada sin tocar la red.
+           Si ese archivo faltara, cae a un GeoJSON sintético y avisa que
+           dist_transporte_m no se verifica.
 
 Uso:  python3 tests/verificar_offline.py
 """
@@ -203,24 +204,32 @@ def verificar_etapa_3(tmp: Path, monkeypatch_sleep=True):
 # ---------------------------------------------------------------------------
 
 def verificar_etapa_4(tmp: Path):
-    titulo("ETAPA 4 - enriquecimiento con GeoJSON sintético")
-    print("  NOTA: dist_transporte_m NO se verifica acá. Depende del GeoJSON")
-    print("        real de BA Data, que requiere red. Se verifica todo lo demás.")
+    titulo("ETAPA 4 - enriquecimiento")
 
-    geojson_falso = tmp / "subte_sintetico.geojson"
-    geojson_falso.write_text(json.dumps({
-        "type": "FeatureCollection",
-        "features": [
-            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-58.3816, -34.6037]}},
-            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-58.4100, -34.5900]}},
-        ],
-    }), encoding="utf-8")
+    geojson_real = RAIZ / "data" / "external" / "estaciones-de-subte.geojson"
+    usa_real = geojson_real.exists()
+
+    if usa_real:
+        geojson = geojson_real
+        print("  Usando el GeoJSON de subte versionado. La verificación cubre las 93")
+        print("  columnas, dist_transporte_m incluida, y compara por SHA256.")
+    else:
+        geojson = tmp / "subte_sintetico.geojson"
+        geojson.write_text(json.dumps({
+            "type": "FeatureCollection",
+            "features": [
+                {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-58.3816, -34.6037]}},
+                {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-58.4100, -34.5900]}},
+            ],
+        }), encoding="utf-8")
+        print("  NOTA: falta data/external/estaciones-de-subte.geojson, así que se usa uno")
+        print("        sintético y dist_transporte_m NO queda verificada.")
 
     salida = tmp / "enriquecido.tsv"
     codigo = enriquecimiento.main([
         "--salida", str(salida),
         "--logs-dir", str(tmp / "logs"),
-        "--subte-geojson", str(geojson_falso),
+        "--subte-geojson", str(geojson),
     ])
     if not registrar("enriquecimiento corre sin error", codigo == 0):
         return
@@ -231,13 +240,17 @@ def verificar_etapa_4(tmp: Path):
     registrar("misma cantidad de filas", len(ref) == len(obt), f"{len(obt)}")
     registrar("mismas columnas y en el mismo orden", list(ref.columns) == list(obt.columns),
               f"{len(obt.columns)} columnas")
-
     if list(ref.columns) != list(obt.columns):
         return
 
+    if usa_real:
+        digest = sha256(salida)
+        registrar("SHA256 idéntico al dataset versionado",
+                  sha256(REF_ENRIQUECIDO) == digest, f"{digest[:16]}...")
+
     iguales, distintas = [], []
     for col in ref.columns:
-        if col == "dist_transporte_m":
+        if col == "dist_transporte_m" and not usa_real:
             continue
         a, b = ref[col], obt[col]
         if a.dtype.kind == "f" and b.dtype.kind == "f":
@@ -248,9 +261,14 @@ def verificar_etapa_4(tmp: Path):
         (iguales if coincide else distintas).append(col)
 
     registrar("dist_centralidad_m reproducida exactamente", "dist_centralidad_m" in iguales)
+    if usa_real:
+        registrar("dist_transporte_m reproducida exactamente", "dist_transporte_m" in iguales,
+                  f"media {obt['dist_transporte_m'].mean():.0f} m")
     registrar("subzona reproducida exactamente", "subzona" in iguales,
               f"{obt['subzona'].nunique()} sub-zonas")
-    registrar(f"las otras {len(ref.columns) - 1} columnas coinciden", not distintas,
+
+    total = len(ref.columns) if usa_real else len(ref.columns) - 1
+    registrar(f"las {total} columnas comparadas coinciden", not distintas,
               "difieren: " + ", ".join(distintas) if distintas else "")
 
 

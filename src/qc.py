@@ -63,16 +63,22 @@ class ControlCalidad:
         self.metrica(nombre, n)
         return n
 
-    def tasa_geocoding(self, df: pd.DataFrame, columna="geo_status") -> None:
-        """Registra el desglose de estados de geocodificación y la tasa de éxito."""
+    def tasa_geocoding(self, df: pd.DataFrame, columna="geo_status", sufijo="") -> None:
+        """
+        Registra el desglose de estados de geocodificación y la tasa de éxito.
+
+        El sufijo permite distinguir el alcance. En una corrida parcial
+        (--limite) la tasa sobre el dataset completo no dice nada útil, así
+        que se reporta además la tasa sobre las filas realmente procesadas.
+        """
         if columna not in df.columns:
             return
         conteo = df[columna].value_counts(dropna=False)
-        self.desglose("geocoding_por_estado", {str(k): int(v) for k, v in conteo.items()})
+        self.desglose(f"geocoding_por_estado{sufijo}", {str(k): int(v) for k, v in conteo.items()})
         total = len(df)
         ok = int((df[columna] == "OK").sum())
-        self.metrica("geocoding_ok", ok)
-        self.metrica("geocoding_tasa_exito_pct", round(100 * ok / total, 2) if total else 0.0)
+        self.metrica(f"geocoding_ok{sufijo}", ok)
+        self.metrica(f"geocoding_tasa_exito{sufijo}_pct", round(100 * ok / total, 2) if total else 0.0)
 
     # -- salida -------------------------------------------------------------
 

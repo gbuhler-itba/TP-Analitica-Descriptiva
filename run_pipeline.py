@@ -81,6 +81,10 @@ def construir_parser() -> argparse.ArgumentParser:
                         help="Etapa 1: tope de páginas por barrio.")
     parser.add_argument("--limite-geocoding", type=int, default=None,
                         help="Etapa 3: procesar solo las primeras N direcciones pendientes.")
+    parser.add_argument("--verificar-geocoding", action="store_true",
+                        help="Etapa 3 en modo verificación: valida el geocodificado ya "
+                             "existente sin llamar a USIG. Permite validar la cadena entera "
+                             "en segundos en vez de repetir dos horas de consultas.")
     parser.add_argument("--forzar-descarga-subte", action="store_true",
                         help="Etapa 4: rebajar el GeoJSON de subte aunque exista el cache.")
     return parser
@@ -117,6 +121,11 @@ def correr_etapa_2(args) -> int:
 
 
 def correr_etapa_3(args) -> int:
+    if args.verificar_geocoding:
+        encabezado("ETAPA 3/4 - GEOCODIFICACIÓN (modo verificación, sin red)")
+        argv = ["--config", args.config] if args.config else []
+        return geocoding_propiedades.main(argv + ["--verificar"])
+
     encabezado("ETAPA 3/4 - GEOCODIFICACIÓN (USIG)")
     argv = ["--config", args.config] if args.config else []
     if args.limite_geocoding is not None:

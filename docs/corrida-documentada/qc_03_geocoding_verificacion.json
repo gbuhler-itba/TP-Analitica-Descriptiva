@@ -1,0 +1,33 @@
+{
+  "etapa": "03_geocoding_verificacion",
+  "corrida": "2026-09-14 15:36:33",
+  "metricas": {
+    "modo": "verificacion (sin llamadas a USIG)",
+    "filas_entrada": 27922,
+    "filas_salida": 27922,
+    "columnas_salida": 90,
+    "direcciones_geocodificables": 26338,
+    "direcciones_no_geocodificables": 1584,
+    "dir_limpia_reproducida": 27922,
+    "geocoding_por_estado": {
+      "OK": 22912,
+      "SIN_RESULTADO": 3406,
+      "NO_GEOCODIFICABLE": 1584,
+      "SIN_COORDENADAS": 20
+    },
+    "geocoding_ok": 22912,
+    "geocoding_tasa_exito_pct": 82.06,
+    "coordenadas_presentes": 22912,
+    "duplicados_residuales": 0,
+    "nulos_columnas_clave": {
+      "link": 0,
+      "precio": 0,
+      "m2": 26,
+      "ubicacion": 0,
+      "barrio": 0
+    },
+    "llamadas_a_usig": 0,
+    "archivo_verificado": "data/interim/propiedades_geocodificadas.tsv",
+    "controles_ok": "8/8"
+  }
+}

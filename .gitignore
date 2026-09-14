@@ -14,13 +14,22 @@ data/raw/cuotas/*_parcial.tsv
 data/interim/geocoding_parcial.tsv
 **/*_parcial.tsv
 
-# Logs y reportes de control de calidad de corridas nuevas
+# Logs y reportes de control de calidad de corridas nuevas.
+# Son salida de trabajo y cada corrida los sobrescribe. La evidencia de la
+# corrida documentada NO vive acá: está curada y versionada en
+# docs/corrida-documentada/ para que un spot check no la pise.
 outputs/logs/*
 !outputs/logs/.gitkeep
 
-# Cache de fuentes externas (se rebaja solo si falta)
+# Cache de fuentes externas.
+# El GeoJSON de estaciones de subte SÍ se versiona a propósito: congela el set
+# de estaciones de la corrida documentada. Si BA Data publica una versión
+# distinta, dist_transporte_m cambiaría sin que nadie toque una línea de
+# código y el hash dejaría de reproducirse por un motivo invisible.
+# Ver la sección 10 del README.
 data/external/*
 !data/external/.gitkeep
+!data/external/estaciones-de-subte.geojson
 
 # Directorio de salida de la estructura vieja, previo a la reorganización
 output/

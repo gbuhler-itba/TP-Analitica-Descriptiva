@@ -64,10 +64,19 @@ def haversine_np(lat1, lon1, lat2, lon2):
     return R * 2 * np.arcsin(np.sqrt(a))
 
 
+class ErrorFuenteExterna(RuntimeError):
+    """No se pudo obtener una fuente externa necesaria para la etapa."""
+
+
 def obtener_geojson_subte(cache, url, timeout=30, forzar=False):
     """
     Devuelve el GeoJSON de estaciones de subte, desde el cache local o
     descargándolo de BA Data y guardándolo en el cache.
+
+    Si la descarga falla, levanta ErrorFuenteExterna y la etapa corta. Es un
+    cambio deliberado respecto del script original, que ante un fallo seguía
+    adelante y dejaba dist_transporte_m en NaN para las 27.922 filas: un
+    dataset degradado que parece completo es peor que un error visible.
     """
     destino = asegurar_directorio(cache)
 
@@ -77,9 +86,13 @@ def obtener_geojson_subte(cache, url, timeout=30, forzar=False):
             return json.load(fh), "cache"
 
     print("[subte] Descargando estaciones de subte de BA Data...")
-    r = requests.get(url, timeout=timeout)
-    r.raise_for_status()
-    data = r.json()
+    try:
+        r = requests.get(url, timeout=timeout)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        raise ErrorFuenteExterna("{}: {}".format(type(e).__name__, e))
+
     with open(destino, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False)
     print(f"  Cache guardado en {ruta_relativa(destino)}")
@@ -182,9 +195,29 @@ def enriquecer(entrada, salida, logs_dir, cfg_enr, cache_subte, columnas_clave,
     lat = df_ok["lat"].values
     lon = df_ok["lon"].values
 
-    data, origen_geojson = obtener_geojson_subte(
-        cache_subte, cfg_enr["url_subte"], timeout=cfg_enr["timeout"], forzar=forzar_descarga
-    )
+    try:
+        data, origen_geojson = obtener_geojson_subte(
+            cache_subte, cfg_enr["url_subte"], timeout=cfg_enr["timeout"], forzar=forzar_descarga
+        )
+    except ErrorFuenteExterna as e:
+        print()
+        print("[!] No se pudo obtener el GeoJSON de estaciones de subte de BA Data.")
+        print(f"    Motivo: {e}")
+        print(f"    URL:    {cfg_enr['url_subte']}")
+        print()
+        print("    La etapa 4 CORTA en lugar de continuar. Si siguiera, dist_transporte_m")
+        print("    quedaría en NaN para las 27.922 filas y el dataset resultante parecería")
+        print("    completo sin serlo.")
+        print()
+        print("    Qué hacer:")
+        print("      1. Reintentá: el portal de BA Data suele tener caídas cortas.")
+        print("      2. Revisá la conectividad hacia cdn.buenosaires.gob.ar, por ejemplo")
+        print("         curl -I " + cfg_enr["url_subte"])
+        print("      3. Si ya bajaste el GeoJSON alguna vez, dejalo en")
+        print(f"         {ruta_relativa(cache_subte)} y la etapa lo usa sin pedir red.")
+        print("      4. También podés apuntar a una copia local con")
+        print("         python3 src/enriquecimiento.py --subte-geojson RUTA/AL/ARCHIVO.geojson")
+        return 1
     estaciones = parsear_estaciones(data)
     print(f"  {len(estaciones)} estaciones de subte.")
 
