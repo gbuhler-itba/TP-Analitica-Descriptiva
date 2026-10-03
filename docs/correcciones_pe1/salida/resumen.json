@@ -1,0 +1,123 @@
+{
+  "precio_concatenado": {
+    "filas": 627,
+    "mediana_usd_original": 135000.0,
+    "media_usd_original": 5215103339.496257,
+    "baja_pct_mediana": 6.818181818181824,
+    "baja_pct_min": 5.000000000000004
+  },
+  "mediana_precio_usd": 130000.0,
+  "mediana_m2": 57.0,
+  "filas_ars": 5,
+  "geocoding": {
+    "tasa_global": 0.8205715922928157,
+    "chi2_barrio_p": 1.0114838529951665e-101,
+    "tasa_min": 0.5952380952380952,
+    "barrio_min": "puerto-madero",
+    "tasa_max": 0.9247058823529412,
+    "barrio_max": "boedo",
+    "barrios_bajo_75": [
+      "puerto-madero",
+      "villa-real",
+      "villa-lugano",
+      "nueva-pompeya",
+      "villa-general-mitre",
+      "la-boca",
+      "villa-riachuelo",
+      "paternal",
+      "velez-sarsfield"
+    ],
+    "mediana_pm2_ok": 2389.055222887558,
+    "mediana_pm2_no_ok": 2454.3859649122805,
+    "mannwhitney_p": 1.1158567698141246e-06,
+    "mediana_m2_ok": 56.0,
+    "mediana_m2_no_ok": 58.0,
+    "completitud_ok": 0.5216043994413407,
+    "completitud_no_ok": 0.5352533029179736,
+    "spearman_tasa_vs_pm2_barrio": 0.150786308973173
+  },
+  "muestra_diagnostico": {
+    "filas": 22406,
+    "pm2_p01": 918.0,
+    "pm2_p99": 6808.510638297872
+  },
+  "bloques_nulo_es_no": {
+    "infraestructura": {
+      "media": 0.408,
+      "desvio": 0.28,
+      "pct_valores_distintos": 8,
+      "pct_en_cero": 18.2,
+      "pct_varianza_intra_subzona": 96.9,
+      "spearman_intra_subzona_vs_log_pm2": 0.054
+    },
+    "amenities": {
+      "media": 0.101,
+      "desvio": 0.145,
+      "pct_valores_distintos": 11,
+      "pct_en_cero": 50.6,
+      "pct_varianza_intra_subzona": 87.4,
+      "spearman_intra_subzona_vs_log_pm2": 0.286
+    },
+    "atributos": {
+      "media": 0.394,
+      "desvio": 0.256,
+      "pct_valores_distintos": 5,
+      "pct_en_cero": 16.6,
+      "pct_varianza_intra_subzona": 96.1,
+      "spearman_intra_subzona_vs_log_pm2": 0.213
+    },
+    "corr_bloques_con_completitud": {
+      "infraestructura": 0.601,
+      "amenities": 0.52,
+      "atributos": 0.2
+    }
+  },
+  "bloques_solo_declarados": {
+    "infraestructura": {
+      "media": 0.537,
+      "desvio": 0.315,
+      "pct_valores_distintos": 18,
+      "pct_en_cero": 13.8,
+      "pct_varianza_intra_subzona": 96.7,
+      "spearman_intra_subzona_vs_log_pm2": 0.061
+    },
+    "amenities": {
+      "media": 0.442,
+      "desvio": 0.394,
+      "pct_valores_distintos": 16,
+      "pct_en_cero": 25.7,
+      "pct_varianza_intra_subzona": 91.7,
+      "spearman_intra_subzona_vs_log_pm2": 0.269
+    },
+    "atributos": {
+      "media": 0.478,
+      "desvio": 0.297,
+      "pct_valores_distintos": 7,
+      "pct_en_cero": 14.7,
+      "pct_varianza_intra_subzona": 96.6,
+      "spearman_intra_subzona_vs_log_pm2": 0.208
+    },
+    "corr_bloques_con_completitud": {
+      "infraestructura": 0.193,
+      "amenities": -0.0,
+      "atributos": -0.028
+    }
+  },
+  "sensibilidad": {
+    "combinaciones": 171,
+    "marcados_por_ponderacion": 1121,
+    "jaccard_min": 0.663,
+    "jaccard_mediana": 0.817,
+    "spearman_gap_min": 0.95,
+    "propiedades_marcadas_alguna_vez": 1705,
+    "marcadas_en_90pct_o_mas": 797,
+    "marcadas_en_todas": 692,
+    "jaccard_base_vs_tratamiento_nulos_alt": 0.725,
+    "jaccard_base_vs_sin_indice": 0.673,
+    "peor_combinacion": {
+      "infraestructura": 0.05,
+      "amenities": 0.4,
+      "atributos": 0.55
+    }
+  }
+}
