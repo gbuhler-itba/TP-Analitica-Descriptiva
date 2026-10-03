@@ -16,3 +16,9 @@ scikit-learn==1.6.1
 # PyYAML no estaba en el pipeline original: se incorporó al parametrizar el
 # proyecto, para leer config/config.yaml. Es la única dependencia agregada.
 PyYAML==6.0.3
+
+# Análisis exploratorio (PreEntrega 2): estadística y gráficos.
+# scipy ya venía instalado como dependencia de scikit-learn; se fija explícito.
+scipy==1.13.1
+matplotlib==3.9.4
+seaborn==0.13.2
