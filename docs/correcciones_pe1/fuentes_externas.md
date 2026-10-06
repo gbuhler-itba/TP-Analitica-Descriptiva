@@ -1,5 +1,7 @@
 # Fuentes externas: fichas (borrador para el README)
 
+> **Borrador de trabajo del 29/09/2026.** La versión vigente, actualizada al dataset limpio y al modelo, está en `docs/entregas_grupo/fuentes_externas.md`.
+
 Formato pedido por el enunciado de la PreEntrega 2: fuente concreta, cobertura
 geográfica, período, granularidad, mecanismo de unión, variable derivada,
 análisis/KPI/hipótesis al que aporta y limitaciones conocidas.
