@@ -87,8 +87,9 @@ cambia el orden de los avisos dentro de una zona.
   barrio (notebook 02, sección 4; notebook 03, sección 2).
 - **Geográfico:** 47 categorías de barrio de MercadoLibre. No coinciden con los 48 barrios oficiales: incluyen
   "Barrio Norte" y no incluyen San Cristóbal ni Parque Chas.
-- **Tipología:** departamentos usados en venta. Quedan fuera casas, alquileres y unidades en pozo (237 avisos con
-  antigüedad negativa, más 2 con la antigüedad mal cargada, se excluyen en la limpieza).
+- **Tipología:** departamentos usados en venta. Quedan fuera casas, alquileres y unidades en pozo (237 avisos: 235
+  con antigüedad negativa y 2 con la antigüedad mal cargada, se excluyen en la limpieza). Una casa publicada como
+  departamento sigue en el dataset, marcada como atípica.
 - **Precio:** precio de publicación en USD, no precio de cierre.
 - **Temporal:** una foto del mercado; fecha de extracción 14/08/2026.
 
