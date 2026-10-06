@@ -138,7 +138,9 @@ def parsear_expensas(serie, maximo_ars=10_000_000):
     - 0 pasa a NaN: un departamento sin expensas es casi imposible, se lee
       como "no informado";
     - montos en ARS por encima de `maximo_ars` pasan a NaN (errores de carga
-      del tipo 111.111.111.111).
+      del tipo 111.111.111.111);
+    - en los montos marcados en USD, los de 10.000 o más se reinterpretan como
+      pesos y los menores a 10 pasan a NaN.
     Devuelve (monto, moneda).
     """
     moneda = serie.str.extract(r"\s(ARS|USD)$")[0]
@@ -148,6 +150,12 @@ def parsear_expensas(serie, maximo_ars=10_000_000):
     )
     monto = monto.where(monto > 0, np.nan)
     monto = monto.where(~((moneda == "ARS") & (monto > maximo_ars)), np.nan)
+    # Expensas "en USD": los montos de 10.000 o más son pesos con la moneda mal
+    # cargada (ej. "222.000 USD", un valor típico en ARS); los menores a 10 no
+    # son un dato real ("1 USD").
+    usd = moneda == "USD"
+    moneda = moneda.where(~(usd & (monto >= 10_000)), "ARS")
+    monto = monto.where(~(usd & (monto < 10)), np.nan)
     return monto, moneda
 
 

@@ -1,6 +1,6 @@
 # Fuentes externas: fichas
 
-*TP2, Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 2*
+*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 2*
 
 Formato pedido por el enunciado de la PreEntrega 2: fuente concreta, cobertura
 geográfica, período, granularidad, mecanismo de unión, variable derivada,
@@ -67,7 +67,7 @@ todos los avisos que se comparan.
 | Mecanismo de unión | Distancia haversine mínima a cualquiera de los tres polos |
 | Variable derivada | `dist_centralidad_m` |
 | Aporta a | H3, que no se apoyó: dentro del barrio la distancia a los polos no se relaciona con el precio (ρ ≈ 0, notebook 02). No entra al modelo de precio esperado |
-| Limitaciones | Es una elección del grupo, no un dato externo, y hay que presentarla como tal. Hallazgo del TP1: correlación casi nula con el precio por m², porque el valor está en el corredor norte y no en el centro geográfico |
+| Limitaciones | Es una elección del grupo, no un dato externo, y hay que presentarla como tal. Hallazgo de la PreEntrega 1: correlación casi nula con el precio por m², porque el valor está en el corredor norte y no en el centro geográfico |
 
 ## 4. Estaciones de ferrocarril, BA Data (prevista)
 
@@ -145,8 +145,8 @@ todos los avisos que se comparan.
 | Granularidad | **Punto a nivel de parcela, con coordenadas en el 100% de los registros.** Cada registro trae el punto dos veces: `wkt_1` en coordenadas planas de la Ciudad y `wkt_2` en longitud y latitud WGS84 (el portal las describe como "punto de inicio" y "de destino", pero son el mismo punto). Trae también el código de parcela (`smp`), la dirección, el barrio y la comuna. Compatible con la sub-zona |
 | Mecanismo de unión | Conteo de permisos de obra nueva en un radio alrededor de cada aviso (por ejemplo, 500 m) dentro de una ventana previa al scraping (por ejemplo, 24 meses), con `wkt_2`. Se prefiere el radio a contar "dentro de la sub-zona" porque la sub-zona no tiene límites definidos. Radio, ventana y tipos de trámite son decisión del grupo. Hay que deduplicar por expediente o por parcela, porque una misma obra puede tener varios trámites |
 | Variable derivada | `permisos_obra_500m` (proxy de dinamismo) |
-| Aporta a | La línea de "dinamismo de zona" planteada en el TP1 |
-| Limitaciones | Mide actividad constructiva registrada, no valorización ni obra ejecutada. **Cerca de un tercio de los registros no son obras**: al menos 23.443 (26,7%) son proyectos de instalaciones (ventilación mecánica, prevención de incendios, ascensores, instalaciones térmicas y eléctricas) y 2.705 (3,1%) son regularizaciones de obras en contravención. Los trámites de obra propiamente dicha son "Permiso de ejecución de obra civil" (5.311) y "Registro-permiso obra" (4.198), en conjunto el 10,8%. Podrían ser el mismo trámite con dos nombres: en la vista previa del portal, el segundo aparece en registros de 2021 y el primero en 2023, a confirmar con el archivo completo. Las demoliciones también vienen con dos nombres, "Permiso de demolición" (5.308) y "Demolición" (2.705), que conviene contar juntos. El tipo más frecuente, "P. obra e. proy. / conforme / r. obras en contra" (22.604, 25,7%), mezcla trámites distintos y no se puede separar. Queda para la PreEntrega 3 |
+| Aporta a | La línea de "dinamismo de zona" planteada en la PreEntrega 1 |
+| Limitaciones | Mide actividad constructiva registrada, no valorización ni obra ejecutada. **Cerca de un tercio de los registros no son obras**: al menos 23.443 (26,7%) son proyectos de instalaciones (ventilación mecánica, prevención de incendios, ascensores, instalaciones térmicas y eléctricas) y 2.705 (3,1%) son regularizaciones de obras en contravención. Los trámites de obra propiamente dicha son "Permiso de ejecución de obra civil" (5.311) y "Registro-permiso obra" (4.198), en conjunto el 10,8%. Podrían ser el mismo trámite con dos nombres: en la vista previa del portal, el segundo aparece en registros de 2021 y el primero en 2023, a confirmar con el archivo completo. Las demoliciones también vienen con dos nombres, "Permiso de demolición" (5.308) y "Demolición" (cantidad a confirmar con el archivo completo: el conteo anotado coincidía con el de regularizaciones y puede ser un error de copia), que conviene contar juntos. El tipo más frecuente, "P. obra e. proy. / conforme / r. obras en contra" (22.604, 25,7%), mezcla trámites distintos y no se puede separar. Queda para la PreEntrega 3 |
 
 ## 10. Barrios populares, BA Data (prevista)
 
@@ -164,7 +164,7 @@ todos los avisos que se comparan.
 ## Descartadas o a descartar
 
 - **Datos agregados por comuna**, como la superficie de espacios verdes por habitante
-  por comuna que publica BA Data: la comuna agrupa 2 o 3 barrios y el análisis compara
+  por comuna que publica BA Data: la comuna agrupa varios barrios (hasta seis) y el análisis compara
   dentro de la sub-zona. Pueden servir solo como contexto descriptivo, no para
   explicar precios.
 - **Alquileres (scraping propio)**: permitirían estimar rentabilidad bruta por zona,

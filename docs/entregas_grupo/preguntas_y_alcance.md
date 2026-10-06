@@ -1,6 +1,6 @@
 # Preguntas por nivel, nivel predictivo y alcance
 
-Entregable de la Tarea B para la PreEntrega 2. Reemplaza la sección 3 del README de la PreEntrega 1 y agrega dos secciones nuevas: la definición del nivel predictivo y lo que el análisis no mide.
+Reemplaza la sección de preguntas del README de la PreEntrega 1 y agrega dos secciones nuevas: la definición del nivel predictivo y lo que el análisis no mide.
 
 **Cambio de enfoque que atraviesa todo el documento.** La idea del índice se mantiene, pero sus pesos dejan de ser los 45/30/25 elegidos a mano. Los 45/30/25 quedan como primera propuesta, ya contrastada con los datos (ver `docs/correcciones_pe1/diagnostico.md`), y los pesos pasan a salir de lo que el mercado paga por cada característica dentro de la misma zona. Así, cada aviso tiene un **precio esperado** según sus características. Los avisos que se marcan son **avisos con precio atípicamente bajo para investigar**, es decir, publicados por debajo de su precio esperado. Son una señal para que el analista mire, no una oportunidad comprobada.
 
@@ -12,9 +12,9 @@ Las preguntas de la tabla remiten a estas hipótesis. H2 y H3 se mantienen. H1 s
 - **H2.** Un barrio no es una unidad homogénea de precios; la sub-zona es una vara de referencia más precisa.
 - **H3.** Parte de la variación de precios se explica por variables de entorno (transporte, centralidad). Controlar por ellas separa los avisos baratos para su ubicación de los que son baratos simplemente por estar peor ubicados.
 
-**Resultado en esta entrega:** H1, apoyo parcial (notebook 03); H2, apoyo parcial: la sub-zona mejora la referencia solo en algunos barrios (notebook 02); H3, no se apoya: dentro del barrio, la cercanía al subte y a los polos no se asocia al precio una vez controlada la antigüedad (notebook 02).
+**Resultado en esta entrega:** H1, apoyo débil: la brecha prioriza qué revisar, pero la proporción de marcados es casi la que produciría el error del modelo por sí solo (notebook 03); H2, apoyo parcial: la sub-zona mejora la referencia solo en algunos barrios (notebook 02); H3, no se apoya: dentro del barrio, la cercanía al subte y a los polos no se asocia al precio una vez controlada la antigüedad (notebook 02).
 
-**KPIs con nombre actualizado:** precio por m² de la sub-zona, tasa de completitud, prima por característica (reemplaza al "peso empírico por bloque"), precio esperado, brecha de precio (reemplaza al "gap de confort": diferencia porcentual entre precio publicado y precio esperado), error de estimación fuera de muestra, índice de accesibilidad, eficiencia de expensas y ranking de avisos a investigar (reemplaza al "ranking de oportunidades").
+**KPIs con nombre actualizado:** precio por m² de la zona de referencia, tasa de completitud, prima por característica (reemplaza al "peso empírico por bloque"), precio esperado, brecha de precio (reemplaza al "gap de confort": diferencia porcentual entre precio publicado y precio esperado), error de estimación fuera de muestra, índice de accesibilidad, eficiencia de expensas y ranking de avisos a investigar (reemplaza al "ranking de oportunidades").
 
 ## Parte 1: preguntas reclasificadas
 

@@ -12,6 +12,9 @@ Las tablas completas quedan en `docs/correcciones_pe1/salida/`.
 
 > Todo lo marcado con **[DECIDIR]** es criterio del grupo. El script usa un valor
 > provisorio para poder correr, pero no es una decisión tomada.
+>
+> **Actualización (06/10/2026):** este es el diagnóstico de trabajo del 29/09. Las decisiones marcadas se resolvieron en
+> la PreEntrega 2; el resumen está en la sección 3.4 y en `estado_correcciones.md`.
 
 ---
 
@@ -190,17 +193,22 @@ y se marcó el 5% con el precio más bajo para su confort, unos 1.120 avisos.
 Dos lecturas:
 
 1. Los pesos importan menos de lo que parecía. Hay un núcleo de **692 avisos** que
-   aparecen señalados con cualquier ponderación. Es un argumento para el README:
-   los resultados no dependen de un 45/30/25 elegido a mano.
+   aparecen señalados con cualquier ponderación: los resultados no dependían de un
+   45/30/25 elegido a mano.
 2. La contracara: **dos tercios de lo que marca el índice ya aparece mirando solo el
    precio relativo a la sub-zona.** El índice reordena en el margen, pero la mayor
-   parte de la señal es "precio atípicamente bajo". Esto coincide con lo que dijo el
-   profe: hay que presentarlos como señales de precio atípico para investigar, no
+   parte de la señal es "precio atípicamente bajo". Esto coincide con la devolución:
+   hay que presentarlos como señales de precio atípico para investigar, no
    como confort subvaluado.
 
 Tabla completa: `salida/sensibilidad_pesos.csv`.
 
-### 3.4. Decisiones de criterio que abre este diagnóstico
+### 3.4. Decisiones de criterio que abrió este diagnóstico
+
+> **Cómo se resolvieron (PreEntrega 2):** los pesos pasaron a salir de los datos, como primas de un modelo de
+> precio esperado (notebook 03). La circularidad que se menciona abajo se evita estimando el precio esperado de cada
+> aviso fuera de muestra, con un modelo que no lo vio. Los vacíos de las columnas "solo Sí" entran al modelo como
+> "no lo declara". El detalle está en `estado_correcciones.md`.
 
 - **[DECIDIR]** ¿Se mantiene la infraestructura como bloque? Hay tres caminos:
   sacarla del índice y usarla como filtro de calidad del aviso; quedarse solo con sus
