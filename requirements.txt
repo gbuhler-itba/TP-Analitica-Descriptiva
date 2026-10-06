@@ -4,7 +4,7 @@
 # datasets versionados en el repositorio. Todas verificadas contra PyPI y
 # todas con wheels para CPython 3.9.
 #
-# Requiere Python 3.9 o superior.
+# Requiere Python 3.9 a 3.12 (numpy 2.0.2 y scipy 1.13.1 no tienen wheels para 3.13).
 # Instalación:  pip install -r requirements.txt
 
 requests==2.32.5

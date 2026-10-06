@@ -37,7 +37,9 @@ característica dentro de la zona (sección 10).
 - El modelo de precio esperado erra 12,7% en la mediana, fuera de muestra, contra 17,2% de usar la mediana de la
   zona como referencia.
 - 1.704 avisos (6,2%) piden más de 25% menos que su precio esperado; 1.434 de ellos siguen marcados con un umbral
-  ajustado al error de su barrio, y 1.047 no tienen señales de error de carga.
+  ajustado al error de su barrio, y 1.225 de esos no tienen señales de error de carga. Pero esa proporción es casi la
+  que produciría el error del modelo por sí solo (6,0%): la brecha ordena los avisos, no prueba que su precio sea
+  atípico.
 - La revisión de avisos en el portal muestra que los casos más extremos son errores de carga o casos especiales, y
   que en los intermedios el descuento suele tener un motivo que el aviso no registra (se vende con inquilino, está
   sin terminar). La brecha sirve para priorizar qué revisar, no para afirmar una subvaluación.
@@ -86,7 +88,7 @@ cambia el orden de los avisos dentro de una zona.
 - **Geográfico:** 47 categorías de barrio de MercadoLibre. No coinciden con los 48 barrios oficiales: incluyen
   "Barrio Norte" y no incluyen San Cristóbal ni Parque Chas.
 - **Tipología:** departamentos usados en venta. Quedan fuera casas, alquileres y unidades en pozo (237 avisos con
-  antigüedad negativa se excluyen en la limpieza).
+  antigüedad negativa, más 2 con la antigüedad mal cargada, se excluyen en la limpieza).
 - **Precio:** precio de publicación en USD, no precio de cierre.
 - **Temporal:** una foto del mercado; fecha de extracción 14/08/2026.
 
@@ -109,7 +111,7 @@ Reclasificadas a partir de la devolución. Versión completa, con el porqué de 
 | | P2 | ¿Con qué error, y dónde es mayor? | Respondida: 12,7% en la mediana; mayor en Puerto Madero y en barrios chicos del sur y el oeste (notebook 03, secciones 4 y 9) |
 | | P3 | ¿Qué precio se esperaría para un departamento no publicado? | Posible con el mismo modelo; no se aplicó a casos concretos |
 | | P4 | Si se repite el scraping, ¿los avisos marcados salen del portal o bajan antes que sus comparables? | Requiere un segundo relevamiento |
-| Prescriptivo | R1 | ¿Qué regla decide qué avisos pasan a revisión? | Propuesta: brecha menor a −25% (dos veces el error del modelo), sin señales de error de carga |
+| Prescriptivo | R1 | ¿Qué regla decide qué avisos pasan a revisión? | Propuesta: brecha menor a −25% (dos veces el error mediano del modelo, que además supera la suma de error y negociación), con el umbral por barrio y sin señales de error de carga |
 | | R2 | ¿Conviene ponderar distinto un aviso bien ubicado que uno periférico? | Pendiente |
 | | R3 | ¿En qué zonas concentrar el análisis? | Parcial: el error del modelo por barrio indica dónde la brecha es más confiable (notebook 03, sección 9) |
 
@@ -119,8 +121,8 @@ Reclasificadas a partir de la devolución. Versión completa, con el porqué de 
 
 | | Hipótesis | Evidencia | Estado |
 |---|---|---|---|
-| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación (~5%). Son candidatos a investigar, no oportunidades confirmadas | 1.704 avisos con brecha menor a −25%, robustos al ajustar el umbral por barrio. Pero una cuarta parte tiene señales de error de carga, y los casos revisados en el portal muestran errores o motivos no registrados | Apoyo parcial (notebook 03) |
-| H2 | Un barrio no es homogéneo: la sub-zona da una referencia de precio más precisa que el barrio | El error de referencia baja de 17,7% a 17,2% en total, pero en algunos barrios baja mucho (Villa Lugano, de 25% a 14%) y en otros empeora | Apoyo parcial: depende del barrio (notebook 02) |
+| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación (~5%). Son candidatos a investigar, no oportunidades confirmadas | 1.704 avisos con brecha menor a −25%, robustos al ajustar el umbral por barrio. Pero esa proporción (6,2%) es casi la que daría el error del modelo por sí solo (6,0%), y los casos revisados en el portal muestran errores de carga o motivos no registrados | Apoyo débil: la brecha prioriza qué revisar, pero no prueba precios atípicos más allá del error del modelo (notebook 03) |
+| H2 | Un barrio no es homogéneo: la sub-zona da una referencia de precio más precisa que el barrio | El error de la referencia (avisos con coordenadas) baja de 17,7% a 17,2% en total, pero en algunos barrios baja mucho (Villa Lugano, de 25% a 14%) y en otros empeora | Apoyo parcial: depende del barrio (notebook 02) |
 | H3 | Parte de la diferencia de precio dentro de un barrio se explica por la ubicación: cercanía al subte y a los polos de centralidad | A menos de 300 m del subte los precios son 5,5% menores, pero a igual antigüedad la diferencia baja a −1,9%. La centralidad no se relaciona con el precio (ρ ≈ 0) | No se apoya (notebook 02) |
 
 ### KPIs
@@ -228,7 +230,7 @@ una misma zona; los polígonos de barrios se usan solo como control de calidad. 
 
 ## 9. Cómo reproducir el análisis
 
-Requiere Python 3.9 o superior; la versión de referencia es 3.9.
+Requiere Python 3.9 a 3.12; la versión de referencia es 3.9, y los notebooks se ejecutaron con 3.11 y las versiones de `requirements.txt`.
 
 ```bash
 git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
@@ -282,8 +284,8 @@ estaba declarada.
 | Ubicaciones especiales dentro de un barrio (Rodrigo Bueno en Puerto Madero) | El modelo las compara con el resto del barrio | Integrar la fuente de barrios populares |
 | Accesibilidad solo con subte | Deja afuera el transporte del sur y el oeste | Integrar tren y Metrobus y volver a evaluar H3 |
 | Validación de la señal (P4) | Es la única forma de saber si la brecha anticipa algo real | Repetir el scraping y comparar marcados contra comparables |
-| Errores residuales de la limpieza: 303 baños en 0, pisos cargados como número de unidad, 254 expensas de 1 a 1.000 pesos | Se verificó que no cambian el modelo (1.702 marcados en lugar de 1.704), pero son datos incorrectos | Corregirlos en la próxima versión de la limpieza |
-| Marca de outliers y elección de barrios calculadas con todos los avisos | Tocan la separación de la validación cruzada, con un efecto chico | Calcularlas dentro de cada vuelta |
+| Errores residuales de la limpieza: 303 baños en 0, pisos cargados como número de unidad, 254 expensas de 1 a 1.000 pesos, una casa publicada como departamento | Se verificó que no cambian el modelo (1.702 marcados en lugar de 1.704), pero son datos incorrectos | Corregirlos en la próxima versión de la limpieza |
+| Marca de outliers y elección de barrios calculadas con todos los avisos, y comparación de H2 con particiones que no agrupan por unidad | Tocan la separación de la validación cruzada. Con particiones agrupadas, la sub-zona mejora en 24 barrios en lugar de 28 | Calcularlas dentro de cada vuelta y con particiones por unidad |
 | Eficiencia de expensas | KPI definido y no calculado | Calcular expensas en USD por m² dentro de la zona |
 | Permisos de obra y alquileres | Dinamismo de zona y rentabilidad | Evaluar para la PreEntrega 3 |
 
@@ -298,4 +300,5 @@ estaba declarada.
   avisos se comparan contra su barrio.
 - **Barrios truncados.** Palermo, Belgrano, Caballito y Recoleta llegaron al tope de paginación (2.016 avisos):
   son una muestra de la oferta, no el total.
-- **Error del modelo.** Un error típico de 13% sirve para ordenar avisos, no para tasar uno en particular.
+- **Error del modelo.** Un error típico de 13% sirve para ordenar avisos, no para tasar uno en particular ni para
+  separar un precio atípico de un error de estimación.
