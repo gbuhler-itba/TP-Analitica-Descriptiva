@@ -53,7 +53,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto (estación), en WGS84. Compatible con la sub-zona: la distancia varía entre avisos de la misma sub-zona |
 | Mecanismo de unión | Distancia haversine de cada aviso geocodificado a la estación más cercana. Las estaciones repetidas por combinación no afectan la mínima |
 | Variable derivada | `dist_transporte_m` |
-| Aporta a | H3 (efecto de la ubicación) e índice de accesibilidad. **No entra al modelo de precio esperado:** en el notebook 02, dentro del barrio y a igual antigüedad, la cercanía al subte casi no se relaciona con el precio (H3 no se apoya) |
+| Aporta a | H3 (efecto de la ubicación) e índice de accesibilidad. **No entra al modelo de precio esperado:** en el notebook 02, dentro del barrio y a igual antigüedad, la cercanía al subte casi no se relaciona con el precio (H3 no se detectó con este indicador) |
 | Limitaciones | Solo subte. Deja afuera tren y Metrobus, que son el transporte pesado en buena parte del sur y el oeste. Distancia en línea recta al punto de la estación, no a pie ni a la boca de acceso. No distingue líneas ni frecuencia |
 
 ## 3. Polos de centralidad (integrada, definición propia)
@@ -66,7 +66,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto. Compatible con la sub-zona, aunque dentro de una sub-zona la distancia al centro casi no varía: los avisos que se comparan están a pocas cuadras entre sí |
 | Mecanismo de unión | Distancia haversine mínima a cualquiera de los tres polos |
 | Variable derivada | `dist_centralidad_m` |
-| Aporta a | H3, que no se apoyó: dentro del barrio la distancia a los polos no se relaciona con el precio (ρ ≈ 0, notebook 02). No entra al modelo de precio esperado |
+| Aporta a | H3, que no se detectó con este indicador: dentro del barrio la distancia a los polos no se relaciona con el precio (ρ ≈ 0, notebook 02). No entra al modelo de precio esperado |
 | Limitaciones | Es una elección del grupo, no un dato externo, y hay que presentarla como tal. Hallazgo de la PreEntrega 1: correlación casi nula con el precio por m², porque el valor está en el corredor norte y no en el centro geográfico |
 
 ## 4. Estaciones de ferrocarril, BA Data (prevista)
@@ -131,7 +131,7 @@ todos los avisos que se comparan.
 | Granularidad | Un único valor para todos los avisos. No necesita variar entre avisos: es una conversión de unidades, no una variable explicativa |
 | Mecanismo de unión | Se aplica el mismo valor a todos los avisos en el notebook 01 (`PARAMS`) |
 | Variable derivada | `expensas_ars` (las publicadas en USD pasadas a pesos) y `expensas_usd` (todas las expensas en dólares) |
-| Aporta a | KPI "eficiencia de expensas". El enunciado exige declarar fuente, tipo de cambio, fecha y criterio para toda normalización monetaria |
+| Aporta a | KPI "eficiencia de expensas", calculado en el notebook 03 (sección 11). El enunciado exige declarar fuente, tipo de cambio, fecha y criterio para toda normalización monetaria |
 | Criterio | Se eligió el MEP porque el comprador paga el departamento con dólares propios y las expensas en pesos: el MEP es el tipo de cambio al que una persona convierte legalmente dólares a pesos. El A 3500 es mayorista y un comprador no accede a él |
 | Limitaciones | La elección pesa poco: la brecha entre los dos era de 2%, y la mediana de expensas pasa de USD 131,7 (MEP) a USD 134,3 (A 3500). Como se aplica un solo valor a todos, **no cambia el orden de los avisos dentro de una zona**. Los 5 avisos con precio en pesos no se convierten: se excluyen en la limpieza (`precio_en_pesos`), porque sus montos no cierran como pesos |
 

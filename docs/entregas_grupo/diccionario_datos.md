@@ -70,9 +70,9 @@ literales pasan a vacío cuando pandas lee las cuotas en la etapa 2 (hubo uno so
 **Transformación: Ninguna** quiere decir "el valor de la ficha tal cual, con esta regla general".
 
 **"En limpieza:"** describe lo que hacen las funciones de `src/limpieza.py`, aplicadas en el notebook 01. El resultado
-queda en `propiedades_limpias.tsv`: las columnas originales se conservan tal cual, salvo `ambientes` y
-`departamentos_por_piso`, cuyos faltantes disfrazados pasan a vacío, y las transformaciones generan las columnas nuevas
-de la última sección.
+queda en `propiedades_limpias.tsv`. Las columnas originales se conservan tal cual, con dos excepciones: en `ambientes` y
+`departamentos_por_piso` los faltantes disfrazados pasan a vacío, y en `tipo_de_seguridad` y `tipo_de_departamento` se
+unifican dos etiquetas mal cargadas. Las transformaciones generan las columnas nuevas de la última sección.
 
 **Primas.** Para las variables que entran al modelo se cita la **prima del modelo** (notebook 03, sección 5): la
 diferencia de precio por m² asociada a la característica comparando dentro de la misma zona y con las demás
@@ -136,7 +136,7 @@ Atributos numéricos y categóricos de la ficha. Es el bloque con más valores i
 
 | Variable | Significado | Tipo | Unidad | Fuente | Transformación | Con dato | Observaciones |
 |---|---|---|---|---|---|---|---|
-| `tipo_de_departamento` | Subtipo de unidad que declara el anunciante | Categórica nominal (9 categorías) | No aplica | MercadoLibre, ficha de detalle | Ninguna | 26.335 (94,3%) | 5,7% vacío; "Departamento" es el 85,9%. "Penthhouse" (31) viene así escrito desde la plataforma. Hay 60 "Ph" (0,2%): aparecieron en la búsqueda de departamentos y **se conservan**, porque el anunciante los publicó como departamento; es una limitación menor. "Monoambiente" (372) no coincide con los 4.222 avisos de 1 ambiente: no sirve para contar monoambientes |
+| `tipo_de_departamento` | Subtipo de unidad que declara el anunciante | Categórica nominal (9 categorías) | No aplica | MercadoLibre, ficha de detalle | Ninguna | 26.335 (94,3%) | 5,7% vacío; "Departamento" es el 85,9%. "Penthhouse" (31) viene así escrito desde la plataforma: **en limpieza** se corrige a "Penthouse". Hay 60 "Ph" (0,2%): aparecieron en la búsqueda de departamentos y **se conservan**, porque el anunciante los publicó como departamento; es una limitación menor. "Monoambiente" (372) no coincide con los 4.222 avisos de 1 ambiente: no sirve para contar monoambientes |
 | `antig_edad` | Antigüedad del edificio que declara el anunciante | Texto con número y unidad (numérica discreta tras el parseo) | años | MercadoLibre, ficha de detalle | Ninguna en el pipeline. El nombre sale de `normalizar_nombre_columna()`, que no reemplaza la "ü" de "Antigüedad" y la convierte en "_". En limpieza: `parsear_antiguedad()` pasa los valores de 1800 o más a 2026 menos el año, los negativos a 0 marcando `en_construccion`, y los mayores a 150 a vacío | 27.143 (97,2%) | 2,8% vacío. 235 negativos: unidades en pozo o en construcción, que no son usadas. 66 son años de construcción ("1.976 años") y 2 son "40.000 años", que el parser lee como año y deja negativos (se excluyen junto con los de pozo); 6 están entre 151 y 1.799 y 1 no es número. Fuerte redondeo a decenas (50 años es el 10%; 40, el 8%) y 1.479 avisos con "1 años" (5,3%), posible carga por defecto para "a estrenar". Es dato declarado, no verificado |
 | `cantidad_de_pisos` | Cantidad de pisos declarada en la ficha; en principio, del edificio | Numérica discreta (`float64`) | pisos | MercadoLibre, ficha de detalle | Ninguna | 18.563 (66,5%) | 33,5% vacío; mediana 7. 4.374 avisos valen 1 (23,6% de los que tienen dato), raro para un edificio de departamentos: probablemente parte de los anunciantes carga los pisos de la unidad (1 si es simple, 2 si es dúplex). 12 avisos superan 60, la altura de cualquier edificio residencial de CABA, e incluyen años (1970, 2008, 2011) y valores como 162 o 410 |
 | `departamentos_por_piso` | Cantidad de unidades por planta del edificio | Numérica discreta (`float64`) | unidades por piso | MercadoLibre, ficha de detalle | Ninguna | 17.525 (62,8%) | 37,2% vacío. **6.970 avisos (25%) valen 99:** faltante disfrazado o valor por defecto. **En limpieza:** pasa a vacío (notebook 01). La mediana (5) y el p99 (99) están contaminados por ese valor. 1 negativo; máximo 278 |
@@ -210,7 +210,7 @@ En las diferencias simples de la PreEntrega 1 era el bloque que más se asociaba
 | `lavanderia` | El edificio tiene lavandería común | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 25,6% · No 39,0% | No confundir con `con_lavadero` (lavadero propio de la unidad) |
 | `recepcion` | El edificio tiene recepción | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,1% (580) | — |
 | `seguridad` | El edificio tiene seguridad | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 26,8% · No 38,4% | Solo 3.388 avisos informan `tipo_de_seguridad`, contra 7.496 con "Sí". Prima del modelo: +0,9% |
-| `tipo_de_seguridad` | Modalidad de la seguridad del edificio | Categórica nominal (5 categorías) | No aplica | MercadoLibre, ficha de detalle | Ninguna | 3.388 (12,1%) | "24 horas" (1.718) y "24 hs" (26) son la misma categoría; no se unificaron porque la variable no se usa en el análisis. Las otras: Diurno, Virtual, Nocturno. No entra al análisis |
+| `tipo_de_seguridad` | Modalidad de la seguridad del edificio | Categórica nominal (5 categorías) | No aplica | MercadoLibre, ficha de detalle | Ninguna | 3.388 (12,1%) | "24 horas" (1.718) y "24 hs" (26) son la misma categoría: **en limpieza** se unifican en "24 horas" (notebook 01, sección 3.4). Las otras: Diurno, Virtual, Nocturno. No entra al análisis |
 | `estacionamiento_para_visitantes` | El edificio tiene estacionamiento para visitantes | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,6% (156) | — |
 | `cancha_de_paddle` | El edificio o complejo tiene cancha de pádel | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,1% (25) | — |
 | `cancha_de_tenis` | El edificio o complejo tiene cancha de tenis | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,5% (133) | — |
@@ -283,8 +283,8 @@ filas del dataset limpio.
 | `incoherencia_dormitorios` | Dormitorios mayor o igual que ambientes, sin contar el monoambiente | Booleana | `dormitorios >= ambientes`, salvo 1 ambiente con 1 dormitorio, que es la convención de la plataforma para un monoambiente | True en 376 (1,4%) |
 | `incoherencia_piso` | El piso de la unidad supera la cantidad de pisos | Booleana | `numero_de_piso_de_la_unidad > cantidad_de_pisos` | True en 2.299 (8,3%) |
 
-Además, en las columnas originales: `ambientes` en 0 o negativo pasa a vacío y `departamentos_por_piso` = 99 pasa a
-vacío. Las 343 filas excluidas (68 duplicados por ID, 237 en pozo, 28 con superficie inválida, 5 en pesos, 4 con
+Además, en las columnas originales: `ambientes` en 0 o negativo pasa a vacío, `departamentos_por_piso` = 99 pasa a
+vacío, y se unifican "24 hs" con "24 horas" (`tipo_de_seguridad`) y "Penthhouse" con "Penthouse" (`tipo_de_departamento`). Las 343 filas excluidas (68 duplicados por ID, 237 en pozo, 28 con superficie inválida, 5 en pesos, 4 con
 precio menor a USD 20.000 y 1 con precio imposible) están en `registro_limpieza.csv` con su motivo.
 
 ### Creadas por el modelo de precio esperado (notebook 03)
@@ -297,10 +297,22 @@ unidad marcada).
 | `zona` | Zona de referencia del aviso | Categórica nominal (166 zonas) | `subzona` en los 28 barrios donde la sub-zona tiene menor error de referencia fuera de muestra que el barrio; `barrio` en el resto, para los avisos sin coordenadas y para las zonas con menos de 10 avisos |
 | `precio_m2_esperado` ★ | Precio por m² esperado para las características y la zona del aviso | Numérica continua; USD/m² | exp de la predicción de una regresión lineal de log(`precio_m2_usd`) sobre características y zona, estimada **fuera de muestra** (5 partes agrupadas por dirección y superficie, ajustada sin los `outlier_precio_m2`). Características en `src/modelo.py`, `matriz_caracteristicas()` |
 | `brecha` ★ | Brecha de precio | Numérica continua; proporción (−0,25 = 25% por debajo) | `precio_m2_usd` / `precio_m2_esperado` − 1 |
-| `marcado` ★ | Precio atípicamente bajo para investigar | Booleana | `brecha` < −0,25 (dos veces el error típico del modelo, 12,7%) |
+| `marcado` ★ | Precio atípicamente bajo para investigar | Booleana | `brecha` < −0,25 (dos veces el error mediano del modelo, 12,7%) |
 | `senal_error_carga` | El aviso tiene alguna señal de que el dato puede estar mal | Booleana | Alguna de: m² por ambiente fuera del 1% a 99%, superficie recuperada de la total, `incoherencia_dormitorios`, `incoherencia_piso`, `menciona_alquiler` |
 | `marcado_barrio` | Marcado con un umbral ajustado al error de su barrio | Booleana (solo en el ranking) | `brecha` < −2 × error mediano del modelo en su barrio (barrios con menos de 50 avisos: el de la ciudad) |
 | `avisos_de_la_unidad` | Cuántos avisos marcados repiten la misma unidad | Numérica discreta (solo en el ranking) | Conteo por dirección y superficie entre los marcados |
+| `cumple_regla` | La unidad pasa la regla R1: marcada con el umbral de la ciudad y el de su barrio, y sin señales de error de carga | Booleana (solo en el ranking) | `marcado_barrio` y no `senal_error_carga` (1.150 de 1.590 unidades) |
+| `titulo_a_refaccionar` | El título dice "refaccionar", "a reciclar" o "para reciclar" | Booleana | `marcas_del_titulo()`: expresión regular sobre `titulo` en minúsculas. True en 381 (1,4%) |
+| `titulo_reciclado` | El título dice "reciclado/a" y no es "a refaccionar" | Booleana | Ídem. True en 531 (1,9%) |
+| `titulo_a_estrenar` | El título dice "a estrenar" | Booleana | Ídem. True en 875 (3,2%) |
+| `titulo_con_renta` | El título dice "renta" o "inquilino" (se vende alquilado) | Booleana | Ídem. True en 283 (1,0%) |
+| `tasa_completitud` | KPI: proporción de campos con dato, entre los 26 donde el vacío es falta de dato | Numérica continua; proporción | Promedio de `notna()` sobre las 16 dicotómicas Sí/No y 10 atributos principales (antigüedad, cocheras, bauleras, piso, cantidad de pisos, disposición, orientación, tipo de departamento, expensas y superficie cubierta). Mediana 0,88 |
+| `expensas_usd_m2` | Expensas por m² | Numérica continua; USD por m² por mes | `expensas_usd / m2_final`. 23.132 con dato; mediana USD 2,42 |
+| `expensas_rel_zona` | KPI eficiencia de expensas: expensas por m² relativas a su zona | Numérica continua; log (0 = típica de la zona) | log(`expensas_usd_m2`) menos la mediana del log en su `zona` |
+
+Las marcas del título y los dos KPIs están en `precio_esperado.tsv`; el ranking suma `titulo_a_refaccionar`,
+`titulo_con_renta` y `tasa_completitud`. Ninguna entra al modelo de precio esperado en esta entrega (notebook 03,
+sección 11).
 
 ## Resumen de anomalías y qué se hizo con cada una
 
@@ -336,7 +348,7 @@ Problemas detectados en las 93 columnas originales y su resolución en el notebo
 | Mismo aviso en dos filas | `link` | 136 filas (68 sobrantes) | Deduplicado por `id_aviso`: queda la primera fila de cada ID |
 | Misma unidad publicada con otro ID | varias | 3.059 | Marcados (`posible_duplicado`), no se borran. En el modelo, las partes de la validación se arman por unidad para que no estén de los dos lados |
 | Avisos clasificados como PH | `tipo_de_departamento` | 60 | Se conservan: el anunciante los publicó como departamento |
-| Dos etiquetas para la misma categoría | `tipo_de_seguridad` | 26 | Se acepta: la variable no se usa |
+| Dos etiquetas para la misma categoría | `tipo_de_seguridad`, `tipo_de_departamento` | 26 ("24 hs") y 31 ("Penthhouse") | Unificadas en la limpieza ("24 horas", "Penthouse") |
 | "No" que no significa ausencia | `cocina`, `living`, `comedor` | 5.907 / 14.638 / 11.143 | No se usan en el modelo |
 | Barrio no oficial y barrios oficiales ausentes | `barrio` | 801 en "barrio-norte"; San Cristóbal y Parque Chas sin avisos | Se acepta y se declara en el README. El cruce con polígonos oficiales queda como fuente prevista |
 | Barrios truncados por el tope de paginación | `barrio` | 4 barrios con 2.016 avisos | Se acepta y se declara como limitación |

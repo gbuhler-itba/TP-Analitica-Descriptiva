@@ -29,7 +29,7 @@ Actualizado: 06/10/2026. Cada fila dice qué pidió la devolución y dónde est�
 
 1. **Pesos del índice:** derivados de los datos, como primas de un modelo de precio esperado. H1 se reescribe.
 2. **Unidad de comparación:** sub-zona solo en los barrios donde mejora la referencia fuera de muestra; barrio en el resto.
-3. **Umbral para marcar un aviso:** brecha menor a −25%, dos veces el error típico del modelo, con un control por el error de cada barrio.
+3. **Umbral para marcar un aviso:** brecha menor a −25%, dos veces el error mediano del modelo, con un control por el error de cada barrio.
 4. **Tipo de cambio para expensas:** dólar MEP del 14/08/2026 (ARS 1.518,05).
 5. **Avisos en pozo:** excluidos, porque el alcance es departamentos usados.
 6. **Alquileres:** quedan como próximo paso; no se scrapearon para esta entrega.

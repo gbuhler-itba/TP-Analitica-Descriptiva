@@ -192,6 +192,27 @@ def menciona_alquiler(titulo):
     return titulo.fillna("").str.contains(r"alquil", case=False)
 
 
+def marcas_del_titulo(titulo):
+    """Variables booleanas extraídas del título con expresiones regulares.
+
+    El dataset no trae la descripción del aviso, así que el título es el único
+    texto libre disponible. Las marcas recogen motivos de precio que las
+    columnas de la ficha no registran:
+    - titulo_a_refaccionar: "refaccionar", "a reciclar", "para reciclar";
+    - titulo_reciclado: "reciclado/a" (ya reformado), sin contar los anteriores;
+    - titulo_a_estrenar: "a estrenar";
+    - titulo_con_renta: "renta" o "inquilino" (se vende alquilado).
+    """
+    t = titulo.fillna("").str.lower()
+    a_refaccionar = t.str.contains(r"refacc|a reciclar|para reciclar")
+    return pd.DataFrame({
+        "titulo_a_refaccionar": a_refaccionar,
+        "titulo_reciclado": t.str.contains(r"reciclad") & ~a_refaccionar,
+        "titulo_a_estrenar": t.str.contains(r"estrenar"),
+        "titulo_con_renta": t.str.contains(r"renta|inquilin"),
+    }, index=titulo.index)
+
+
 def outliers_iqr_por_grupo(valores, grupo, k=1.5, minimo_grupo=10):
     """Marca outliers con el criterio IQR (Q1 - k*IQR, Q3 + k*IQR) calculado
     dentro de cada grupo. Grupos con menos de `minimo_grupo` datos no se
