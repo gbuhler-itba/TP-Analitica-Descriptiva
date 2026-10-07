@@ -13,6 +13,25 @@ GRIS = "#B0B0B0"       # contexto, de-énfasis
 ROJO = "#C8553D"       # énfasis / alerta
 
 
+# Nombres de barrio para mostrar en gráficos (el dataset usa el formato de la URL)
+_TILDES_BARRIO = {
+    "nunez": "Núñez", "agronomia": "Agronomía", "constitucion": "Constitución",
+    "villa-ortuzar": "Villa Ortúzar", "san-nicolas": "San Nicolás",
+    "velez-sarsfield": "Vélez Sarsfield", "villa-pueyrredon": "Villa Pueyrredón",
+}
+
+
+def nombre_barrio(slug):
+    """'villa-lugano' -> 'Villa Lugano'; agrega las tildes de los nombres oficiales."""
+    return _TILDES_BARRIO.get(slug, slug.replace("-", " ").title().replace(" Del ", " del "))
+
+
+def formato_ar(valor, decimales=0):
+    """Número con separador de miles "." y decimal "," (12345.6 -> '12.345,6')."""
+    texto = f"{valor:,.{decimales}f}"
+    return texto.replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 def resumen_numerico(df, columnas):
     """Estadísticos de resumen robustos para variables numéricas."""
     filas = {}

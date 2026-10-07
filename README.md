@@ -37,12 +37,14 @@ característica dentro de la zona (sección 10).
 - El modelo de precio esperado erra 12,7% en la mediana, fuera de muestra, contra 17,2% de usar la mediana de la
   zona como referencia.
 - 1.704 avisos (6,2%) piden más de 25% menos que su precio esperado; 1.434 de ellos siguen marcados con un umbral
-  ajustado al error de su barrio, y 1.225 de esos no tienen señales de error de carga. Pero esa proporción es casi la
-  que produciría el error del modelo por sí solo (6,0%): la brecha ordena los avisos, no prueba que su precio sea
-  atípico.
+  ajustado al error de su barrio, y 1.225 de esos no tienen señales de error de carga. Pero la cola de abajo no es más
+  pesada de lo esperable (6,0% con una normal de la misma dispersión) y es más chica que la de arriba (8,9%): la
+  brecha ordena los avisos, no prueba que su precio sea atípico.
 - La revisión de avisos en el portal muestra que los casos más extremos son errores de carga o casos especiales, y
   que en los intermedios el descuento suele tener un motivo que el aviso no registra (se vende con inquilino, está
   sin terminar). La brecha sirve para priorizar qué revisar, no para afirmar una subvaluación.
+- Las palabras del título lo confirman a escala: los avisos que se publican "a refaccionar" quedan marcados tres veces
+  más que el resto (19,2% contra 6,0%). Parte de la brecha es el estado del inmueble, que la ficha no informa.
 - La antigüedad es lo que más pesa en el precio por m² dentro de la zona (un edificio de 0 a 5 años se publica 37%
   más caro que uno de más de 70); la cercanía al subte no, una vez controlada la antigüedad.
 
@@ -100,19 +102,19 @@ Reclasificadas a partir de la devolución. Versión completa, con el porqué de 
 
 | Nivel | # | Pregunta (resumida) | Estado en esta entrega |
 |---|---|---|---|
-| Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida (notebook 02, secciones 2 a 5) |
-| | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida a nivel de columna (diccionario y notebook 01); la tasa de completitud por aviso queda pendiente |
+| Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida: la mediana va de USD 1.016 a 6.125 por m² entre barrios, y las sub-zonas de un mismo barrio difieren en una mediana de 18% (notebook 02, secciones 2 a 5) |
+| | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida: por columna (diccionario y notebook 01) y por aviso, con la tasa de completitud (notebook 03, sección 11) |
 | | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Parcial: frecuencias generales en el diccionario |
-| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida (notebook 01 y notebook 03, sección 8) |
+| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8%, de 0% a 5,2% según el barrio (notebook 01; notebook 02, sección 8; notebook 03, sección 8) |
 | Diagnóstico | G1 | Dentro de la zona, ¿cuánto se asocia cada característica con el precio por m²? | Respondida (notebook 03, sección 5) |
 | | G2 | ¿La prima de cada característica cambia según la zona o el segmento de precio? | Pendiente |
-| | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y centralidad? | Respondida: casi nada dentro del barrio, una vez controlada la antigüedad (notebook 02, sección 6) |
-| | G4 | ¿Qué distingue a los avisos con precio atípicamente bajo? | Parcial: errores de carga, bajas de precio y revisión en el portal (notebook 03, secciones 7, 8 y 10) |
+| | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y centralidad? | Parcial: casi nada dentro del barrio, una vez controlada la antigüedad (notebook 02, sección 6); falta ver si los marcados lo siguen siendo al controlar por ubicación |
+| | G4 | ¿Qué distingue a los avisos con precio atípicamente bajo? | Parcial: errores de carga, bajas de precio, palabras del título, expensas y revisión en el portal (notebook 03, secciones 7, 8, 10 y 11) |
 | Predictivo | P1 | ¿Qué precio por m² se esperaría para un aviso según sus características y su zona? | Respondida (notebook 03, sección 4) |
 | | P2 | ¿Con qué error, y dónde es mayor? | Respondida: 12,7% en la mediana; mayor en Puerto Madero y en barrios chicos del sur y el oeste (notebook 03, secciones 4 y 9) |
 | | P3 | ¿Qué precio se esperaría para un departamento no publicado? | Posible con el mismo modelo; no se aplicó a casos concretos |
 | | P4 | Si se repite el scraping, ¿los avisos marcados salen del portal o bajan antes que sus comparables? | Requiere un segundo relevamiento |
-| Prescriptivo | R1 | ¿Qué regla decide qué avisos pasan a revisión? | Propuesta: brecha menor a −25% (dos veces el error mediano del modelo, que además supera la suma de error y negociación), con el umbral por barrio y sin señales de error de carga |
+| Prescriptivo | R1 | ¿Qué regla decide qué avisos pasan a revisión? | Propuesta: brecha menor a −25% (dos veces el error mediano del modelo, que además supera la suma de error y negociación), con el umbral por barrio y sin señales de error de carga. En el ranking, columna `cumple_regla` (1.150 unidades) |
 | | R2 | ¿Conviene ponderar distinto un aviso bien ubicado que uno periférico? | Pendiente |
 | | R3 | ¿En qué zonas concentrar el análisis? | Parcial: el error del modelo por barrio indica dónde la brecha es más confiable (notebook 03, sección 9) |
 
@@ -122,9 +124,9 @@ Reclasificadas a partir de la devolución. Versión completa, con el porqué de 
 
 | | Hipótesis | Evidencia | Estado |
 |---|---|---|---|
-| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación (~5%). Son candidatos a investigar, no oportunidades confirmadas | 1.704 avisos con brecha menor a −25%, robustos al ajustar el umbral por barrio. Pero esa proporción (6,2%) es casi la que daría el error del modelo por sí solo (6,0%), y los casos revisados en el portal muestran errores de carga o motivos no registrados | Apoyo débil: la brecha prioriza qué revisar, pero no prueba precios atípicos más allá del error del modelo (notebook 03) |
+| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación (~5%). Son candidatos a investigar, no oportunidades confirmadas | 1.704 avisos con brecha menor a −25%; la mayoría (84%) se mantiene con un umbral por barrio. Pero la cola de abajo (6,2%) no es más pesada que la de una normal con la misma dispersión (6,0%) ni que la de arriba (8,9%), y los casos revisados en el portal muestran errores de carga o motivos no registrados | Apoyo débil: la brecha prioriza qué revisar, pero no prueba precios atípicos más allá del error del modelo (notebook 03) |
 | H2 | Un barrio no es homogéneo: la sub-zona da una referencia de precio más precisa que el barrio | El error de la referencia (avisos con coordenadas) baja de 17,7% a 17,2% en total, pero en algunos barrios baja mucho (Villa Lugano, de 25% a 14%) y en otros empeora | Apoyo parcial: depende del barrio (notebook 02) |
-| H3 | Parte de la diferencia de precio dentro de un barrio se explica por la ubicación: cercanía al subte y a los polos de centralidad | A menos de 300 m del subte los precios son 5,5% menores, pero a igual antigüedad la diferencia baja a −1,9%. La centralidad no se relaciona con el precio (ρ ≈ 0) | No se apoya (notebook 02) |
+| H3 | Parte de la diferencia de precio dentro de un barrio se explica por la ubicación: cercanía al subte y a los polos de centralidad | A menos de 300 m del subte los precios son 5,5% menores, pero a igual antigüedad la diferencia baja a −1,9%. La centralidad no se relaciona con el precio (ρ ≈ 0) | No se detectó con estos indicadores (notebook 02): los polos están en el microcentro y falta el transporte del sur y el oeste |
 
 ### KPIs
 
@@ -135,9 +137,9 @@ Reclasificadas a partir de la devolución. Versión completa, con el porqué de 
 | Precio esperado | El precio por m² "normal" para un aviso | Predicción fuera de muestra del modelo | Calculado (`precio_esperado.tsv`) |
 | Brecha de precio | Cuánto se aleja el precio publicado del esperado (reemplaza al gap de confort) | `precio_m2_usd / precio_m2_esperado − 1` | Calculado (notebook 03, sección 6) |
 | Error de estimación fuera de muestra | Si la brecha es señal o ruido | Mediana del error absoluto del precio esperado, por zona y por barrio | Calculado: 12,7% |
-| Ranking de avisos a investigar | Lista priorizada para el analista (reemplaza al ranking de oportunidades) | Avisos con brecha menor a −25%, uno por unidad, con señales de error de carga y de baja de precio | Calculado (`avisos_a_investigar.csv`) |
-| Tasa de completitud | Qué tan confiable es el precio esperado de un aviso | % de características con dato en el aviso | Pendiente |
-| Eficiencia de expensas | Si las expensas son altas para lo que ofrece el edificio | Expensas en USD por m², comparadas dentro de la zona | Pendiente (las expensas en USD ya están calculadas) |
+| Ranking de avisos a investigar | Lista priorizada para el analista (reemplaza al ranking de oportunidades) | Avisos con brecha menor a −25%, uno por unidad, con señales de error de carga, de baja de precio y del título, y la columna `cumple_regla` | Calculado (`avisos_a_investigar.csv`) |
+| Tasa de completitud | Qué tan confiable es el precio esperado de un aviso | % de los 26 campos de la ficha donde el vacío es falta de dato que tienen dato | Calculado (notebook 03, sección 11): mediana 88%; no se asocia con la marca |
+| Eficiencia de expensas | Si las expensas son altas para lo que ofrece el edificio | Expensas en USD por m², relativas a la mediana de la zona (`expensas_rel_zona`) | Calculado (notebook 03, sección 11): con expensas bajas para su zona se marca el 9,9% de los avisos; con expensas altas, el 3,3% |
 | Índice de accesibilidad | Qué tan bien conectado está un aviso | Distancia al transporte pesado | Replanteado: con subte solo no explicó el precio (H3); se retoma con tren y Metrobus |
 
 ## 7. Datasets y fuentes externas
@@ -154,12 +156,13 @@ y distancias. El detalle de cada columna está en el
 | `data/processed/propiedades_enriquecidas.tsv` | 27.922 × 93 | Consolidado, geocodificado y con distancias y sub-zonas (pipeline) |
 | `data/processed/propiedades_limpias.tsv` | 27.579 × 112 | Dataset de trabajo, salida del notebook 01 |
 | `data/processed/registro_limpieza.csv` | 343 | Avisos excluidos y su motivo |
-| `data/processed/precio_esperado.tsv` | 27.579 | Precio esperado, brecha y marcas de cada aviso (notebook 03) |
-| `data/processed/avisos_a_investigar.csv` | 1.590 | Ranking: una fila por unidad marcada (notebook 03) |
+| `data/processed/precio_esperado.tsv` | 27.579 | Precio esperado, brecha, marcas, variables del título y KPIs de cada aviso (notebook 03) |
+| `data/processed/avisos_a_investigar.csv` | 1.590 | Ranking: una fila por unidad marcada; `cumple_regla` señala las 1.150 que pasan la regla R1 (notebook 03) |
 
 **Del crudo al limpio.** Se excluyen 343 avisos: 68 duplicados por ID de aviso, 237 en pozo, 28 con superficie
 inválida, 5 con precio en pesos, 4 con precio menor a USD 20.000 y 1 con precio imposible. Se corrigen 627
-precios concatenados por "BAJÓ DE PRECIO" (la mediana correcta es USD 130.000, no 135.000) y se marcan, sin
+precios concatenados por "BAJÓ DE PRECIO" (la mediana correcta es USD 130.000, no 135.000), se unifican dos
+etiquetas mal cargadas ("24 hs" y "Penthhouse") y se marcan, sin
 borrarlos, posibles duplicados con otro ID (3.059), outliers de precio por m² para su zona (928) e incoherencias
 entre variables. Todo está justificado en el notebook 01.
 
@@ -279,15 +282,15 @@ estaba declarada.
 
 | Pendiente | Por qué importa | Plan |
 |---|---|---|
-| Tasa de completitud por aviso | El precio esperado de un aviso con pocas características declaradas es menos confiable | Calcularla y sumarla como filtro del ranking (PreEntrega 3) |
 | Las primas pueden cambiar según la zona o el segmento (G2) | Un único coeficiente por característica para toda la ciudad puede no alcanzar | Estimar primas por grupos de barrios o por segmento de precio |
-| Motivos de descuento que el dataset no registra (venta con inquilino, a reciclar) | Explican parte de los casos marcados | Marcar palabras como "reciclar", "refaccionar" y "renta" en el título y la descripción |
+| Estado del inmueble y expensas fuera del modelo | Explican parte de la brecha: los avisos "a refaccionar" se marcan tres veces más, y los de expensas bajas para su zona también | Sumar las marcas del título y las expensas relativas como controles del modelo, y medir cuánto cambia el ranking |
 | Ubicaciones especiales dentro de un barrio (Rodrigo Bueno en Puerto Madero) | El modelo las compara con el resto del barrio | Integrar la fuente de barrios populares |
 | Accesibilidad solo con subte | Deja afuera el transporte del sur y el oeste | Integrar tren y Metrobus y volver a evaluar H3 |
 | Validación de la señal (P4) | Es la única forma de saber si la brecha anticipa algo real | Repetir el scraping y comparar marcados contra comparables |
 | Errores residuales de la limpieza: 303 baños en 0, pisos cargados como número de unidad, 254 expensas de 1 a 1.000 pesos, una casa publicada como departamento | Se verificó que no cambian el modelo (1.702 marcados en lugar de 1.704), pero son datos incorrectos | Corregirlos en la próxima versión de la limpieza |
 | Marca de outliers y elección de barrios calculadas con todos los avisos, y comparación de H2 con particiones que no agrupan por unidad | Tocan la separación de la validación cruzada. Con particiones agrupadas, la sub-zona mejora en 24 barrios en lugar de 28 | Calcularlas dentro de cada vuelta y con particiones por unidad |
-| Eficiencia de expensas | KPI definido y no calculado | Calcular expensas en USD por m² dentro de la zona |
+| Atípicos marcados con IQR sobre el precio por m², no sobre su logaritmo | Solo dejan fuera del ajuste la cola de arriba (con el logaritmo serían 536 atípicos, 187 por debajo) | Recalcularlos sobre el logaritmo y por zona de referencia |
+| En las características Sí/No, el vacío entra al modelo junto con el "No" | La prima compara "lo declara" contra "no lo declara" | Probar una categoría propia para el vacío |
 | Permisos de obra y alquileres | Dinamismo de zona y rentabilidad | Evaluar para la PreEntrega 3 |
 
 ## 12. Limitaciones
@@ -301,5 +304,5 @@ estaba declarada.
   avisos se comparan contra su barrio.
 - **Barrios truncados.** Palermo, Belgrano, Caballito y Recoleta llegaron al tope de paginación (2.016 avisos):
   son una muestra de la oferta, no el total.
-- **Error del modelo.** Un error típico de 13% sirve para ordenar avisos, no para tasar uno en particular ni para
+- **Error del modelo.** Un error mediano de 13% sirve para ordenar avisos, no para tasar uno en particular ni para
   separar un precio atípico de un error de estimación.
