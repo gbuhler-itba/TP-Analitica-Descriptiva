@@ -82,6 +82,8 @@ COLUMNAS_SALIDA = [
     "barrio_coincide",
     "en_barrio_popular",
     "tipo_barrio_popular",
+    "dist_barrio_busqueda_m",
+    "geo_dudoso",
 ]
 
 
@@ -409,6 +411,24 @@ def calcular_accesibilidad(df, cfg) -> tuple:
     ]
     out["barrio_coincide"] = out["barrio_coincide"].astype("Int64")
     out["en_barrio_popular"] = out["en_barrio_popular"].round().astype("Int64")
+
+    # Distancia del punto al barrio con el que se buscó el aviso. Un punto a
+    # más de `umbral_geo_dudoso_m` del barrio buscado es casi seguro un error de
+    # geocodificación (calles homónimas: "Arroyo 800" cae en Villa Crespo).
+    # Agregado en la integración de la PreEntrega 3 (control_fuentes.md, sección 4).
+    poly = dict(zip(barrios["nombre"].map(lambda t: normalizar_texto(t, abrev)), barrios.geometry))
+    geom_busqueda = {}
+    for b in df.loc[ok_mask, "barrio"].unique():
+        k = normalizar_texto(b, abrev)
+        partes = [poly[x] for x in equivalencias.get(k, {k}) if x in poly]
+        geom_busqueda[b] = shapely.union_all(partes) if partes else None
+    puntos_aviso = puntos_proyectados(lat_all[ok_mask].to_numpy(), lon_all[ok_mask].to_numpy(), crs).geometry.to_numpy()
+    distancias = [shapely.distance(p, geom_busqueda[b]) if geom_busqueda[b] is not None else np.nan
+                  for p, b in zip(puntos_aviso, df.loc[ok_mask, "barrio"])]
+    out["dist_barrio_busqueda_m"] = pd.Series(np.round(distancias, 0), index=df.index[ok_mask]).reindex(df.index)
+    umbral = cfg.get("umbral_geo_dudoso_m", 1000)
+    out["geo_dudoso"] = (out["dist_barrio_busqueda_m"] > umbral).astype("Int64").where(ok_mask)
+    met["geo_dudoso"] = int(out["geo_dudoso"].sum())
 
     met["fuera_de_barrio_oficial"] = int((ok_mask & out["barrio_oficial"].isna()).sum())
     met["en_barrio_popular"] = int(out["en_barrio_popular"].sum())
