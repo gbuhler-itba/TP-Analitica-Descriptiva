@@ -60,7 +60,8 @@ def _expensas_relativas(df, zona, ajusta):
     return relativa, log_exp.isna().astype(float)
 
 
-def comparar_modelos(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, alpha_ridge=1.0):
+def comparar_modelos(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, alpha_ridge=1.0, modelos=None,
+                     barrios_excluidos=()):
     """Predicción fuera de muestra (log del precio por m²) de cada modelo, con las mismas vueltas.
 
     - mediana_zona: la referencia simple, la mediana de la zona.
@@ -70,29 +71,41 @@ def comparar_modelos(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, alpha_r
     - gbm: gradient boosting con las mismas características más latitud,
       longitud, barrio y la mediana de la zona; capta interacciones y
       no linealidades, pero no da primas interpretables.
+    `modelos`: subconjunto de MODELOS a calcular (por defecto, todos).
+    `barrios_excluidos`: barrios que nunca usan sub-zona (sub-zonas inestables).
     Devuelve (DataFrame de predicciones, Serie con la vuelta de cada aviso).
     """
+    modelos = list(modelos) if modelos is not None else MODELOS
     X = modelo.matriz_caracteristicas(df)
     Xa = caracteristicas_ampliadas(df)
-    pred = pd.DataFrame(np.nan, index=df.index, columns=MODELOS)
+    pred = pd.DataFrame(np.nan, index=df.index, columns=modelos)
     vuelta = pd.Series(-1, index=df.index)
     barrio_cod = df["barrio"].astype("category").cat.codes
-    for p, prueba, ajusta, zona in modelo.vueltas_sin_fuga(df, y, k, semilla, minimo_grupo, iqr_k):
+    zonas = pd.Series(np.nan, index=df.index, dtype="object")
+    for p, prueba, ajusta, zona in modelo.vueltas_sin_fuga(df, y, k, semilla, minimo_grupo, iqr_k,
+                                                         barrios_excluidos=barrios_excluidos):
         vuelta[prueba] = p
+        zonas[prueba] = zona[prueba]
         precio = np.exp(y[ajusta])
         mediana = precio.groupby(zona[ajusta]).median()
-        pred.loc[prueba, "mediana_zona"] = np.log(zona[prueba].map(mediana).fillna(precio.median())).values
+        if "mediana_zona" in modelos:
+            pred.loc[prueba, "mediana_zona"] = np.log(zona[prueba].map(mediana).fillna(precio.median())).values
 
         exp_rel, exp_nan = _expensas_relativas(df, zona, ajusta)
         Xb = Xa.assign(expensas_rel_zona=exp_rel, expensas_sin_dato=exp_nan)
         for nombre, XX in [("lineal", X), ("lineal_ampliado", Xb)]:
+            if nombre not in modelos:
+                continue
             A = modelo.matriz_diseno(XX, zona)
             coef, *_ = np.linalg.lstsq(A[ajusta].values, y[ajusta].values, rcond=None)
             pred.loc[prueba, nombre] = A[prueba].values @ coef
 
-        A = modelo.matriz_diseno(Xb, zona).drop(columns="constante")
-        ridge = Ridge(alpha=alpha_ridge).fit(A[ajusta].values, y[ajusta].values)
-        pred.loc[prueba, "ridge"] = ridge.predict(A[prueba].values)
+        if "ridge" in modelos:
+            A = modelo.matriz_diseno(Xb, zona).drop(columns="constante")
+            ridge = Ridge(alpha=alpha_ridge).fit(A[ajusta].values, y[ajusta].values)
+            pred.loc[prueba, "ridge"] = ridge.predict(A[prueba].values)
+        if "gbm" not in modelos:
+            continue
 
         G = Xb.assign(lat=df["lat"], lon=df["lon"], barrio=barrio_cod,
                       zona_log_mediana=np.log(zona.map(mediana)))
@@ -101,6 +114,7 @@ def comparar_modelos(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, alpha_r
             categorical_features=[G.columns.get_loc("barrio")], random_state=semilla,
         ).fit(G[ajusta].values, y[ajusta].values)
         pred.loc[prueba, "gbm"] = gbm.predict(G[prueba].values)
+    pred.attrs["zona"] = zonas
     return pred, vuelta
 
 

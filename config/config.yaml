@@ -32,6 +32,7 @@ rutas:
   unidades_marcadas: data/processed/unidades_marcadas.csv
   ranking: data/processed/avisos_a_investigar.csv
   embudo: data/processed/embudo_ranking.csv
+  accesibilidad: data/processed/accesibilidad.tsv
   # Permisos de obra (src/permisos_obra.py, PreEntrega 3).
   permisos_obra_snapshot: data/external/obras-registradas.csv
   permisos_obra: data/processed/permisos_obra.tsv
@@ -175,6 +176,11 @@ analisis:
   iqr_k: 1.5                     # atípicos: IQR sobre el log del precio por m², dentro de la zona
   umbral: -0.25                  # brecha desde la que un aviso queda marcado
   minimo_avisos_barrio: 50       # barrios más chicos usan el error de la ciudad en el umbral por barrio
+  # Decisiones del notebook 04 (PreEntrega 3)
+  modelo_oficial: lineal_ampliado   # lineal_ampliado o gbm; el otro se usa para la marca de consenso
+  nivel_intervalo: 0.80             # intervalo de predicción por aviso (conformal cruzado, por barrio)
+  ari_minimo_subzona: 0.7           # debajo: sub-zonas inestables, el barrio se compara entero
+  repeticiones_estabilidad: 100
 
 # -----------------------------------------------------------------------------
 # Controles de calidad
@@ -255,6 +261,8 @@ fuentes_externas:
   # coincida con la búsqueda villa-general-mitre.
   equivalencias_barrio:
     barrio-norte: [Recoleta, Retiro, Palermo]
+  # Punto a más de esta distancia del barrio buscado: geocodificación dudosa (geo_dudoso).
+  umbral_geo_dudoso_m: 1000
   abreviaturas_barrio:
     GRAL: GENERAL
 
