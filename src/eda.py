@@ -60,17 +60,25 @@ def precio_relativo(valores, grupo):
     return log_v - log_v.groupby(grupo).transform("mean")
 
 
-def error_vara_fuera_de_muestra(valores, grupo, k=5, minimo_grupo=10, semilla=42):
+def error_vara_fuera_de_muestra(valores, grupo, k=5, minimo_grupo=10, semilla=42, unidad=None):
     """Error de usar la mediana de un grupo como precio de referencia.
 
     Para cada aviso, la mediana de su grupo se calcula SIN ese aviso (validación
     cruzada en k partes), y se mide el error porcentual absoluto. Permite comparar
     barrio contra sub-zona sin favorecer a la división con más grupos.
+
+    `unidad`: Serie opcional con el grupo de unidad de cada aviso (misma
+    dirección y superficie). Si se pasa, las partes se arman por unidad, para
+    que dos avisos del mismo departamento nunca queden uno en cada lado.
     Devuelve una Serie con el error de cada aviso (NaN si su grupo es muy chico).
     """
     datos = pd.DataFrame({"v": valores, "g": grupo}).dropna()
     rng = np.random.default_rng(semilla)
-    datos["parte"] = rng.integers(0, k, len(datos))
+    if unidad is None:
+        datos["parte"] = rng.integers(0, k, len(datos))
+    else:
+        u = pd.Series(pd.factorize(unidad.loc[datos.index])[0], index=datos.index)
+        datos["parte"] = (rng.permutation(u.max() + 1) % k)[u.values]
     error = pd.Series(np.nan, index=datos.index)
     for p in range(k):
         entrena = datos[datos["parte"] != p]

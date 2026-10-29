@@ -172,7 +172,8 @@ def motivo_fuera_de_alcance(df, precio_minimo=20_000, precio_m2_maximo=50_000):
     """Motivo por el que un aviso queda fuera del alcance (NaN si queda adentro).
 
     El alcance es: departamento usado en venta, precio en USD y superficie
-    interpretable. Los avisos en pozo (columna `en_construccion`, si existe)
+    interpretable. Los avisos que piden comprar ("Compro...") quedan fuera
+    porque no son ventas. Los avisos en pozo (columna `en_construccion`, si existe)
     quedan fuera porque no son usados. `precio_m2_maximo` corta errores de carga (USD 111.111.111
     por 163 m²): está muy por encima del máximo real del mercado de CABA.
     """
@@ -183,13 +184,64 @@ def motivo_fuera_de_alcance(df, precio_minimo=20_000, precio_m2_maximo=50_000):
     motivo[motivo.isna() & (df["precio_usd"] < precio_minimo)] = "precio_menor_a_minimo"
     motivo[motivo.isna() & df["m2_final"].isna()] = "superficie_invalida"
     motivo[motivo.isna() & (df["precio_usd"] / df["m2_final"] > precio_m2_maximo)] = "precio_imposible"
+    if "titulo" in df.columns:
+        motivo[motivo.isna() & no_es_venta(df["titulo"])] = "no_es_venta"
     return motivo
+
+
+def no_es_venta(titulo):
+    """True si el título es un pedido de compra y no una venta ("Compro sucesiones...")."""
+    return titulo.fillna("").str.contains(r"^\s*(?:compro|compramos)\b", case=False)
 
 
 def menciona_alquiler(titulo):
     """True si el título menciona alquiler. Se marca, no se excluye: los
     precios de esos avisos son de venta (el título suele estar mal)."""
     return titulo.fillna("").str.contains(r"alquil", case=False)
+
+
+def marcas_casa(titulo):
+    """Marcas del título para avisos que pueden no ser un departamento.
+
+    - titulo_tipo_casa: "tipo casa", "estilo casa", "casa en altura" y
+      similares. Es una tipología de departamento (planta baja con patio,
+      entrada independiente), no una casa: se marca como característica.
+    - titulo_casa: el título dice que se vende una casa ("Casa en Coghlan",
+      "Venta casa 3 ambientes", "Casa lote propio", "PH/casa"), sin contar
+      los "tipo casa" ni los edificios que se llaman "Casa ..." ("Casa del
+      Ángel"). Es una posible casa publicada como departamento.
+    """
+    t = titulo.fillna("").str.lower()
+    tipo_casa = t.str.contains(
+        r"tipo casa|t/ ?casa|como (?:una )?casa|estilo casa|casa en altura|depto casa|alma de casa"
+    )
+    casa = t.str.contains(
+        r"^(?:venta |vendo |se vende )?casas?\b|\bcasa (?:en|con|al|lote|multifamiliar|de \d|\d)"
+        r"|venta de casa|lote ?/ ?casa|casa ?/ ?(?:lote|ph)|ph ?/ ?casa|-casa\b"
+    ) & ~tipo_casa
+    return pd.DataFrame({
+        "titulo_tipo_casa": tipo_casa,
+        "titulo_casa": casa,
+    }, index=titulo.index)
+
+
+def menciona_barrio_popular(titulo):
+    """True si el título ubica el aviso en un barrio popular que el geocoding no ve.
+
+    Rodrigo Bueno está dentro de Puerto Madero y sus avisos no tienen
+    coordenadas, así que el cruce con los polígonos de barrios populares no los
+    detecta (docs/entregas_grupo/control_fuentes.md).
+    """
+    return titulo.fillna("").str.contains(r"rodrigo bueno|barrio mugica|padre mugica|villa 31", case=False)
+
+
+def piso_desde_numero_de_unidad(piso):
+    """Corrige pisos cargados como número de unidad (903 = piso 9, depto 3).
+
+    Un valor de 100 o más no es un piso de CABA: se queda con las centenas.
+    """
+    piso = pd.to_numeric(piso, errors="coerce")
+    return piso.where(piso < 100, piso // 100)
 
 
 def marcas_del_titulo(titulo):
@@ -211,6 +263,32 @@ def marcas_del_titulo(titulo):
         "titulo_a_estrenar": t.str.contains(r"estrenar"),
         "titulo_con_renta": t.str.contains(r"renta|inquilin"),
     }, index=titulo.index)
+
+
+def estado_y_riesgo_del_titulo(titulo, reglas):
+    """Estado del inmueble y señales de riesgo legal según el título (PreEntrega 3).
+
+    Reemplaza a `marcas_del_titulo` en el análisis de la PreEntrega 3: la marca
+    anterior "a refaccionar" también tomaba "refaccionado", que es lo contrario,
+    y "con renta" mezclaba avisos con inquilino con publicidad ("ideal renta").
+    Las expresiones regulares están en config/costos.yaml (tarea 3):
+    - `estado_refaccion`: lista ordenada; gana la primera que coincide. Devuelve
+      la columna `estado_titulo` (a_reciclar, a_refaccionar, ya_reformado,
+      a_estrenar o sin_marca).
+    - `riesgo_legal`: una columna booleana `riesgo_<señal>` por cada señal.
+    """
+    t = titulo.fillna("").str.lower()
+    estado = pd.Series(np.nan, index=titulo.index, dtype="object")
+    for regla in reglas["estado_refaccion"]:
+        if regla["regex"] is None:
+            estado = estado.fillna(regla["estado"])
+        else:
+            coincide = t.str.contains(regla["regex"], regex=True) & estado.isna()
+            estado[coincide] = regla["estado"]
+    salida = pd.DataFrame({"estado_titulo": estado}, index=titulo.index)
+    for regla in reglas["riesgo_legal"]:
+        salida[f"riesgo_{regla['senal']}"] = t.str.contains(regla["regex"], regex=True)
+    return salida
 
 
 def outliers_iqr_por_grupo(valores, grupo, k=1.5, minimo_grupo=10):

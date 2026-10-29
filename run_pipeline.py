@@ -5,10 +5,11 @@ Ejecuta la cadena completa en orden. Por defecto ARRANCA EN LA ETAPA 2,
 asumiendo que las cuotas del scraping ya están descargadas en
 data/raw/cuotas/ (vienen versionadas en el repositorio).
 
-    python3 run_pipeline.py                      # etapas 2, 3 y 4
-    python3 run_pipeline.py --desde-etapa 3      # etapas 3 y 4
-    python3 run_pipeline.py --hasta-etapa 3      # etapas 2 y 3
-    python3 run_pipeline.py --incluir-scraping   # etapas 1, 2, 3 y 4
+    python3 run_pipeline.py                      # etapas 2 a 6
+    python3 run_pipeline.py --desde-etapa 5      # limpieza y análisis (unos segundos)
+    python3 run_pipeline.py --desde-etapa 6      # solo el análisis
+    python3 run_pipeline.py --hasta-etapa 4      # etapas 2, 3 y 4 (hasta el dataset enriquecido)
+    python3 run_pipeline.py --incluir-scraping   # etapas 1 a 6
 
 La etapa 1 (scraping) solo corre con --incluir-scraping explícito: son
 entre 8 y 15 horas y requiere IP residencial. La etapa 3 (geocodificación)
@@ -41,7 +42,7 @@ RAIZ = Path(__file__).resolve().parent
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
-from src import enriquecimiento, geocoding_propiedades, scrapper_mercadolibre, unir_cuotas
+from src import analisis, enriquecimiento, geocoding_propiedades, limpiar, scrapper_mercadolibre, unir_cuotas
 from src.entorno import verificar_python, version_actual
 from src.configuracion import agregar_argumento_config, cargar_config
 from src.rutas import resolver
@@ -51,6 +52,8 @@ ETAPAS = {
     2: "consolidacion",
     3: "geocoding",
     4: "enriquecimiento",
+    5: "limpieza",
+    6: "analisis",
 }
 
 
@@ -67,10 +70,10 @@ def construir_parser() -> argparse.ArgumentParser:
         ),
     )
     agregar_argumento_config(parser)
-    parser.add_argument("--desde-etapa", type=int, default=None, choices=[1, 2, 3, 4],
+    parser.add_argument("--desde-etapa", type=int, default=None, choices=[1, 2, 3, 4, 5, 6],
                         help="Primera etapa a ejecutar (default: 2, o 1 con --incluir-scraping).")
-    parser.add_argument("--hasta-etapa", type=int, default=4, choices=[1, 2, 3, 4],
-                        help="Última etapa a ejecutar (default: 4).")
+    parser.add_argument("--hasta-etapa", type=int, default=6, choices=[1, 2, 3, 4, 5, 6],
+                        help="Última etapa a ejecutar (default: 6).")
     parser.add_argument("--incluir-scraping", action="store_true",
                         help="Habilita la etapa 1. Sin este flag el scraping NUNCA corre.")
     parser.add_argument("--cuotas", nargs="+", default=None,
@@ -100,7 +103,7 @@ def encabezado(texto: str) -> None:
 def correr_etapa_1(args, cfg) -> int:
     cuotas = args.cuotas or list(cfg["scraping"]["cuotas"])
     for nombre in cuotas:
-        encabezado(f"ETAPA 1/4 - SCRAPING ({nombre})")
+        encabezado(f"ETAPA 1/6 - SCRAPING ({nombre})")
         argv = ["--cuota", nombre]
         if args.config:
             argv += ["--config", args.config]
@@ -115,18 +118,18 @@ def correr_etapa_1(args, cfg) -> int:
 
 
 def correr_etapa_2(args) -> int:
-    encabezado("ETAPA 2/4 - CONSOLIDACIÓN DE CUOTAS")
+    encabezado("ETAPA 2/6 - CONSOLIDACIÓN DE CUOTAS")
     argv = ["--config", args.config] if args.config else []
     return unir_cuotas.main(argv)
 
 
 def correr_etapa_3(args) -> int:
     if args.verificar_geocoding:
-        encabezado("ETAPA 3/4 - GEOCODIFICACIÓN (modo verificación, sin red)")
+        encabezado("ETAPA 3/6 - GEOCODIFICACIÓN (modo verificación, sin red)")
         argv = ["--config", args.config] if args.config else []
         return geocoding_propiedades.main(argv + ["--verificar"])
 
-    encabezado("ETAPA 3/4 - GEOCODIFICACIÓN (USIG)")
+    encabezado("ETAPA 3/6 - GEOCODIFICACIÓN (USIG)")
     argv = ["--config", args.config] if args.config else []
     if args.limite_geocoding is not None:
         argv += ["--limite", str(args.limite_geocoding)]
@@ -134,11 +137,23 @@ def correr_etapa_3(args) -> int:
 
 
 def correr_etapa_4(args) -> int:
-    encabezado("ETAPA 4/4 - ENRIQUECIMIENTO")
+    encabezado("ETAPA 4/6 - ENRIQUECIMIENTO")
     argv = ["--config", args.config] if args.config else []
     if args.forzar_descarga_subte:
         argv.append("--forzar-descarga")
     return enriquecimiento.main(argv)
+
+
+def correr_etapa_5(args) -> int:
+    encabezado("ETAPA 5/6 - LIMPIEZA")
+    argv = ["--config", args.config] if args.config else []
+    return limpiar.main(argv)
+
+
+def correr_etapa_6(args) -> int:
+    encabezado("ETAPA 6/6 - ANÁLISIS (PRECIO ESPERADO, BRECHA Y RANKING)")
+    argv = ["--config", args.config] if args.config else []
+    return analisis.main(argv)
 
 
 def main(argv=None) -> int:
@@ -161,7 +176,7 @@ def main(argv=None) -> int:
         print("    Las cuotas ya descargadas están versionadas en data/raw/cuotas/.")
         return 2
 
-    etapas = [e for e in (1, 2, 3, 4) if desde <= e <= hasta]
+    etapas = [e for e in ETAPAS if desde <= e <= hasta]
     inicio = datetime.now()
 
     print("=" * 70)
@@ -174,7 +189,8 @@ def main(argv=None) -> int:
     print(f"Inicio:               {inicio.strftime('%Y-%m-%d %H:%M:%S')}")
 
     corredores = {1: lambda: correr_etapa_1(args, cfg), 2: lambda: correr_etapa_2(args),
-                  3: lambda: correr_etapa_3(args), 4: lambda: correr_etapa_4(args)}
+                  3: lambda: correr_etapa_3(args), 4: lambda: correr_etapa_4(args),
+                  5: lambda: correr_etapa_5(args), 6: lambda: correr_etapa_6(args)}
 
     duraciones = {}
     for etapa in etapas:

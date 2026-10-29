@@ -1,0 +1,22 @@
+# Corre la suite de tests en cada push y pull request.
+# Usa Python 3.9, la versión de referencia de la corrida documentada: es la que
+# garantiza que las etapas reproduzcan los datasets versionados byte a byte.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: pip
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Correr los tests
+        run: pytest -v
