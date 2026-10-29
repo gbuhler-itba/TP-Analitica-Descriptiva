@@ -30,6 +30,18 @@ outputs/logs/*
 data/external/*
 !data/external/.gitkeep
 !data/external/estaciones-de-subte.geojson
+# Snapshots de la PreEntrega 3 (src/fuentes_externas.py), descargados el
+# 27/10/2026. Se versionan por el mismo motivo que el de subte: el módulo
+# tiene que correr sin red y dar siempre el mismo resultado.
+!data/external/estaciones-ferrocarril.geojson
+!data/external/estaciones-metrobus.geojson
+!data/external/estaciones-premetro.geojson
+!data/external/espacios-verdes-publicos.geojson
+!data/external/barrios.geojson
+!data/external/barrios-populares.geojson
+# Snapshot de Obras Registradas (BA Data), descargado el 29/10/2026: congela los
+# permisos de obra que usa src/permisos_obra.py.
+!data/external/obras-registradas.csv
 
 # Directorio de salida de la estructura vieja, previo a la reorganización
 output/

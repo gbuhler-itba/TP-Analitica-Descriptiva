@@ -1,0 +1,346 @@
+# =============================================================================
+# Costos y liquidez para la regla de decisión (PE3, Tarea 3)
+# TP Analítica Descriptiva (ITBA, 2026 C2)
+# =============================================================================
+# Cada parámetro tiene: valor (central), minimo, maximo, unidad, fuente y
+# fecha. El rango sirve para el análisis de sensibilidad.
+#
+# Convenciones:
+# - Los porcentajes están en puntos porcentuales: 2.42 significa 2,42% del
+#   precio de escritura. Para usarlos como fracción, dividir por 100.
+# - Los montos en pesos se pasaron a dólares con el dólar MEP de la fecha
+#   de la fuente (bloque tipo_de_cambio). Los porcentajes con IVA ya lo
+#   incluyen: un fondo que compra vivienda usada no puede computarlo como
+#   crédito fiscal, porque la venta de inmuebles usados no está gravada.
+# - Todas las fuentes se consultaron el 2026-10-29.
+# - Detalle y confiabilidad de cada número: docs/entregas_grupo/costos_y_liquidez.md
+# =============================================================================
+
+consultado: "2026-10-29"
+
+tipo_de_cambio:
+  # Dólar MEP de cierre, ARS por USD. El de la fecha del scraping es el
+  # mismo que usa contexto_argentino.md para las expensas.
+  mep_2026_08_14: 1518.05   # fecha del scraping
+  mep_2026_10_01: 1552.44   # arancel notarial vigente desde el 01/10/2026
+  mep_2026_05_11: 1425.02   # costos de refacción de Reporte Inmobiliario
+  mep_2026_02_promedio: 1429.53  # costos de remodelación integral
+  fuente: >-
+    Rava Bursátil, https://www.rava.com/cotizaciones/historico/dolar-mep/2026/10/01/ ;
+    dolarhistorico.com, https://dolarhistorico.com/dolar-mep/cotizacion/11-mayo-2026 ;
+    indicadores.ar, https://indicadores.ar/cotizacion-dolar/2026-02
+
+# -----------------------------------------------------------------------------
+# Costos de entrada (a cargo del comprador)
+# -----------------------------------------------------------------------------
+costos_entrada:
+
+  honorarios_escribano:
+    valor: 2.42        # 2% sugerido + IVA 21%
+    minimo: 1.21       # 1% + IVA, honorario negociado
+    maximo: 2.42
+    unidad: "% del precio de escritura"
+    minimo_absoluto_usd: 1275   # honorario mínimo ARS 1.980.000 al MEP del 01/10/2026
+    nota: >-
+      El mínimo absoluto pesa en avisos de menos de USD 63.770: ahí el 2% no
+      llega al honorario mínimo. Base: el mayor entre precio, valor actual y
+      valuación fiscal.
+    fuente: >-
+      Colegio de Escribanos de la Ciudad de Buenos Aires, Arancel Notarial 2026
+      (Res. 353/26), https://www.colegio-escribanos.org.ar/noticias/Arancel-web.pdf ;
+      rango de mercado 1% a 2%: iProfesional,
+      https://www.iprofesional.com/realestate/455280-escriturar-en-provincia-de-buenos-aires-cuanto-cuesta-y-que-cambia-respecto-a-caba-mayo-2026
+    fecha: "2026-10-01"
+
+  impuesto_sellos:
+    # Parte del comprador. El impuesto se reparte 50/50 por costumbre.
+    valor: 1.35        # mitad de 2,7% (precio hasta el umbral)
+    minimo: 1.35
+    maximo: 3.50       # el comprador absorbe todo el 3,5%
+    unidad: "% del precio de escritura"
+    alicuota_total_hasta_umbral: 2.70
+    alicuota_total_sobre_umbral: 3.50
+    umbral_ars: 226100000
+    umbral_usd: 148941      # al MEP del 14/08/2026; 57% de los avisos queda por debajo
+    proporcion_comprador: 0.5
+    nota: >-
+      La alícuota se aplica sobre el total, no sobre el excedente, y la base es
+      el mayor entre precio, Valuación Fiscal Homogénea y valor inmobiliario de
+      referencia. La exención por vivienda única no aplica: un fondo no compra
+      su vivienda única, familiar y de ocupación permanente. El umbral está en
+      pesos, así que en dólares se mueve con el tipo de cambio (USD 145.642 al
+      MEP del 01/10/2026). Cálculo sugerido: alícuota total según el precio,
+      por proporcion_comprador.
+    fuente: >-
+      Ley 6927, Ley Impositiva 2026 de la CABA, Anexo, art. 34 (B.O. 19/12/2025),
+      https://contadoresenred.com/wp-content/uploads/2025/12/PL-FEERR-LCABA-LCABA-6927-25-ANX.pdf ;
+      ficha de la norma, https://boletinoficial.buenosaires.gob.ar/normativaba/norma/829857 ;
+      la Ley 6948 (B.O. 19/05/2026) modificó Ingresos Brutos, no Sellos,
+      https://contadoresenred.com/wp-content/uploads/2026/05/ck_PL-LEY-LCABA-LCBA-6948-26-7369.pdf
+    fecha: "2026-01-01"
+
+  comision_inmobiliaria_comprador:
+    valor: 4.84        # 4% + IVA, la práctica más citada en CABA
+    minimo: 3.63       # 3% + IVA, negociada
+    maximo: 4.84
+    unidad: "% del precio de escritura"
+    nota: >-
+      Desde la Ley 5859 la comisión de venta en CABA se pacta libremente: no
+      hay tope legal. Si se compra directo al dueño la comisión es 0 (hay 140
+      avisos con "dueño directo" o "dueño vende" en el título), pero no se usa
+      como mínimo porque casi todos los avisos los publica una inmobiliaria.
+    fuente: >-
+      Ley 2340 de la CABA, art. 11 inc. 2, texto según Ley 5859,
+      https://garciaalonso.com.ar/?p=4813 ;
+      práctica 4% + IVA: Mudafy (act. 02/10/2026),
+      https://mudafy.com.ar/guias/post/que-gastos-se-afrontan-al-comprar-una-propiedad ;
+      rango 3% a 4%: iProfesional,
+      https://www.iprofesional.com/realestate/423461-cuanto-cuesta-escriturar-una-casa-2025-como-se-hace
+    fecha: "2026-10-02"
+
+  otros_gastos_escritura:
+    valor: 0.15        # inscripción en el Registro (0,1%) + planillas, precio mediano USD 130.000
+    minimo: 0.10       # solo la tasa del Registro de la Propiedad
+    maximo: 1.23       # el comprador además paga certificados y estudio de títulos (con IVA)
+    unidad: "% del precio de escritura"
+    nota: >-
+      Por costumbre en CABA, el vendedor paga certificados y estudio de títulos,
+      y el comprador la inscripción. El máximo cubre el caso en que el comprador
+      los absorbe: certificados ARS 275.000 + 0,2% (tope ARS 4.125.000) y
+      estudio de títulos ARS 740.000 + 0,2%. Calculado para el precio mediano
+      del dataset (USD 130.000) al MEP del 01/10/2026; en avisos chicos los
+      montos fijos pesan más.
+    fuente: >-
+      Tasa general del 1 por mil: Decreto 902/2024 (B.O. 14/10/2024),
+      https://www.boletinoficial.gob.ar/detalleAviso/primera/315455/20241014 ;
+      certificados, estudio de títulos y planillas: Arancel Notarial 2026,
+      https://www.colegio-escribanos.org.ar/noticias/Arancel-web.pdf ;
+      quién paga qué: iProfesional,
+      https://www.iprofesional.com/realestate/423461-cuanto-cuesta-escriturar-una-casa-2025-como-se-hace
+    fecha: "2026-10-01"
+
+  total_costos_entrada:
+    # Suma de los cuatro parámetros anteriores, como control.
+    valor: 8.76
+    minimo: 6.29
+    maximo: 11.99
+    unidad: "% del precio de escritura"
+    nota: >-
+      Coincide con el rango de 5,5% a 12% que informa Ámbito para CABA y
+      provincia (11/06/2026).
+    fuente: >-
+      Cálculo propio ; control: Ámbito,
+      https://www.ambito.com/real-estate/cuales-son-los-gastos-que-pagan-comprador-y-vendedor-una-propiedad-us100000-caba-y-provincia-n6287354
+    fecha: "2026-10-29"
+
+# -----------------------------------------------------------------------------
+# Refacción (USD por m² de superficie del aviso, m2_final)
+# -----------------------------------------------------------------------------
+refaccion:
+
+  liviana:
+    # Pintura general y pulido plastificado de pisos.
+    valor: 105
+    minimo: 60         # solo pintura
+    maximo: 130        # supuesto propio: +25% de imprevistos
+    unidad: "USD por m²"
+    nota: >-
+      Pintura de un 2 ambientes ARS 3.700.000 y de un 3 ambientes ARS
+      5.200.000; pulido plastificado ARS 66.000 por m². Con 42 m² (mediana de
+      2 ambientes) da USD 108 por m², y con 63 m² (3 ambientes) da USD 104.
+    fuente: >-
+      La Nación con datos de Reporte Inmobiliario (11/05/2026),
+      https://www.lanacion.com.ar/propiedades/casas-y-departamentos/remodelar-el-bano-y-la-cocina-cuesta-mas-de-us10000-nid11052026/
+    fecha: "2026-05-11"
+
+  media:
+    # Baño y cocina completos más la refacción liviana del resto.
+    valor: 330         # unidad de 57 m², la mediana del dataset
+    minimo: 240        # unidad de 95 m² (mediana de 4 ambientes)
+    maximo: 510        # monoambiente de 32 m²
+    unidad: "USD por m²"
+    costo_bano_cocina_usd: 12950   # fijo por unidad: ARS 18.453.373 al MEP del 11/05/2026
+    nota: >-
+      Baño y cocina cuestan casi lo mismo en cualquier unidad, así que por m²
+      el costo baja con el tamaño. Mejor que un valor por m²:
+      costo_media = costo_bano_cocina_usd + liviana.valor * m2_final.
+      Supone un baño; unidades de 4 ambientes o más suelen tener dos.
+    fuente: >-
+      Reporte Inmobiliario, "Costos para refaccionar departamentos" (baño de
+      3,75 m² y cocina de 5,6 m²), https://www.reporteinmobiliario.com/article5813-costos-para-refaccionar-departamentos ;
+      montos en pesos: La Nación (11/05/2026),
+      https://www.lanacion.com.ar/propiedades/casas-y-departamentos/remodelar-el-bano-y-la-cocina-cuesta-mas-de-us10000-nid11052026/
+    fecha: "2026-05-11"
+
+  integral:
+    # Instalaciones eléctricas, sanitarias y de gas nuevas, pisos, baño y cocina.
+    valor: 1227        # arquitecto independiente, punto medio, con IVA (el fondo no recupera el IVA)
+    minimo: 1143       # arquitecto independiente, extremo bajo, con IVA
+    maximo: 1549       # servicio llave en mano, con IVA
+    unidad: "USD por m²"
+    nota: >-
+      ARS 1.350.000 a 1.550.000 por m² + IVA con arquitecto independiente y ARS
+      1.830.000 + IVA llave en mano, en un caso real de 52 m² en CABA, al MEP
+      promedio de febrero de 2026. Como techo de referencia, construir obra
+      nueva costó USD 1.593,61 por m² en septiembre de 2026 (APYMECO).
+    fuente: >-
+      RenovArqui (febrero de 2026), https://renovarqui.com/cuanto-cuesta-remodelar-un-departamento-en-buenos-aires-en-2026 ;
+      control: APYMECO, Informe Mensual N° 132, citado en InfoPlatense,
+      https://www.infoplatense.com.ar/metro-cuadrado-construccion-septiembre-2026-apymeco-fondo-pymes/
+    fecha: "2026-02-28"
+
+# -----------------------------------------------------------------------------
+# Negociación
+# -----------------------------------------------------------------------------
+negociacion:
+
+  brecha_publicado_cierre:
+    valor: 4.79        # agosto de 2026 (último mes del informe de UCEMA; septiembre, 4,75%, sin fuente primaria)
+    minimo: 4.18       # febrero de 2025, mínimo de la serie mensual desde 2025
+    maximo: 5.14       # enero de 2026
+    unidad: "% por debajo del precio publicado"
+    nota: >-
+      Índice M² Real (RE/MAX, UCEMA y Reporte Inmobiliario), departamentos
+      usados de CABA, sobre operaciones cerradas. La serie mensual desde 2024
+      nunca baja de 4,15% (octubre y noviembre de 2024). Septiembre de 2026
+      (4,75%) figura en prensa, sin el informe primario. Reemplaza al ~5%
+      que usamos hoy.
+    fuente: >-
+      iProfesional (19/10/2026), https://www.iprofesional.com/realestate/466916-cuanto-cuesta-el-metro-cuadrado-de-un-departamento-usado-en-caba ;
+      valor y mínimo: UCEMA, Informe M² Real agosto 2026, https://ucema.edu.ar/sites/default/files/2026-09/Informe_M2_Real_Agosto_2026.pdf ;
+      máximo: Reporte Inmobiliario, https://www.reporteinmobiliario.com/article5775-recio-real-de-cierre-por-m%C3%82%C2%B2-%C3%82%E2%80%93-enero-2026
+    fecha: "2026-10-19"
+
+# -----------------------------------------------------------------------------
+# Liquidez
+# -----------------------------------------------------------------------------
+liquidez:
+
+  tiempo_venta:
+    valor: 8.8         # 263 días, toda la Ciudad, 4to. trimestre de 2025
+    minimo: 2.0        # aviso bien tasado: 2 a 4 meses
+    maximo: 11.5       # 349 días, avisos activos de 5 ambientes o más
+    unidad: "meses"
+    por_ambientes_dias:
+      # IDECBA, 4to. trimestre de 2025 (tiempo medio de publicación).
+      1_ambiente: 256
+      2_ambientes: 269
+      3_ambientes: 262
+      5_o_mas: 316
+    absorcion_mensual: 5.99   # % del stock publicado que se vende por mes (Bryn, octubre de 2026)
+    nota: >-
+      No se encontró el dato por zona ni por barrio: las fuentes lo abren por
+      ambientes. Es tiempo de publicación, no de venta: incluye avisos mal
+      tasados que no se venden. Para un aviso con precio de mercado, el
+      mínimo es la referencia más cercana.
+    fuente: >-
+      IDECBA, citado en Infobae (23/04/2026),
+      https://www.infobae.com/economia/2026/04/23/se-acorto-el-tiempo-de-venta-de-propiedades-en-caba-cuales-son-los-inmuebles-mas-faciles-de-vender/ ;
+      mínimo, máximo y absorción: El Cronista (26/10/2026),
+      https://www.cronista.com/negocios/el-mercado-inmobiliario-de-caba-desperto-que-conviene-hacer-si-vas-a-comprar-vender-o-alquilar-hoy/
+    fecha: "2026-04-23"
+
+  escrituras_mensuales_caba:
+    valor: 5355        # promedio enero a septiembre de 2026 (48.195 / 9)
+    minimo: 4193       # promedio mensual del 1er. trimestre de 2026
+    maximo: 6612       # septiembre de 2026
+    unidad: "escrituras de compraventa por mes"
+    nota: >-
+      Todos los inmuebles de CABA, no solo departamentos. El 1er. trimestre es
+      cálculo propio: 48.195 menos el 2do. trimestre (16.897, IDECBA) y julio,
+      agosto y septiembre (6.051, 6.055 y 6.612).
+    fuente: >-
+      Colegio de Escribanos de la CABA, septiembre de 2026,
+      https://www.colegio-escribanos.org.ar/?p=144949 ;
+      2do. trimestre: IDECBA, Informe 2052 (28/08/2026),
+      https://www.estadisticaciudad.gob.ar/eyc/wp-content/uploads/2026/08/ir_2026_2052.pdf
+    fecha: "2026-10-22"
+
+# -----------------------------------------------------------------------------
+# Estado del aviso -> nivel de refacción
+# -----------------------------------------------------------------------------
+# Se basa en marcas del título. Las regex son una propuesta: la marca actual
+# titulo_a_refaccionar incluye "refaccionado", que significa lo contrario
+# (ver costos_y_liquidez.md, sección 3). Orden de evaluación: el primero que
+# coincide gana.
+estado_refaccion:
+  - estado: a_reciclar
+    regex: 'reciclar|reciclaje|recicl[aá]lo'
+    nivel: integral
+    nivel_sensibilidad: [media, integral]
+    avisos: 141
+  - estado: a_refaccionar
+    regex: 'refaccionar|\ba refacc\b|refacc\.|refacc-|\ben refacci|ideal (?:para )?refacci'
+    nivel: media
+    nivel_sensibilidad: [media, integral]
+    avisos: 111
+  - estado: ya_reformado
+    regex: 'refaccionad|reciclad|recicl a nuevo|refacci[oó]n (?:total|premium|completa)|refacc nuevo'
+    nivel: ninguna
+    nivel_sensibilidad: [ninguna, liviana]
+    avisos: 671
+  - estado: a_estrenar
+    regex: 'estrenar'
+    nivel: ninguna
+    nivel_sensibilidad: [ninguna, ninguna]
+    avisos: 868
+  - estado: sin_marca
+    regex: null
+    nivel: liviana
+    nivel_sensibilidad: [ninguna, media]
+    avisos: 25788
+    nota: >-
+      8.643 de estos avisos tienen 50 años o más. Para ellos conviene correr
+      la sensibilidad con nivel media.
+
+# -----------------------------------------------------------------------------
+# Riesgo legal: palabras del título
+# -----------------------------------------------------------------------------
+# Regex sobre el título en minúsculas. "avisos" = coincidencias en
+# propiedades_limpias.tsv. "accion": descartar (no entra al ranking) o
+# revisar (entra, con la señal a la vista del analista).
+riesgo_legal:
+  - senal: nuda_propiedad
+    regex: 'nuda propiedad|usufruct'
+    accion: descartar
+    avisos: 4
+  - senal: sucesion
+    regex: 'suces|tracto abreviado'
+    accion: revisar
+    avisos: 2      # uno con "tracto abreviado"; el otro es un aviso de "compro sucesiones", no una venta (se excluye en la limpieza)
+  - senal: con_inquilino
+    regex: 'con renta|c/ ?renta|inquilin|alquilad[oa]|contrato vigente|renta activa|rentad[oa]|renta (?:vigente|inmediata|\d)|(?:y|\+|c/exc\.?) ?renta\b'
+    accion: revisar
+    avisos: 201
+  - senal: ocupado
+    regex: '(?<!des)ocupad'
+    accion: descartar
+    avisos: 0
+  - senal: sin_escritura
+    regex: 'sin escritura|boleto|\bcesi[oó]n'
+    accion: descartar
+    avisos: 1
+  - senal: subasta
+    regex: 'subasta|remate|judicial'
+    accion: revisar
+    avisos: 0
+  - senal: credito_pendiente
+    regex: '(?:con|tiene) hipoteca|cr[eé]dito pendiente|embarg|inhibi'
+    accion: revisar
+    avisos: 0      # ojo: "apto crédito hipotecario" (47 avisos) no es una señal de riesgo
+  - senal: parte_indivisa
+    regex: 'indivis|porcentaje indiviso'
+    accion: descartar
+    avisos: 1
+  - senal: en_pozo
+    regex: '\bpozo\b|fideicom|en construcci|preventa'
+    accion: descartar
+    avisos: 169    # \b evita "Combate de los Pozos"; suma obra en construcción y preventa
+  - senal: con_financiacion
+    regex: 'financ|cuotas|anticipo'
+    accion: revisar
+    avisos: 197
+  - senal: no_apto_credito
+    regex: '\bno apto (?:para )?cr'
+    accion: revisar
+    avisos: 6      # \b evita "Lugano apto crédito"

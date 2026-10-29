@@ -282,6 +282,32 @@ en ese caso.
 
 Hay dos cosas distintas y conviene no confundirlas.
 
+### Suite de tests (pytest)
+
+Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
+
+```bash
+pytest            # toda la suite, ~15 segundos, sin red
+pytest -v         # con el nombre de cada test
+pytest tests/test_limpieza.py   # un solo archivo
+```
+
+La misma suite corre en GitHub Actions (`.github/workflows/tests.yml`) en cada
+push y pull request, con Python 3.9.
+
+| Archivo | Qué cubre |
+|---|---|
+| `tests/test_pipeline.py` | Los controles de `verificar_offline.py`, uno por test: parseo del scraper contra HTML guardado (etapa 1), SHA256 del consolidado (etapa 2), del geocodificado con USIG replayeado (etapa 3) y del enriquecido con el GeoJSON de subte versionado (etapa 4), encadenado de rutas y ausencia de rutas absolutas |
+| `tests/test_limpieza.py` | `corregir_precio`, `parsear_superficie`, `parsear_antiguedad`, `parsear_expensas`, `marcas_del_titulo` y `outliers_iqr_por_grupo`, con casos armados a mano (incluidos los errores de carga que cada función corrige) |
+| `tests/test_geocoding.py` | `limpiar_direccion`: abreviaturas de avenida, "Al", texto después de un punto, esquinas y direcciones no geocodificables |
+| `tests/test_enriquecimiento.py` | `haversine_np` (Obelisco a Plaza de Mayo, ~1 km; un grado de latitud, 111,2 km) y `parsear_estaciones` |
+| `tests/test_eda.py` | `precio_relativo` y `error_vara_fuera_de_muestra` |
+| `tests/test_permisos_obra.py` | Filtro de tipos, ventana y parcelas, conteo en el radio de 500 m, y una corrida completa de `src/permisos_obra.py` sobre el snapshot que tiene que reproducir `data/processed/permisos_obra.tsv` |
+
+`src/modelo.py` todavía no tiene tests porque está en revisión para la PreEntrega 3.
+`tests/verificar_offline.py` se conserva como script de consola con salida legible;
+verifica lo mismo que `test_pipeline.py`.
+
 ### 15.1. Smoke test reproducible, sin red
 
 ```bash

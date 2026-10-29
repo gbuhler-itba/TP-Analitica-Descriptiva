@@ -1,0 +1,5 @@
+paso,filtro,avisos,unidades,avisos_%_del_paso_anterior,unidades_%_del_paso_anterior
+analizados,Avisos del dataset limpio,27578,25168,,
+marcado,Brecha menor que el umbral de la ciudad (−25%),1887,1779,6.8,7.1
+marcado_barrio,"Además, por debajo del umbral según el error de su barrio",1631,1534,86.4,86.2
+cumple_regla,"Además, sin señales de error de carga (regla R1: lista oficial)",1526,1436,93.6,93.6

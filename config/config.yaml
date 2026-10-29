@@ -24,6 +24,17 @@ rutas:
   subte_geojson: data/external/estaciones-de-subte.geojson
   # Logs y reportes de control de calidad.
   logs_dir: outputs/logs
+  # Etapa 5 (limpieza): dataset de trabajo y registro de lo eliminado.
+  limpio: data/processed/propiedades_limpias.tsv
+  registro_limpieza: data/processed/registro_limpieza.csv
+  # Etapa 6 (análisis): salidas oficiales.
+  precio_esperado: data/processed/precio_esperado.tsv
+  unidades_marcadas: data/processed/unidades_marcadas.csv
+  ranking: data/processed/avisos_a_investigar.csv
+  embudo: data/processed/embudo_ranking.csv
+  # Permisos de obra (src/permisos_obra.py, PreEntrega 3).
+  permisos_obra_snapshot: data/external/obras-registradas.csv
+  permisos_obra: data/processed/permisos_obra.tsv
 
 # -----------------------------------------------------------------------------
 # ETAPA 1 - Scraping
@@ -137,6 +148,35 @@ enriquecimiento:
     n_init: 10
 
 # -----------------------------------------------------------------------------
+# ETAPA 5 - Limpieza (la misma lógica que explica el notebook 01)
+# -----------------------------------------------------------------------------
+limpieza:
+  anio_referencia: 2026            # para convertir "año de construcción" en edad
+  precio_minimo_usd: 20000         # por debajo: alquiler o error de carga
+  precio_m2_maximo_usd: 50000      # por encima: error de carga (el máximo real ronda 20.000)
+  m2_minimo: 15
+  m2_maximo: 1000
+  antiguedad_maxima: 150
+  expensas_maximo_ars: 10000000
+  expensas_minimo_ars: 1000        # por debajo: valor de relleno (casi todas son 1 peso)
+  iqr_k: 1.5
+  tipo_cambio_ars_usd: 1518.05     # dólar MEP, cierre del 14/08/2026 (Ámbito)
+  # "cantidad_de_pisos" mezcla las plantas del departamento (1, o 2 en un dúplex)
+  # con los pisos del edificio: la incoherencia de piso solo se mide desde este valor.
+  pisos_edificio_desde: 3
+
+# -----------------------------------------------------------------------------
+# ETAPA 6 - Análisis: precio esperado, brecha y ranking (PreEntrega 3)
+# -----------------------------------------------------------------------------
+analisis:
+  k_folds: 5                     # partes de la validación cruzada (agrupadas por unidad)
+  semilla: 42
+  minimo_grupo: 10               # avisos mínimos para usar una zona como referencia
+  iqr_k: 1.5                     # atípicos: IQR sobre el log del precio por m², dentro de la zona
+  umbral: -0.25                  # brecha desde la que un aviso queda marcado
+  minimo_avisos_barrio: 50       # barrios más chicos usan el error de la ciudad en el umbral por barrio
+
+# -----------------------------------------------------------------------------
 # Controles de calidad
 # -----------------------------------------------------------------------------
 qc:
@@ -146,3 +186,89 @@ qc:
     - m2
     - ubicacion
     - barrio
+
+
+# -----------------------------------------------------------------------------
+# FUENTES EXTERNAS (PreEntrega 3): accesibilidad, espacios verdes y barrios
+# -----------------------------------------------------------------------------
+# src/fuentes_externas.py lee el dataset enriquecido y escribe un TSV aparte,
+# con link como clave. No modifica ningún dataset existente. Todas las fuentes
+# son snapshots de BA Data descargados el 27/10/2026 (el de premetro, el 28/10/2026): las fichas, con link y
+# SHA-256, están en docs/entregas_grupo/fuentes_externas.md.
+fuentes_externas:
+  rutas:
+    salida: data/processed/accesibilidad.tsv
+    tren: data/external/estaciones-ferrocarril.geojson
+    metrobus: data/external/estaciones-metrobus.geojson
+    premetro: data/external/estaciones-premetro.geojson
+    espacios_verdes: data/external/espacios-verdes-publicos.geojson
+    barrios: data/external/barrios.geojson
+    barrios_populares: data/external/barrios-populares.geojson
+
+  # Proyección métrica para los polígonos: UTM 21S. En CABA la distorsión de
+  # escala es del orden de 0,02%. Las distancias a puntos usan haversine, como
+  # el subte, para que el mínimo compare distancias medidas igual.
+  crs_metrico: "EPSG:32721"
+
+  # El dataset de tren cubre toda la red metropolitana y no trae un campo de
+  # estado. Se excluyen las estaciones cerradas por nombre.
+  tren:
+    campo_nombre: nombre
+    excluir_nombre_regex: "^Ex-estaci"
+
+  verdes:
+    campo_clase: clasificac
+    # dist_espacio_verde_m: solo espacios que funcionan como plaza o parque.
+    # Quedan afuera canteros centrales, plazoletas (el 57% mide menos de
+    # 500 m²), patios y paseos. PARQUE SEMIPÚBLICO incluye la Reserva Ecológica.
+    clases_distancia:
+      - PLAZA
+      - PARQUE
+      - PARQUE SEMIPÚBLICO
+      - JARDÍN
+      - JARDÍN BOTÁNICO
+    # area_verde_500m_ha: todo salvo los canteros centrales y la franja de la
+    # General Paz (id 652, una "plazoleta" de 104 ha que es el borde de la
+    # avenida). Se mide el área dentro del círculo, no la del polígono entero.
+    clases_excluidas_area:
+      - CANTERO CENTRAL
+    ids_excluidos_area: [652]
+    radio_area_m: 500
+    segmentos_cuarto: 32           # 128 vértices: el círculo pierde 0,04% de área
+
+  # Si un punto cae en dos barrios populares superpuestos (Rodrigo Bueno y
+  # Playón de Chacarita tienen dos polígonos cada uno), se informa el tipo más
+  # informal. El modelo probablemente use solo villas y asentamientos.
+  barrios_populares:
+    prioridad_tipo:
+      - Villa
+      - Asentamiento precario
+      - Núcleo habitacional transitorio
+      - Barrio urbanizado
+      - Barrio municipal
+      - Conjunto habitacional
+
+  # barrio_coincide compara el barrio de búsqueda de MercadoLibre con el
+  # oficial, normalizados (mayúsculas, sin tildes, guiones ni puntos).
+  # Barrio Norte no es un barrio oficial: se toma como coincidente si cae en
+  # Recoleta, Retiro o Palermo. "Gral." se expande para que Villa Gral. Mitre
+  # coincida con la búsqueda villa-general-mitre.
+  equivalencias_barrio:
+    barrio-norte: [Recoleta, Retiro, Palermo]
+  abreviaturas_barrio:
+    GRAL: GENERAL
+
+# -----------------------------------------------------------------------------
+# PERMISOS DE OBRA (PreEntrega 3): src/permisos_obra.py
+# -----------------------------------------------------------------------------
+permisos_obra:
+  fecha_scraping: "2026-08-14"     # fin de la ventana (no incluido)
+  anios_ventana: 3                 # 14/08/2023 a 13/08/2026 (ficha 9)
+  radio_m: 500
+  tipos_obra:
+    - PERMISO DE EJECUCION DE OBRA CIVIL
+    - PERMISO TEMPRANO DE EJECUCION DE OBRA CIVIL
+    - REGISTRO-PERMISO OBRA
+    - DEMOLICION TOTAL Y OBRA
+    - OBRA NUEVA
+    - PERMISO DE OBRA MAYOR

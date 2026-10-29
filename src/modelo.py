@@ -27,12 +27,16 @@ TRAMOS_ANTIGUEDAD = [(0, 5), (6, 15), (16, 30), (31, 50), (51, 70)]
 # ---------------------------------------------------------------------------
 # Zona de referencia
 # ---------------------------------------------------------------------------
-def barrios_donde_conviene_subzona(df, k=5, minimo_grupo=10, semilla=42):
+def barrios_donde_conviene_subzona(df, k=5, minimo_grupo=10, semilla=42, por_unidad=False):
     """Barrios en los que la mediana de la sub-zona predice el precio por m²
-    mejor que la del barrio (error fuera de muestra, como en el notebook 02)."""
+    mejor que la del barrio (error fuera de muestra, como en el notebook 02).
+
+    `por_unidad=True` arma las partes por unidad (misma dirección y superficie),
+    para que un posible duplicado no quede a la vez en entrenamiento y prueba."""
     geo = df[df["subzona"].notna()]
-    e_barrio = error_vara_fuera_de_muestra(geo["precio_m2_usd"], geo["barrio"], k, minimo_grupo, semilla)
-    e_sub = error_vara_fuera_de_muestra(geo["precio_m2_usd"], geo["subzona"], k, minimo_grupo, semilla)
+    unidad = grupo_de_unidad(geo) if por_unidad else None
+    e_barrio = error_vara_fuera_de_muestra(geo["precio_m2_usd"], geo["barrio"], k, minimo_grupo, semilla, unidad)
+    e_sub = error_vara_fuera_de_muestra(geo["precio_m2_usd"], geo["subzona"], k, minimo_grupo, semilla, unidad)
     ok = e_barrio.notna() & e_sub.notna()
     tabla = pd.DataFrame({
         "barrio": geo.loc[ok, "barrio"],
@@ -63,12 +67,15 @@ def matriz_caracteristicas(df):
     """Características del departamento, sin ninguna variable derivada del precio.
 
     Faltantes: la antigüedad y el piso sin dato tienen su propia categoría;
-    los ambientes sin dato se completan con dormitorios + 1.
+    los ambientes sin dato se completan con dormitorios + 1, y los baños sin
+    dato con 1 (el mínimo posible), con una marca propia.
     """
     X = pd.DataFrame(index=df.index)
     X["log_m2"] = np.log(df["m2_final"])
     X["ambientes"] = df["ambientes"].fillna(df["dormitorios"] + 1).clip(upper=6)
-    X["banos"] = df["banos"].clip(upper=4)
+    # Baños sin dato: todo departamento tiene al menos uno, se completa con 1 y se marca
+    X["banos"] = df["banos"].fillna(1).clip(upper=4)
+    X["banos_sin_dato"] = df["banos"].isna().astype(float)
     X["cochera"] = (df["cocheras"].fillna(0) > 0).astype(float)
 
     ant = df["antiguedad"]
@@ -146,3 +153,75 @@ def ajustar(y, A, usar=None):
 def prima_porcentual(coef):
     """Coeficiente en log -> diferencia porcentual de precio por m²."""
     return 100 * (np.exp(coef) - 1)
+
+
+# ---------------------------------------------------------------------------
+# Validación cruzada sin fuga de información (PreEntrega 3)
+# ---------------------------------------------------------------------------
+def vueltas_sin_fuga(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, atipicos_en_log=True,
+                     barrios_excluidos=()):
+    """Genera, para cada vuelta de la validación cruzada, las decisiones tomadas SOLO con entrenamiento.
+
+    En la PreEntrega 2 dos decisiones se tomaban con todos los avisos antes de
+    la validación cruzada: qué barrios usan sub-zona y qué avisos son atípicos
+    (y quedan fuera del ajuste). Eso deja que los avisos de prueba influyan en
+    el modelo que los evalúa. Acá, en cada vuelta y solo con los avisos de
+    entrenamiento:
+      1. se eligen los barrios donde conviene la sub-zona (partes por unidad);
+      2. se arma la zona de referencia;
+      3. se marcan los atípicos con IQR sobre el logaritmo del precio por m²,
+         dentro de la zona, y se dejan fuera del ajuste.
+    Las partes se arman por unidad (misma dirección y superficie).
+
+    `atipicos_en_log=False` reproduce el criterio de la PreEntrega 2 (IQR sobre
+    el precio por m², que solo detecta la cola de arriba), para comparar.
+    `barrios_excluidos`: barrios que nunca usan sub-zona (por ejemplo, los de
+    sub-zonas inestables).
+
+    Devuelve tuplas (vuelta, prueba, ajusta, zona): máscaras booleanas de prueba
+    y de avisos que entran al ajuste, y la zona de referencia de cada aviso.
+    """
+    from src.limpieza import outliers_iqr_por_grupo
+
+    folds = folds_agrupados(grupo_de_unidad(df), k, semilla)
+    for p in sorted(folds.unique()):
+        prueba = folds == p
+        entrena = ~prueba
+        tabla = barrios_donde_conviene_subzona(df[entrena], k, minimo_grupo, semilla, por_unidad=True)
+        barrios_sub = [b for b in tabla.index[tabla["conviene_subzona"]] if b not in set(barrios_excluidos)]
+
+        # Zona con los conteos de entrenamiento: una sub-zona chica en entrenamiento vuelve al barrio
+        usa_sub = df["barrio"].isin(barrios_sub) & df["subzona"].notna()
+        zona = df["subzona"].where(usa_sub, df["barrio"])
+        conteo = zona[entrena].value_counts()
+        zona = zona.where(zona.map(conteo).fillna(0) >= minimo_grupo, df["barrio"])
+
+        escala = y if atipicos_en_log else np.exp(y)
+        atipico = outliers_iqr_por_grupo(escala[entrena], zona[entrena], k=iqr_k, minimo_grupo=minimo_grupo)
+        ajusta = entrena.copy()
+        ajusta[entrena] = ~atipico.values
+        yield p, prueba, ajusta, zona
+
+
+def precio_esperado_sin_fuga(df, y, X, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, atipicos_en_log=True,
+                             barrios_excluidos=()):
+    """Precio esperado fuera de muestra con el modelo hedónico lineal, sin fuga de información
+    (ver `vueltas_sin_fuga`).
+
+    Devuelve un DataFrame con, para cada aviso: log del precio esperado, log de
+    la mediana de su zona (referencia simple), la zona usada y la vuelta.
+    """
+    salida = pd.DataFrame(index=df.index, columns=["log_esperado", "log_mediana_zona", "zona", "vuelta"])
+    for p, prueba, ajusta, zona in vueltas_sin_fuga(df, y, k, semilla, minimo_grupo, iqr_k, atipicos_en_log,
+                                                    barrios_excluidos):
+        A = matriz_diseno(X, zona)
+        coef, *_ = np.linalg.lstsq(A[ajusta].values, y[ajusta].values, rcond=None)
+        salida.loc[prueba, "log_esperado"] = A[prueba].values @ coef
+        medianas = np.exp(y[ajusta]).groupby(zona[ajusta]).median()
+        global_ = np.exp(y[ajusta]).median()
+        salida.loc[prueba, "log_mediana_zona"] = np.log(zona[prueba].map(medianas).fillna(global_)).values
+        salida.loc[prueba, "zona"] = zona[prueba].values
+        salida.loc[prueba, "vuelta"] = p
+    salida["log_esperado"] = salida["log_esperado"].astype(float)
+    salida["log_mediana_zona"] = salida["log_mediana_zona"].astype(float)
+    return salida

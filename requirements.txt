@@ -14,7 +14,7 @@ numpy==2.0.2
 scikit-learn==1.6.1
 
 # PyYAML no estaba en el pipeline original: se incorporó al parametrizar el
-# proyecto, para leer config/config.yaml. Es la única dependencia agregada.
+# proyecto, para leer config/config.yaml.
 PyYAML==6.0.3
 
 # Análisis exploratorio (PreEntrega 2): estadística, gráficos y notebooks.
@@ -23,3 +23,18 @@ scipy==1.13.1
 matplotlib==3.9.4
 seaborn==0.13.2
 ipykernel==6.29.5
+
+# Tests (PreEntrega 3): suite formal con pytest, corre también en GitHub Actions.
+pytest==8.3.5
+
+# Fuentes externas (PreEntrega 3): polígonos de espacios verdes, barrios y
+# barrios populares (src/fuentes_externas.py). Las cuatro requieren Python 3.9
+# o superior. pyproj y pyogrio no compilan contra la API C de numpy, y shapely
+# admite numpy < 3, así que conviven con numpy 2.0.2.
+geopandas==1.0.1
+shapely==2.0.7
+pyproj==3.6.1
+pyogrio==0.10.0
+
+# Segundo relevamiento (PreEntrega 3): regresiones con errores agrupados (notebook 05).
+statsmodels==0.14.4
