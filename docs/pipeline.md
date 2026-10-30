@@ -282,7 +282,7 @@ en ese caso.
 
 Hay dos cosas distintas y conviene no confundirlas.
 
-### Suite de tests (pytest)
+### 7.1. Suite de tests (pytest)
 
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
@@ -308,7 +308,7 @@ push y pull request, con Python 3.9.
 `tests/verificar_offline.py` se conserva como script de consola con salida legible;
 verifica lo mismo que `test_pipeline.py`.
 
-### 15.1. Smoke test reproducible, sin red
+### 7.2. Smoke test reproducible, sin red
 
 ```bash
 python3 tests/verificar_offline.py
@@ -345,7 +345,7 @@ versionado, la etapa 4 reproduce las 93 columnas, `dist_transporte_m` incluida,
 y las 198 sub-zonas. O sea que la cadena entera, desde las cuotas versionadas
 hasta el dataset final, es reproducible byte a byte **sin tocar la red**.
 
-### 15.2. Corrida completa real
+### 7.3. Corrida completa real
 
 El smoke test no reemplaza una corrida real: las etapas 1, 3 y 4 dependen de
 MercadoLibre, USIG y BA Data respectivamente. La corrida completa contra los
@@ -367,7 +367,7 @@ versionados como evidencia en
 python3 run_pipeline.py --incluir-scraping
 ```
 
-### 16.1. Etapa 1, scraping
+### 8.1. Etapa 1, scraping
 
 Cinco cuotas corridas en sesiones separadas, con `con_detalle=true` y
 `max_paginas_por_barrio=42`.
@@ -385,13 +385,13 @@ Duplicados de `link` dentro de cada cuota: 0. Cuatro barrios llegaron al tope de
 paginación con 2.016 avisos cada uno (Palermo, Belgrano, Caballito, Recoleta);
 el más chico fue Villa Riachuelo con 15.
 
-### 16.2. Etapa 2, consolidación
+### 8.2. Etapa 2, consolidación
 
 Entran 27.922, salen 27.922. Duplicados detectados 0, eliminados 0, residuales 0.
 Nulos en columnas clave: solo `m2` con 26.
 Evidencia: `docs/corrida-documentada/qc_02_consolidacion.json`.
 
-### 16.3. Etapa 3, geocodificación
+### 8.3. Etapa 3, geocodificación
 
 Entran 27.922, salen 27.922, 90 columnas. Direcciones que pasaron la limpieza
 previa: 26.338 (94,3%).
@@ -405,7 +405,7 @@ previa: 26.338 (94,3%).
 
 Evidencia: `docs/corrida-documentada/qc_03_geocoding_verificacion.json`.
 
-### 16.4. Etapa 4, enriquecimiento
+### 8.4. Etapa 4, enriquecimiento
 
 Entran 27.922, salen 27.922, 93 columnas. Con distancias calculadas: 22.912.
 Estaciones de subte descargadas de BA Data: 90. Media a la estación más
@@ -413,7 +413,7 @@ cercana: **925 m**. Media al polo de centralidad más cercano: **5.696 m**.
 Sub-zonas creadas: **198**.
 Evidencia: `docs/corrida-documentada/qc_04_enriquecimiento.json`.
 
-### 16.5. Qué está verificado y cómo
+### 8.5. Qué está verificado y cómo
 
 Esta es la parte que importa para juzgar la reproducibilidad. Hay tres niveles
 de evidencia y conviene no confundirlos.
@@ -432,7 +432,7 @@ volumen de la geocodificación, por costo de tiempo y por no castigar
 innecesariamente servicios públicos gratuitos. En ambos casos el camino de
 código es el mismo que ejercitan los spot checks.
 
-### 16.6. Los spot checks, reproducibles
+### 8.6. Los spot checks, reproducibles
 
 ```bash
 # Etapa 1: un barrio chico, sin fichas, una página. ~1 request.
@@ -552,3 +552,17 @@ confirma el smoke test offline.
   estable: la verificación offline se corrió con `1.6.1` sobre Python 3.9 y con
   `1.7.2` sobre Python 3.10, y las dos reprodujeron las mismas 198 sub-zonas. De todos modos, el dataset final
   versionado congela las sub-zonas de la corrida original.
+- **El gradient boosting puede variar entre plataformas.** Con los mismos datos, la
+  misma semilla y el mismo resultado del modelo lineal, la etapa 6 corrida en el
+  entorno de claude.ai (Linux, Python 3.11) y en la Mac de referencia (Python 3.9.6,
+  scikit-learn 1.6.1) dio el mismo gradient boosting en 3 de las 5 vueltas y uno
+  distinto en las otras 2: diferencia del precio esperado con mediana 0% y p95 3,2%;
+  1.442 contra 1.456 avisos marcados por ese modelo y 1.109 contra 1.112 de consenso.
+  En cada máquina el resultado es determinista. La hipótesis es un empate casi exacto
+  en algún corte que la aritmética de cada plataforma resuelve distinto, y desde ahí
+  los árboles divergen (no verificado). Como el modelo oficial es el lineal, la lista
+  oficial y el embudo no cambian. **Los archivos versionados de la etapa 6 y el
+  notebook 04 se generaron en la Mac de referencia**; en otra plataforma, las columnas
+  `brecha_otro_modelo`, `marcado_otro_modelo` y `marcado_consenso` pueden diferir un
+  poco. El SHAP guardado (`data/interim/shap_gbm.tsv`) se recalcula solo si no
+  coincide con las predicciones de la máquina donde se corre.

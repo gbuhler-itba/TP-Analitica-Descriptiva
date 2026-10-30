@@ -32,6 +32,10 @@ rutas:
   unidades_marcadas: data/processed/unidades_marcadas.csv
   ranking: data/processed/avisos_a_investigar.csv
   embudo: data/processed/embudo_ranking.csv
+  # Explicación del precio esperado de cada aviso marcado, con el modelo oficial (ficha del dashboard).
+  explicacion: data/processed/explicacion_avisos.tsv
+  # SHAP del gradient boosting del notebook 04 (sección 9), guardado porque tarda varios minutos.
+  shap_gbm: data/interim/shap_gbm.tsv
   accesibilidad: data/processed/accesibilidad.tsv
   # Permisos de obra (src/permisos_obra.py, PreEntrega 3).
   permisos_obra_snapshot: data/external/obras-registradas.csv

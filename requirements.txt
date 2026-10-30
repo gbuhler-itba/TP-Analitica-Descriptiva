@@ -23,6 +23,10 @@ scipy==1.13.1
 matplotlib==3.9.4
 seaborn==0.13.2
 ipykernel==6.29.5
+# Para ejecutar los notebooks de punta a punta (jupyter nbconvert --execute).
+# El comando `jupyter` lo da jupyter_core; no hace falta el metapaquete jupyter.
+nbconvert==7.17.2
+jupyter_core==5.8.1
 
 # Tests (PreEntrega 3): suite formal con pytest, corre también en GitHub Actions.
 pytest==8.3.5
@@ -38,3 +42,10 @@ pyogrio==0.10.0
 
 # Segundo relevamiento (PreEntrega 3): regresiones con errores agrupados (notebook 05).
 statsmodels==0.14.4
+
+# Explicación del gradient boosting (PreEntrega 3): valores SHAP (notebook 04 y
+# etapa 6). Versiones probadas con CPython 3.9 y numpy 2.0.2, con wheels para
+# macOS y Linux; numba y llvmlite son dependencias de shap.
+shap==0.49.1
+numba==0.60.0
+llvmlite==0.43.0
