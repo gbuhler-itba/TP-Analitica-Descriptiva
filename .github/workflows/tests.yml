@@ -9,7 +9,8 @@ on:
 
 jobs:
   pytest:
-    runs-on: ubuntu-latest
+    # Fijado en 24.04: ubuntu-latest pasó a 26.04, que no tiene Python 3.9 en setup-python.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
