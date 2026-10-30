@@ -15,6 +15,10 @@ SALIDAS:
                                          analista (unidades que cumplen la regla)
   data/processed/embudo_ranking.csv      el embudo: filtro, denominador y
                                          cantidad de avisos y de unidades por paso
+  data/processed/explicacion_avisos.tsv  una fila por aviso marcado: precio de
+                                         referencia de su zona y qué variables
+                                         suben o bajan su precio esperado
+                                         (para la ficha del dashboard)
 
 Pasos:
   1. Precio esperado fuera de muestra, sin fuga de información
@@ -196,15 +200,47 @@ def tratar_geo_dudoso(df, cfg_enr=None):
     return df
 
 
+def tabla_explicacion(contrib, df, n=3):
+    """Explicación por aviso para la ficha del dashboard.
+
+    `contrib`: salida de `validacion.explicar_modelo` (log del precio esperado
+    = base + suma de las contribuciones). Para cada aviso: el precio por m² de
+    referencia de su zona, los `n` factores que más suben y los `n` que más
+    bajan su precio esperado, y el resto. Los efectos están en % sobre la
+    referencia; no se suman, se multiplican: referencia × (1 + efecto_1) × ...
+    × (1 + resto) = precio esperado, exacto.
+    """
+    variables = contrib.columns.drop(["base", "vuelta"])
+    filas = []
+    for i, c in contrib[variables].iterrows():
+        orden = c.sort_values()
+        sube, baja = orden[orden > 0].iloc[::-1].iloc[:n], orden[orden < 0].iloc[:n]
+        fila = {"id_aviso": df.at[i, "id_aviso"],
+                "precio_m2_referencia_zona": np.exp(contrib.at[i, "base"]),
+                "precio_m2_esperado": np.exp(contrib.at[i, "base"] + c.sum())}
+        for sentido, top in [("sube", sube), ("baja", baja)]:
+            for k in range(n):
+                fila[f"{sentido}_{k + 1}"] = validacion.ETIQUETAS.get(top.index[k], top.index[k]) if k < len(top) else None
+                fila[f"{sentido}_{k + 1}_%"] = 100 * (np.exp(top.iloc[k]) - 1) if k < len(top) else np.nan
+        fila["resto_%"] = 100 * (np.exp(c.drop(sube.index.union(baja.index)).sum()) - 1)
+        filas.append(fila)
+    tabla = pd.DataFrame(filas)
+    tabla[["precio_m2_referencia_zona", "precio_m2_esperado"]] = tabla[["precio_m2_referencia_zona",
+                                                                       "precio_m2_esperado"]].round(0)
+    return tabla.round(1)
+
+
 def analizar(df, cfg_an, cfg_enr=None):
-    """Corre el análisis completo sobre el dataset limpio. Devuelve (df, unidades, embudo, info).
+    """Corre el análisis completo sobre el dataset limpio. Devuelve (df, unidades, embudo, explicacion, info).
 
     Decisiones de la PreEntrega 3 (notebook 04):
       - avisos con geocodificación dudosa: sin coordenadas para el modelo;
       - barrios con sub-zonas inestables (ARI < `ari_minimo_subzona`): comparados contra el barrio;
       - modelo oficial configurable (`modelo_oficial`); se calcula también el otro modelo y la
         marca de consenso (los dos lo marcan);
-      - intervalo de predicción por aviso (conformal cruzado, por barrio).
+      - intervalo de predicción por aviso (conformal cruzado, por barrio);
+      - explicación del precio esperado de cada aviso marcado con el modelo oficial
+        (`validacion.explicar_modelo`), para la ficha del dashboard.
     """
     df = tratar_geo_dudoso(df, cfg_enr)
     y = np.log(df["precio_m2_usd"])
@@ -212,9 +248,9 @@ def analizar(df, cfg_an, cfg_enr=None):
     estab = validacion.estabilidad_subzonas(df, repeticiones=cfg_an["repeticiones_estabilidad"])
     inestables = list(estab.index[estab["ari_mediano"] < cfg_an["ari_minimo_subzona"]])
     modelos = ["mediana_zona", "lineal_ampliado", "gbm"]
-    pred, vuelta = validacion.comparar_modelos(
+    pred, vuelta, ajustes = validacion.comparar_modelos(
         df, y, k=cfg_an["k_folds"], semilla=cfg_an["semilla"], minimo_grupo=cfg_an["minimo_grupo"],
-        iqr_k=cfg_an["iqr_k"], modelos=modelos, barrios_excluidos=inestables,
+        iqr_k=cfg_an["iqr_k"], modelos=modelos, barrios_excluidos=inestables, devolver_modelos=True,
     )
     oficial = cfg_an["modelo_oficial"]
     otro = "gbm" if oficial == "lineal_ampliado" else "lineal_ampliado"
@@ -251,12 +287,17 @@ def analizar(df, cfg_an, cfg_enr=None):
     df["unidad"] = unidad_ranking(df)
     unidades = resumir_unidades(df)
     tabla_embudo = embudo(df, unidades)
+
+    contrib = validacion.explicar_modelo(ajustes, df["marcado"], oficial, semilla=cfg_an["semilla"])
+    if not np.allclose(contrib.drop(columns="vuelta").sum(axis=1), pred.loc[df["marcado"], oficial]):
+        raise RuntimeError("La explicación por aviso no reproduce el precio esperado.")
+    explicacion = tabla_explicacion(contrib, df)
     info = {"veces_error": veces, "error_mediano_ciudad": error_ciudad,
             "error_mediano_mediana_zona": float((df["precio_m2_usd"] / df["precio_m2_mediana_zona"] - 1).abs().median()),
             "error_mediano_otro_modelo": float(df["brecha_otro_modelo"].abs().median()),
             "barrios_subzona_inestable": inestables, "modelo_oficial": oficial,
             "cobertura_intervalo": float(((residuo >= inf) & (residuo <= sup)).mean())}
-    return df, unidades, tabla_embudo, info
+    return df, unidades, tabla_embudo, explicacion, info
 
 
 COLUMNAS_PRECIO = [
@@ -283,9 +324,10 @@ COLUMNAS_RANKING = [
 ]
 
 
-def guardar(df, unidades, tabla_embudo, rutas):
-    """Escribe las cuatro salidas oficiales."""
+def guardar(df, unidades, tabla_embudo, explicacion, rutas):
+    """Escribe las cinco salidas oficiales."""
     df[COLUMNAS_PRECIO].to_csv(asegurar_directorio(rutas["precio_esperado"]), sep="\t", index=False)
+    explicacion.to_csv(asegurar_directorio(rutas["explicacion"]), sep="\t", index=False)
 
     u = unidades.sort_values("brecha").copy()
     for col in ["brecha", "brecha_min", "brecha_max", "brecha_otro_modelo"]:
@@ -325,8 +367,8 @@ def main(argv=None) -> int:
     df = pd.read_csv(entrada, sep="\t", low_memory=False)
     print(f"  {len(df):,} avisos.")
     df = unir_fuentes_externas(df, rutas)
-    df, unidades, tabla_embudo, info = analizar(df, cfg_an, cfg["enriquecimiento"])
-    oficial = guardar(df, unidades, tabla_embudo, rutas)
+    df, unidades, tabla_embudo, explicacion, info = analizar(df, cfg_an, cfg["enriquecimiento"])
+    oficial = guardar(df, unidades, tabla_embudo, explicacion, rutas)
 
     print(f"  Modelo oficial: {info['modelo_oficial']} | error mediano fuera de muestra {100 * info['error_mediano_ciudad']:.1f}% "
           f"(otro modelo {100 * info['error_mediano_otro_modelo']:.1f}%, mediana de la zona "
@@ -352,7 +394,8 @@ def main(argv=None) -> int:
     qc.desglose("embudo_unidades", dict(zip(tabla_embudo["paso"], tabla_embudo["unidades"])))
     qc.metrica("lista_oficial_unidades", len(oficial))
     qc.metrica("precio_esperado_nulos", int(df["precio_m2_esperado"].isna().sum()))
-    for nombre in ["precio_esperado", "unidades_marcadas", "ranking", "embudo"]:
+    qc.metrica("avisos_explicados", len(explicacion))
+    for nombre in ["precio_esperado", "unidades_marcadas", "ranking", "embudo", "explicacion"]:
         qc.metrica(f"archivo_{nombre}", ruta_relativa(resolver(rutas[nombre])))
     qc.cerrar()
 

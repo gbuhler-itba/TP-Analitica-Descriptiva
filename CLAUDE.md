@@ -43,6 +43,13 @@ Si algo de acá contradice al código o a los datos, manda el código y los dato
   tiene que explicar qué resuelve, sus supuestos, cómo se valida, qué agrega frente a una alternativa más simple
   y sus límites (eso pide la consigna).
 - Cuando Gonzalo diga "no entiendo", explicá más simple y con un ejemplo concreto, sin jerga.
+- **Pará después de cada bloque de trabajo** y mostrá `git diff --stat` más un resumen de 3 o 4 líneas de qué
+  cambió y por qué.
+- **Preguntá antes de** instalar paquetes y de restaurar, borrar o pisar archivos commiteados.
+- **Si encontrás algo raro** (por ejemplo, predicciones que no coinciden con las versionadas), contalo y proponé
+  opciones antes de resolverlo.
+- **Entorno de referencia: la Mac de Gonzalo** (`.venv`), no el entorno de claude.ai donde se generaron algunos
+  archivos (Linux, Python 3.11).
 
 ## 3. Qué pide la consigna de la PE3
 
@@ -75,7 +82,8 @@ src/
   limpiar.py + limpieza.py   # etapa 5: limpieza (reproduce el notebook 01; el notebook verifica igualdad)
   analisis.py                # etapa 6: modelo, intervalo, marcas, regla, ranking, embudo
   modelo.py                  # modelo hedónico, validación cruzada sin fuga
-  validacion.py              # comparación de modelos, conformal, estabilidad, bootstrap de primas
+  validacion.py              # comparación de modelos, conformal, estabilidad, bootstrap de primas,
+                             # explicación por aviso (lineal exacta, SHAP por permutación del GBM)
   eda.py, qc.py, rutas.py, configuracion.py, entorno.py
   fuentes_externas.py        # tren, Metrobus, premetro, espacios verdes, barrios populares, geo_dudoso
   permisos_obra.py           # permisos de obra a 500 m
@@ -83,12 +91,12 @@ src/
 notebooks/
   01_calidad_y_limpieza      # actualizado en PE3 (lee PARAMS de config, verifica igualdad con la etapa 5)
   02_eda, 03_precio_esperado # de la PE2, con banner; números actualizados a la limpieza nueva
-  04_validacion_modelos      # PE3, nuevo: faltan las interpretaciones de Gonzalo
+  04_validacion_modelos      # PE3, nuevo (sección 9: SHAP): faltan las interpretaciones de Gonzalo
 docs/pipeline.md             # instalación, ejecución, tests, corrida documentada
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 124 tests pasando
+tests/                       # pytest, 132 tests pasando
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -106,6 +114,8 @@ Datasets clave en `data/processed/`:
 | `unidades_marcadas.csv` | una fila por unidad marcada |
 | `avisos_a_investigar.csv` | **la lista oficial** (unidades que cumplen la regla) |
 | `embudo_ranking.csv` | el embudo por avisos y por unidades |
+| `explicacion_avisos.tsv` | etapa 6: por aviso marcado, referencia de su zona y los 3 factores que más suben y bajan su precio esperado, con el modelo oficial (para la ficha del dashboard) |
+| `../interim/shap_gbm.tsv` | SHAP del GBM de la sección 9 del 04, guardado (se recalcula solo si no coincide con las predicciones) |
 | `relevamiento_2.tsv` | segundo relevamiento consolidado |
 | `seguimiento_avisos.csv` | estado de cada aviso del primer relevamiento en el segundo |
 
@@ -156,8 +166,13 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
 ## 6. Resultados actuales (para no recalcular de memoria; verificá contra los datos si los usás)
 
 - Error mediano fuera de muestra: mediana de la zona 17,5%; lineal 12,7%; lineal ampliado 12,5%; Ridge 12,5%;
-  gradient boosting 11,2%. Marcados: lineal ampliado ~1.800, GBM ~1.442. Jaccard entre ambos ~0,53; consenso
-  ~1.125.
+  gradient boosting 11,2%. Marcados: lineal ampliado 1.800, GBM 1.456. Jaccard entre ambos 0,52; consenso
+  1.112. Números de la Mac de referencia: el GBM varía entre plataformas (en claude.ai daba 1.442 y 1.109; ver
+  `docs/pipeline.md`, sección 10). La lista oficial no depende del GBM.
+- SHAP del GBM (04, sección 9; 2.144 avisos marcados por alguno de los dos modelos): la ubicación es el 47% de la
+  importancia, amenities y cochera 18%, antigüedad 14%, tamaño 12%. Orden estable entre vueltas (Spearman ≥ 0,98).
+  Es aproximado: frente a un fondo de 200 y 1.000 evaluaciones, el top 3 coincide en el 82% de los avisos.
+  El TreeExplainer de shap da valores errados con la categórica nativa de barrio: por eso, permutación.
 - Intervalo 80%: ancho mediano aproximado ±30%.
 - Primas por estado (bootstrap por unidad): "a refaccionar" −16%, "a reciclar" −18% (con la regex vieja daba −8%:
   la regex vieja agarraba "refaccionado").
@@ -176,12 +191,30 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
   con umbral de USD 148.941 (2,7% total abajo, 3,5% arriba, mitad comprador); refacción integral con IVA
   1.227 USD/m² (rango 1.143 a 1.549); tiempo de venta solo por ambientes, no por zona.
 
-## 7. Pendientes, en orden
+## 7. Material de la cursada y decisiones abiertas
 
-1. **Commit del orden del repo:** `CLAUDE.md` y `.gitignore` (lo del 29/10 ya está commiteado en 47ceca3).
-   Correr `pytest` antes. Preguntar antes del push (hay dos commits de PE3 sin pushear, verificá con
-   `git status`).
-2. **SHAP sobre el gradient boosting** (propuesto, confirmar con Gonzalo): sección nueva **al final** del 04, sin
+**Material:** en `_material_grupo/cursada/` (no versionado) están la consigna oficial de la PE3
+(`consigna_pe3.txt`), la devolución de la PE2, el plan original del TP, las clases de visualización, tests de
+hipótesis y MCA, y material de BI. **Empezá por `README_cursada.md`**: resume qué pide la consigna, los
+criterios de visualización de la clase (para el dashboard) y lo que se vio de PCA, K-means y MCA. Cuando una
+decisión de método o de gráfico tenga una versión "como lo vimos en clase", preferí esa, y si te apartás,
+justificalo.
+
+**Decisión abierta (preguntarle a Gonzalo antes del notebook 05):** el plan original de la materia esperaba
+para esta etapa un índice sintético con PCA o MCA y una segmentación con K-means o DBSCAN ("micro-mercados"
+con nombre), y el profe dio esas clases justo antes de la PE3. La consigna oficial dice que ninguna técnica es
+obligatoria y que no se premia la cantidad. Hoy el TP no tiene ni índice ni segmentación de mercado. La idea a
+proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
+- MCA sobre las características Sí/No (amenities) como índice, comparado contra usarlas sueltas en el modelo.
+- K-means de micro-mercados por características (tamaño, antigüedad, índice, precio esperado), con codo y
+  silhouette, nombres de negocio, estabilidad (ARI con bootstrap, como en la clase: > 0,8) y utilidad
+  concreta: primas por segmento (G2), error del modelo y tasa de salida del segundo relevamiento por segmento
+  (liquidez para la regla de decisión) y filtro del dashboard.
+
+## 8. Pendientes, en orden
+
+1. ~~Commit del orden del repo~~ (hecho el 30/10, 3c15710). Sigue sin pushear: preguntar antes.
+2. ~~SHAP sobre el gradient boosting~~ (hecho el 30/10; falta que Gonzalo escriba las interpretaciones): sección nueva **al final** del 04, sin
    mover las celdas existentes. Calcularlo con el modelo de cada vuelta sobre los avisos que esa vuelta no vio.
    Importancia global comparada con las primas del lineal, gráficos de dependencia (m², piso, antigüedad) y
    explicación por aviso para la ficha del dashboard. Límites: explica al modelo, no causas; con variables
@@ -209,7 +242,7 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
    en README, notebooks y dashboard, buscar rayas (`grep -rn "—"`), y una revisión independiente (un subagente
    que no haya hecho el trabajo).
 
-## 8. Errores conocidos y cuidados
+## 9. Errores conocidos y cuidados
 
 - Sacar o agregar una sola fila cambia la asignación de las vueltas (factorización de grupos): si cambia el
   dataset limpio, los números de los notebooks 03 y 04 cambian y hay que actualizarlos en el texto.
