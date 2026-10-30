@@ -49,3 +49,8 @@ statsmodels==0.14.4
 shap==0.49.1
 numba==0.60.0
 llvmlite==0.43.0
+
+# Segmentos exploratorios (PreEntrega 3, notebook 06): MCA con prince, como en
+# la clase. altair es dependencia de prince.
+prince==0.14.0
+altair==5.5.0
