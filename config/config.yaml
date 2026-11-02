@@ -32,6 +32,8 @@ rutas:
   unidades_marcadas: data/processed/unidades_marcadas.csv
   ranking: data/processed/avisos_a_investigar.csv
   embudo: data/processed/embudo_ranking.csv
+  # Segundo relevamiento (src/seguimiento.py): liquidez por ambientes en la regla de decisión.
+  seguimiento: data/processed/seguimiento_avisos.csv
   # Explicación del precio esperado de cada aviso marcado, con el modelo oficial (ficha del dashboard).
   explicacion: data/processed/explicacion_avisos.tsv
   # SHAP del gradient boosting del notebook 04 (sección 9), guardado porque tarda varios minutos.
@@ -185,6 +187,8 @@ analisis:
   nivel_intervalo: 0.80             # intervalo de predicción por aviso (conformal cruzado, por barrio)
   ari_minimo_subzona: 0.7           # debajo: sub-zonas inestables, el barrio se compara entero
   repeticiones_estabilidad: 100
+  # Regla de decisión (src/regla.py): margen mínimo de la brecha neta para "candidato después de costos"
+  umbral_brecha_neta: 0.10
 
 # -----------------------------------------------------------------------------
 # Controles de calidad
