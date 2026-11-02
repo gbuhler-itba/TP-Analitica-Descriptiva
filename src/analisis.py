@@ -31,6 +31,10 @@ Pasos:
   6. Embudo por aviso y por unidad. Una unidad pasa un paso si al menos uno
      de sus avisos lo pasa; su aviso representativo es el que llega más lejos
      y, entre esos, el de menor precio.
+  7. Regla de decisión (src/regla.py): brecha neta de costos de entrada,
+     refacción según el estado y salida (config/costos.yaml); las señales con
+     brecha neta sobre `umbral_brecha_neta` y sin riesgo legal de descarte
+     pasan a "candidato después de costos" (un paso más del embudo).
 
 Uso:  python3 src/analisis.py   (o python3 run_pipeline.py --desde-etapa 6)
 """
@@ -49,7 +53,7 @@ if str(RAIZ) not in sys.path:
 from src import modelo  # noqa: E402
 from src.configuracion import agregar_argumento_config, cargar_config  # noqa: E402
 from src.indice_confort import tipo_de_columna  # noqa: E402
-from src import validacion  # noqa: E402
+from src import regla, validacion  # noqa: E402
 from src.limpieza import estado_y_riesgo_del_titulo  # noqa: E402
 from src.qc import ControlCalidad  # noqa: E402
 from src.rutas import asegurar_directorio, resolver, ruta_relativa  # noqa: E402
@@ -59,7 +63,10 @@ PASOS = [
     ("marcado", "Brecha menor que el umbral de la ciudad (−25%)", "analizados"),
     ("marcado_barrio", "Además, por debajo del umbral según el error de su barrio", "marcado"),
     ("cumple_regla", "Además, sin señales de error de carga (regla R1: lista oficial)", "marcado_barrio"),
+    ("candidato", "Además, brecha neta de costos sobre el umbral y sin riesgo legal de descarte "
+                  "(candidato después de costos)", "cumple_regla"),
 ]
+PASOS_DEL_EMBUDO = [paso for paso, _, previo in PASOS if previo is not None]
 
 
 # ---------------------------------------------------------------------------
@@ -132,8 +139,7 @@ def unidad_ranking(df):
 def resumir_unidades(df):
     """Una fila por unidad con algún aviso marcado: paso del embudo y aviso representativo."""
     marcados = df[df["marcado"]].copy()
-    marcados["paso"] = (marcados["marcado"].astype(int) + marcados["marcado_barrio"].astype(int)
-                        + marcados["cumple_regla"].astype(int))
+    marcados["paso"] = marcados[PASOS_DEL_EMBUDO].astype(int).sum(axis=1)
     # Representativo: el que llega más lejos en el embudo y, entre esos, el más barato
     orden = marcados.sort_values(["unidad", "paso", "precio_usd", "brecha"], ascending=[True, False, True, True])
     rep = orden.drop_duplicates("unidad").set_index("unidad")
@@ -142,10 +148,10 @@ def resumir_unidades(df):
         brecha_min=("brecha", "min"),
         brecha_max=("brecha", "max"),
     )
-    pasos = marcados.groupby("unidad")[["marcado", "marcado_barrio", "cumple_regla"]].any()
-    salida = rep.drop(columns=["marcado", "marcado_barrio", "cumple_regla", "paso"]).join(pasos).join(todos)
+    pasos = marcados.groupby("unidad")[PASOS_DEL_EMBUDO].any()
+    salida = rep.drop(columns=PASOS_DEL_EMBUDO + ["paso"]).join(pasos).join(todos)
     # Discordantes: los avisos de la unidad no llegan todos al mismo paso del embudo
-    paso_todos = df["marcado"].astype(int) + df["marcado_barrio"].astype(int) + df["cumple_regla"].astype(int)
+    paso_todos = df[PASOS_DEL_EMBUDO].astype(int).sum(axis=1)
     salida["avisos_discordantes"] = paso_todos.groupby(df["unidad"]).nunique().loc[salida.index] > 1
     return salida.reset_index()
 
@@ -230,7 +236,7 @@ def tabla_explicacion(contrib, df, n=3):
     return tabla.round(1)
 
 
-def analizar(df, cfg_an, cfg_enr=None):
+def analizar(df, cfg_an, cfg_enr=None, seguimiento=None):
     """Corre el análisis completo sobre el dataset limpio. Devuelve (df, unidades, embudo, explicacion, info).
 
     Decisiones de la PreEntrega 3 (notebook 04):
@@ -240,7 +246,10 @@ def analizar(df, cfg_an, cfg_enr=None):
         marca de consenso (los dos lo marcan);
       - intervalo de predicción por aviso (conformal cruzado, por barrio);
       - explicación del precio esperado de cada aviso marcado con el modelo oficial
-        (`validacion.explicar_modelo`), para la ficha del dashboard.
+        (`validacion.explicar_modelo`), para la ficha del dashboard;
+      - regla de decisión (`src/regla.py`): brecha neta de costos de entrada, refacción y salida
+        (config/costos.yaml), y el nivel "candidato después de costos". `seguimiento`: el
+        seguimiento del segundo relevamiento, para la liquidez por ambientes (informativa).
     """
     df = tratar_geo_dudoso(df, cfg_enr)
     y = np.log(df["precio_m2_usd"])
@@ -284,6 +293,17 @@ def analizar(df, cfg_an, cfg_enr=None):
     df = df.join(estado_y_riesgo_del_titulo(df["titulo"], validacion.cargar_reglas_titulo()))
     df = df.join(kpis_del_aviso(df, df["zona"]))
 
+    # Regla de decisión: de "señal a investigar" a "candidato después de costos"
+    costos = validacion.cargar_reglas_titulo()
+    primas = regla.primas_estado(ajustes)
+    df["prima_estado"] = df["estado_titulo"].map(primas).fillna(0.0)
+    df = df.join(regla.calcular(df, primas, costos))
+    df["riesgo_descartar"], df["riesgo_revisar"] = regla.senales_legales(df, costos)
+    df["candidato"], df["nivel_decision"], df["motivo_decision"] = regla.decidir(
+        df["cumple_regla"], df["brecha_neta"], df["riesgo_descartar"], cfg_an["umbral_brecha_neta"])
+    df["tasa_salida_ambientes"] = (regla.tasa_salida_por_ambientes(df, seguimiento)
+                                   if seguimiento is not None else np.nan)
+
     df["unidad"] = unidad_ranking(df)
     unidades = resumir_unidades(df)
     tabla_embudo = embudo(df, unidades)
@@ -296,7 +316,8 @@ def analizar(df, cfg_an, cfg_enr=None):
             "error_mediano_mediana_zona": float((df["precio_m2_usd"] / df["precio_m2_mediana_zona"] - 1).abs().median()),
             "error_mediano_otro_modelo": float(df["brecha_otro_modelo"].abs().median()),
             "barrios_subzona_inestable": inestables, "modelo_oficial": oficial,
-            "cobertura_intervalo": float(((residuo >= inf) & (residuo <= sup)).mean())}
+            "cobertura_intervalo": float(((residuo >= inf) & (residuo <= sup)).mean()),
+            "primas_estado": primas}
     return df, unidades, tabla_embudo, explicacion, info
 
 
@@ -313,6 +334,9 @@ COLUMNAS_PRECIO = [
     "geo_dudoso", "barrio_oficial", "en_barrio_popular", "tipo_barrio_popular", "dist_transporte_m", "dist_tren_m",
     "dist_metrobus_m", "dist_riel_m", "dist_transporte_pesado_m", "dist_espacio_verde_m", "area_verde_500m_ha",
     "permisos_obra_500m", "lat", "lon",
+    "prima_estado", "nivel_refaccion", "costo_entrada_usd", "refaccion_usd", "costo_total_usd", "valor_salida_usd",
+    "venta_cierre_usd", "costo_salida_usd", "impuesto_usd", "resultado_usd", "brecha_neta", "riesgo_descartar",
+    "riesgo_revisar", "candidato", "nivel_decision", "motivo_decision", "tasa_salida_ambientes",
 ]
 
 COLUMNAS_RANKING = [
@@ -320,12 +344,13 @@ COLUMNAS_RANKING = [
     "precio_m2_esperado", "precio_m2_esperado_inf", "precio_m2_esperado_sup", "brecha_%", "brecha_otro_modelo_%",
     "marcado_consenso", "debajo_del_intervalo", "avisos_de_la_unidad", "brecha_min_%", "brecha_max_%",
     "avisos_discordantes", "bajo_de_precio", "estado_titulo", "riesgo_con_inquilino", "titulo_casa",
-    "geo_dudoso", "tasa_completitud", "link",
+    "geo_dudoso", "tasa_completitud", "brecha_neta_%", "nivel_decision", "motivo_decision", "nivel_refaccion",
+    "costo_total_usd", "resultado_usd", "riesgo_revisar", "tasa_salida_ambientes_%", "link",
 ]
 
 
 def guardar(df, unidades, tabla_embudo, explicacion, rutas):
-    """Escribe las cinco salidas oficiales."""
+    """Escribe las salidas oficiales (precio esperado, explicación, unidades, lista y embudo)."""
     df[COLUMNAS_PRECIO].to_csv(asegurar_directorio(rutas["precio_esperado"]), sep="\t", index=False)
     explicacion.to_csv(asegurar_directorio(rutas["explicacion"]), sep="\t", index=False)
 
@@ -335,8 +360,11 @@ def guardar(df, unidades, tabla_embudo, explicacion, rutas):
     for col in ["precio_m2_esperado", "precio_m2_esperado_inf", "precio_m2_esperado_sup"]:
         u[col] = u[col].round(0)
     u["tasa_completitud"] = u["tasa_completitud"].round(2)
-    pasos = ["marcado", "marcado_barrio", "cumple_regla"]
-    u[["unidad"] + COLUMNAS_RANKING[:-1] + pasos + ["link"]].to_csv(
+    u["brecha_neta_%"] = (100 * u["brecha_neta"]).round(1)
+    u["tasa_salida_ambientes_%"] = (100 * u["tasa_salida_ambientes"]).round(1)
+    for col in ["costo_total_usd", "resultado_usd"]:
+        u[col] = u[col].round(0)
+    u[["unidad"] + COLUMNAS_RANKING[:-1] + PASOS_DEL_EMBUDO + ["link"]].to_csv(
         asegurar_directorio(rutas["unidades_marcadas"]), index=False)
 
     oficial = u[u["cumple_regla"]][COLUMNAS_RANKING].reset_index(drop=True)
@@ -367,7 +395,11 @@ def main(argv=None) -> int:
     df = pd.read_csv(entrada, sep="\t", low_memory=False)
     print(f"  {len(df):,} avisos.")
     df = unir_fuentes_externas(df, rutas)
-    df, unidades, tabla_embudo, explicacion, info = analizar(df, cfg_an, cfg["enriquecimiento"])
+    ruta_seguimiento = resolver(rutas["seguimiento"])
+    seguimiento = pd.read_csv(ruta_seguimiento) if ruta_seguimiento.exists() else None
+    if seguimiento is not None and not (seguimiento["id_aviso"].values == df["id_aviso"].values).all():
+        raise RuntimeError("El seguimiento no está alineado con el dataset limpio.")
+    df, unidades, tabla_embudo, explicacion, info = analizar(df, cfg_an, cfg["enriquecimiento"], seguimiento)
     oficial = guardar(df, unidades, tabla_embudo, explicacion, rutas)
 
     print(f"  Modelo oficial: {info['modelo_oficial']} | error mediano fuera de muestra {100 * info['error_mediano_ciudad']:.1f}% "
@@ -393,6 +425,8 @@ def main(argv=None) -> int:
     qc.desglose("embudo_avisos", dict(zip(tabla_embudo["paso"], tabla_embudo["avisos"])))
     qc.desglose("embudo_unidades", dict(zip(tabla_embudo["paso"], tabla_embudo["unidades"])))
     qc.metrica("lista_oficial_unidades", len(oficial))
+    qc.metrica("candidatos_despues_de_costos_unidades", int(oficial["nivel_decision"].eq(regla.CANDIDATO).sum()))
+    qc.metrica("umbral_brecha_neta", cfg_an["umbral_brecha_neta"])
     qc.metrica("precio_esperado_nulos", int(df["precio_m2_esperado"].isna().sum()))
     qc.metrica("avisos_explicados", len(explicacion))
     for nombre in ["precio_esperado", "unidades_marcadas", "ranking", "embudo", "explicacion"]:

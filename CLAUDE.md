@@ -90,17 +90,19 @@ src/
   seguimiento.py             # cruce con el segundo relevamiento
   inferencia.py              # bootstrap por unidad, tabla de tests formales, Holm, coeficientes con IC (05)
   segmentos.py               # exploratorio (06): MCA, K-means, estabilidad; la etapa 6 no lo importa
+  regla.py                   # regla de decisión: brecha neta de costos y "candidato después de costos" (etapa 6)
 notebooks/
   01_calidad_y_limpieza      # actualizado en PE3 (lee PARAMS de config, verifica igualdad con la etapa 5)
   02_eda, 03_precio_esperado # de la PE2, con banner; números actualizados a la limpieza nueva
   04_validacion_modelos      # PE3, nuevo (sección 9: SHAP): faltan las interpretaciones de Gonzalo
   05_hipotesis               # PE3: H1, H2 y H3 con tests formales, magnitud, IC y robustez
   06_segmentos_exploratorio  # PE3, exploratorio: índice de equipamiento (MCA) y segmentos (K-means)
+  07_regla_de_decision       # PE3: regla de decisión con costos, sensibilidad y alertas legales
 docs/pipeline.md             # instalación, ejecución, tests, corrida documentada
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 146 tests pasando
+tests/                       # pytest, 154 tests pasando
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -182,7 +184,21 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
   la regex vieja agarraba "refaccionado").
 - **Embudo oficial** (`embudo_ranking.csv`): 27.578 avisos / 25.168 unidades analizados → 1.800 / 1.695 marcados
   (brecha < −25%) → 1.546 / 1.459 también bajo el umbral de su barrio → **1.443 avisos / 1.362 unidades sin
-  señales de error de carga = lista oficial**.
+  señales de error de carga = lista oficial (señales a investigar)** → **885 avisos / 839 unidades candidatos
+  después de costos** (brecha neta ≥ +10% y sin riesgo legal de descarte).
+- **Regla de decisión** (notebook 07, `src/regla.py`, aprobada el 02/11): se compra al publicado, se vende a precio
+  de cierre (−4,79%), con costos de entrada (Sellos con umbral), refacción según `estado_titulo` (sin la prima de
+  estado al refaccionar: "a reciclar" −19,8%, "a refaccionar" −16,6%) y costos de salida (bloque `costos_salida` de
+  `costos.yaml`, supuestos con fuente; Ganancias 0 en la base, 15% y 35% en sensibilidad). Brecha neta mediana de
+  las señales 12,6%; refacción integral −37% (casi nunca cierra). Sensibilidad (unidades candidatas): costos
+  pesimistas 523, refacción alta 365, umbral +20% 366, Ganancias 35% 545, **límite inferior del 80% como salida:
+  84**. Límite declarado: costo de tenencia (expensas y tiempo de venta) no incluido.
+- **H3** (notebook 05): Wald de transporte p = 6e-5 y de entorno p = 2e-7 (agrupado por sub-zona), pero con Holm
+  solo área verde (+1,5% por ha) y permisos de obra (+4,5% cada 10). El −24% del premetro es la zona: sin los avisos
+  a menos de 500 m de un barrio popular pasa a −4% (IC incluye el 0, 9 avisos). "Sur y oeste" = comunas 4, 8, 9 y
+  10 (elección del grupo). La ubicación baja el error fuera de muestra 0,21 pp.
+- **H2** (notebook 05): la sub-zona baja el error mediano 0,59 pp (17,70% a 17,10%); con Holm mejoran 6 de 41
+  barrios y ninguno empeora.
 - **Segundo relevamiento (27 y 28/10/2026):** 27.516 avisos. Republicaciones detectadas por dirección + m² +
   ambientes (~24%). Se excluyen los barrios truncados por el tope de 2.016 resultados en el primer relevamiento
   (Palermo, Belgrano, Caballito, Recoleta). Los avisos marcados salen del portal 46,8% contra 39,7% (74 días entre
@@ -233,7 +249,7 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
    - H3: tren, Metrobus, premetro, espacios verdes y permisos de obra, con efectos fijos de barrio y errores
      agrupados; geo_dudoso excluidos.
    - Cada una con magnitud, IC y robustez.
-4. **Regla de decisión** (R1 con costos): brecha neta = brecha menos costos de entrada (con el umbral de Sellos),
+4. ~~Regla de decisión~~ (hecha el 02/11; ver sección 6) (R1 con costos): brecha neta = brecha menos costos de entrada (con el umbral de Sellos),
    negociación y refacción según `estado_titulo`; liquidez con la tasa de salida del seguimiento por zona;
    riesgo legal como descarte o revisión. Análisis de sensibilidad. Mantener dos niveles: "señal a investigar"
    y "candidato después de costos", nunca "oportunidad confirmada".

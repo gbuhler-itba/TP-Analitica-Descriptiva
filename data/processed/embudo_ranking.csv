@@ -3,3 +3,4 @@ analizados,Avisos del dataset limpio,27578,25168,,
 marcado,Brecha menor que el umbral de la ciudad (−25%),1800,1695,6.5,6.7
 marcado_barrio,"Además, por debajo del umbral según el error de su barrio",1546,1459,85.9,86.1
 cumple_regla,"Además, sin señales de error de carga (regla R1: lista oficial)",1443,1362,93.3,93.4
+candidato,"Además, brecha neta de costos sobre el umbral y sin riesgo legal de descarte (candidato después de costos)",885,839,61.3,61.6

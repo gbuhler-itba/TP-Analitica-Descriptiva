@@ -212,6 +212,79 @@ negociacion:
     fecha: "2026-10-19"
 
 # -----------------------------------------------------------------------------
+# Costos de salida (venta del inmueble por el fondo). SUPUESTOS del grupo,
+# agregados el 02/11/2026 para la regla de decisión (src/regla.py).
+# -----------------------------------------------------------------------------
+costos_salida:
+
+  comision_inmobiliaria_vendedor:
+    valor: 3.63        # 3% + IVA
+    minimo: 2.42       # 2% + IVA, negociada
+    maximo: 4.84       # 4% + IVA
+    unidad: "% del precio de venta"
+    nota: >-
+      SUPUESTO. Desde la Ley 5859 la comisión se pacta libremente; la práctica
+      citada para el vendedor en CABA va de 3% a 4% del precio, más IVA. Se
+      toma el 3% como valor central porque el comprador suele pagar el 4%.
+    fuente: >-
+      Ley 2340 de la CABA, art. 11 inc. 2, texto según Ley 5859,
+      https://garciaalonso.com.ar/?p=4813 ;
+      rango 3% a 4%: iProfesional (09/07/2026),
+      https://www.iprofesional.com/realestate/455280-escriturar-en-provincia-de-buenos-aires-cuanto-cuesta-y-que-cambia-respecto-a-caba-mayo-2026
+    fecha: "2026-07-09"
+
+  impuesto_sellos_vendedor:
+    proporcion_vendedor: 0.5   # la otra mitad la paga el comprador (costos_entrada)
+    nota: >-
+      SUPUESTO de reparto. Mismo impuesto y mismo umbral que en la compra
+      (costos_entrada.impuesto_sellos): 2,7% del total si el precio de venta
+      no supera USD 148.941 y 3,5% si lo supera; comprador y vendedor lo pagan
+      por mitades, salvo pacto en contrario.
+    fuente: >-
+      Colegio de Escribanos de la Ciudad de Buenos Aires, informe sobre el
+      Código Fiscal y la Ley Tarifaria 2026,
+      https://www.colegio-escribanos.org.ar/noticias/2025_12_19-Codigo-Fiscal-2026-INFORME.pdf ;
+      reparto por mitades: Mudafy,
+      https://mudafy.com.ar/guias/post/que-gastos-se-afrontan-al-comprar-una-propiedad
+    fecha: "2026-01-01"
+
+  certificados_y_estudio_de_titulos:
+    valor: 1.08        # máximo de otros_gastos_escritura menos la parte del comprador (1,23 − 0,15)
+    minimo: 0.0        # el comprador los absorbe
+    maximo: 1.08
+    unidad: "% del precio de venta"
+    nota: >-
+      SUPUESTO. Por costumbre en CABA, el vendedor paga los certificados y el
+      estudio de títulos. Es el mismo cálculo que el máximo de
+      costos_entrada.otros_gastos_escritura (precio mediano USD 130.000, con
+      IVA), así que en avisos chicos subestima y en grandes sobrestima.
+    fuente: >-
+      Arancel Notarial 2026, https://www.colegio-escribanos.org.ar/noticias/Arancel-web.pdf ;
+      quién paga qué: iProfesional,
+      https://www.iprofesional.com/realestate/423461-cuanto-cuesta-escriturar-una-casa-2025-como-se-hace
+    fecha: "2026-10-01"
+
+  impuesto_ganancias:
+    valor: 0           # la brecha neta se informa antes de Ganancias
+    minimo: 0
+    maximo: 35         # escala de sociedades
+    sensibilidad: [15, 35]
+    unidad: "% de la ganancia (venta neta − costo total), solo si es positiva"
+    nota: >-
+      SUPUESTO. El impuesto depende de la forma jurídica del fondo, que no
+      conocemos: una sociedad paga la escala de 25% a 35% sobre la utilidad, y
+      el régimen cedular de 15% alcanza a personas humanas. Por eso el valor
+      central es 0 (brecha neta antes de Ganancias) y la sensibilidad muestra
+      15% y 35%. El Impuesto a la Transferencia de Inmuebles (1,5%) fue
+      derogado por la Ley 27.743 (B.O. 08/07/2024).
+    fuente: >-
+      Ganancias y ITI: iProfesional (30/06/2026),
+      https://www.iprofesional.com/impuestos/370104-transferencias-de-inmuebles-cuando-pagan-iti-o-ganancias ;
+      derogación del ITI: abogados.com.ar,
+      https://abogados.com.ar/paquete-fiscal-se-elimina-el-impuesto-para-la-transferencia-de-inmuebles/35134
+    fecha: "2026-06-30"
+
+# -----------------------------------------------------------------------------
 # Liquidez
 # -----------------------------------------------------------------------------
 liquidez:
