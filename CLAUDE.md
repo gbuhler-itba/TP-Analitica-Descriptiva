@@ -88,15 +88,19 @@ src/
   fuentes_externas.py        # tren, Metrobus, premetro, espacios verdes, barrios populares, geo_dudoso
   permisos_obra.py           # permisos de obra a 500 m
   seguimiento.py             # cruce con el segundo relevamiento
+  inferencia.py              # bootstrap por unidad, tabla de tests formales, Holm, coeficientes con IC (05)
+  segmentos.py               # exploratorio (06): MCA, K-means, estabilidad; la etapa 6 no lo importa
 notebooks/
   01_calidad_y_limpieza      # actualizado en PE3 (lee PARAMS de config, verifica igualdad con la etapa 5)
   02_eda, 03_precio_esperado # de la PE2, con banner; números actualizados a la limpieza nueva
   04_validacion_modelos      # PE3, nuevo (sección 9: SHAP): faltan las interpretaciones de Gonzalo
+  05_hipotesis               # PE3: H1, H2 y H3 con tests formales, magnitud, IC y robustez
+  06_segmentos_exploratorio  # PE3, exploratorio: índice de equipamiento (MCA) y segmentos (K-means)
 docs/pipeline.md             # instalación, ejecución, tests, corrida documentada
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 132 tests pasando
+tests/                       # pytest, 146 tests pasando
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -181,9 +185,12 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
   señales de error de carga = lista oficial**.
 - **Segundo relevamiento (27 y 28/10/2026):** 27.516 avisos. Republicaciones detectadas por dirección + m² +
   ambientes (~24%). Se excluyen los barrios truncados por el tope de 2.016 resultados en el primer relevamiento
-  (Palermo, Belgrano, Caballito, Recoleta). Los avisos marcados salen del portal 46,5% contra 39,7%. Dentro del
-  barrio, controlando log del valor esperado, log de m² y baja de precio previa: **+9 pp** (IC 6 a 12), logit
-  OR 1,46. Gradiente: cada 10 pp más de brecha negativa, +2,1 pp de salida. Ojo: controlar por el precio
+  (Palermo, Belgrano, Caballito, Recoleta). Los avisos marcados salen del portal 46,8% contra 39,7% (74 días entre
+  relevamientos). Dentro del barrio, controlando log del valor esperado, log de m² y baja de precio previa:
+  **+9,4 pp** (IC 6,5 a 12,3), logit OR 1,48 (notebook 05). Gradiente (principal, aprobado: brecha en log con dos
+  pendientes): cada 10 pp más por debajo del esperado, +2,2 pp de salida (IC 1,6 a 2,8); con una sola pendiente,
+  +2,1. Placebo (brecha > +33%): −8,4 pp. En el tercil de barrios medios el IC incluye el 0. H1a (colas) no se
+  sostiene: la cola de abajo es más liviana que la de arriba (6,5% contra 7,7%). Ojo: controlar por el precio
   publicado es un mal control (borra el efecto porque la brecha está hecha de ese precio); el comparable correcto
   es el valor esperado. Esto le da a H1 y a P4 una evidencia que en la PE2 no tenían. Salir del portal no es lo
   mismo que venderse: puede ser venta, retiro o republicación no detectada.
@@ -213,7 +220,7 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
 
 ## 8. Pendientes, en orden
 
-1. ~~Commit del orden del repo~~ (hecho el 30/10, 3c15710). Sigue sin pushear: preguntar antes.
+1. ~~Commit del orden del repo~~ (hecho el 30/10, 3c15710, pusheado).
 2. ~~SHAP sobre el gradient boosting~~ (hecho el 30/10; falta que Gonzalo escriba las interpretaciones): sección nueva **al final** del 04, sin
    mover las celdas existentes. Calcularlo con el modelo de cada vuelta sobre los avisos que esa vuelta no vio.
    Importancia global comparada con las primas del lineal, gráficos de dependencia (m², piso, antigüedad) y

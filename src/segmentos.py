@@ -12,6 +12,8 @@ from scipy.optimize import linear_sum_assignment
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 
+from src.inferencia import bootstrap_estadistico  # noqa: F401 (se usa desde el notebook 06)
+
 # Variables activas del MCA. Las "Sí/No" tienen las dos respuestas en la ficha
 # (el vacío es falta de dato); en las "solo Sí" el vacío no distingue "no tiene"
 # de "no lo cargó". Quedan afuera playroom, salón de fiestas y roof garden
@@ -191,17 +193,6 @@ def estabilidad_kmeans(Z, k, repeticiones=100, fraccion=0.8, semilla=42, n_init=
 # ---------------------------------------------------------------------------
 # Utilidad: liquidez, modelo de precio e incertidumbre
 # ---------------------------------------------------------------------------
-def bootstrap_estadistico(valores, grupos, funcion=np.mean, b=500, semilla=42):
-    """Estadístico de `valores` con IC 95%, remuestreando grupos (unidades) y no avisos.
-    Devuelve (puntual, límite inferior, límite superior)."""
-    v = np.asarray(valores, dtype=float)
-    por_grupo = pd.Series(np.arange(len(v))).groupby(np.asarray(grupos)).apply(np.array).values
-    rng = np.random.default_rng(semilla)
-    muestras = [funcion(v[np.concatenate(por_grupo[rng.integers(0, len(por_grupo), len(por_grupo))])])
-                for _ in range(b)]
-    return funcion(v), np.percentile(muestras, 2.5), np.percentile(muestras, 97.5)
-
-
 def probabilidad_fuera_de_muestra(y, X, grupos, k=5, semilla=42):
     """Probabilidad de un logit sin penalización, fuera de muestra, con vueltas agrupadas por unidad.
 
