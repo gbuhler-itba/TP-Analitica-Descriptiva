@@ -102,7 +102,7 @@ docs/pipeline.md             # instalación, ejecución, tests, corrida document
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 161 tests pasando (unos 70 s)
+tests/                       # pytest, 187 tests pasando (unos 70 s)
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -172,9 +172,17 @@ financiero (diseño de Gonzalo, 03/11): verde oscuro #1F3A2E, crema #F7F4EE, oro
 #B5651D para firmes, serif (Source Serif 4) en títulos y números, sin tarjetas ni sombras, tiles en gris. Los tres
 niveles se separan por luminancia y por forma (círculo, cuadrado, triángulo; validador de paleta: ΔE ≥ 14 para
 deutan, protan y tritan). La lista destacada del resumen excluye barrio popular o a menos de 500 m de uno, casas o
-PH y usos comerciales u oficinas (campo `exclusiones` de `avisos.json`, calculado en el exportador; esos avisos
-siguen en el mapa y el buscador con la alerta). No existe una marca de "brecha extrema" en el pipeline. El simulador
-reproduce en JS la regla de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`.
+PH, usos comerciales u oficinas, "barrio dudoso" (sin coordenadas y el título nombra otro barrio oficial; Barrio
+Norte equivale a Recoleta, se ignoran calles y esquinas y los títulos que también nombran el barrio propio) y
+"posible venta de varias unidades" (en block, unidades, departamentos o deptos en plural; "unidos" o "unificados"
+anulan), "precio posiblemente con financiación" (financ, anticipo, cuotas: misma regex que la señal de revisión de
+`costos.yaml`) y "en pozo" (ya es de descarte en la regla, nunca candidato); hotel, hostel y apart hotel cuentan como
+uso no residencial. Campo `exclusiones` de `avisos.json`, calculado en el exportador; no toca las 1.375 señales, los
+840 candidatos ni los 83 firmes. Con todas las reglas: 327 señales con alguna alerta, 486 destacados
+(38 firmes). Esos
+avisos siguen en el mapa y el buscador con la alerta. No existe una marca de "brecha extrema" en el pipeline. El
+embudo está solo en Resumen; en Tendencias va el error del modelo por barrio. El simulador reproduce en JS la regla
+de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`.
 
 ## 6. Resultados actuales (para no recalcular de memoria; verificá contra los datos si los usás)
 

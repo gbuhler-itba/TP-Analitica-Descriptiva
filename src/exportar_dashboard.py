@@ -22,18 +22,24 @@ regla.
 
 Lista destacada del resumen: candidatos que marcan los dos modelos, sin los casos
 que la PE2 mostró como especiales (barrio popular o a menos de 500 m de uno, casa
-o PH) ni usos que no son vivienda (oficina, comercial, local). Cada aviso lleva
-sus `exclusiones` (vacías si entra); el dashboard las muestra en la tabla y en la
-ficha. No existe una marca de "brecha extrema" en el pipeline: los casos extremos
-se filtran antes como errores de carga (`senal_error_carga`).
+o PH), usos que no son vivienda (oficina, comercial, local, hotel), avisos sin
+coordenadas cuyo título nombra otro barrio oficial ("barrio dudoso"), posibles
+ventas de varias unidades (en block, departamentos en plural), precio posiblemente
+con financiación (anticipo, cuotas) y en pozo. Cada aviso lleva sus
+`exclusiones` (vacías si entra); el dashboard las muestra en la tabla y en la
+ficha. Las exclusiones no tocan la lista oficial ni los candidatos de la etapa 6.
+No existe una marca de "brecha extrema" en el pipeline: los casos extremos se
+filtran antes como errores de carga (`senal_error_carga`).
 
 Uso:  python3 src/exportar_dashboard.py
 """
 
 import argparse
 import json
+import re
 import subprocess
 import sys
+import unicodedata
 from datetime import date
 from pathlib import Path
 
@@ -58,7 +64,65 @@ ESTADOS = {"sin_marca": "sin marca en el título", "a_reciclar": "a reciclar", "
 # mapa, en el buscador y en la ficha, con el motivo a la vista.
 RADIO_BARRIO_POPULAR_M = 500
 REGEX_PH = r"\bph\b"
-REGEX_USO_NO_RESIDENCIAL = r"\boficinas?\b|comercial|\blocal(?:es)?\b"
+REGEX_USO_NO_RESIDENCIAL = r"\boficinas?\b|comercial|\blocal(?:es)?\b|\bhotel(?:es)?\b|\bhostel\b|apart\s*-?\s*hotel"
+# Precio posiblemente con financiación: el publicado puede ser un anticipo y no el total (misma regex que la
+# señal "con_financiacion" de costos.yaml, que es de revisión; para la lista destacada se descarta).
+REGEX_FINANCIACION = r"financ|anticipo|cuotas"
+EXCLUSION_FINANCIACION = "precio posiblemente con financiación"
+# En pozo: ya es de descarte en la regla de decisión (nunca es candidato); acá queda la alerta para la lista.
+EXCLUSION_EN_POZO = "en pozo: precio no comparable con usados"
+# Posible venta de varias unidades: "en block", "unidades", "departamentos" o "deptos" en plural. "Dos
+# departamentos unidos" es una sola unidad física: "unidos" y "unificados" anulan la marca.
+REGEX_VARIAS_UNIDADES = r"\ben\s+block\b|\bunidades\b|\bdepartamentos\b|\bd(?:e)?ptos\.?\b"
+REGEX_UNA_UNIDAD = r"\bunid[oa]s\b|\bunificad[oa]s\b"
+# Barrio dudoso: sin coordenadas y el título nombra otro barrio oficial. "Barrio Norte" es una categoría
+# del portal dentro de Recoleta. Se ignora el nombre si va después de "av./calle/pasaje" (una calle que se
+# llama como un barrio), si forma una esquina con una calle ("Boedo y Rivadavia") o si el título también
+# nombra el barrio propio ("Recoleta / Retiro").
+EQUIVALENCIAS_BARRIO = {"barrio norte": "recoleta"}
+REGEX_CALLE_ANTES = re.compile(r"(?:\bav\.?|\bavenida|\bcalle|\bpasaje|\bpje\.?)\s*$")
+EXCLUSION_BARRIO_DUDOSO = "barrio dudoso"
+EXCLUSION_VARIAS_UNIDADES = "posible venta de varias unidades"
+
+
+def normalizar(texto):
+    """Minúsculas y sin tildes, para comparar nombres de barrios con títulos."""
+    return unicodedata.normalize("NFKD", str(texto)).encode("ascii", "ignore").decode().lower()
+
+
+def barrios_oficiales(cfg_fe):
+    """Nombres normalizados de los 48 barrios oficiales (BA Data), con "gral." como "general"."""
+    g = json.load(open(resolver(cfg_fe["rutas"]["barrios"]), encoding="utf-8"))
+    return sorted({normalizar(f["properties"]["nombre"]).replace("gral.", "general") for f in g["features"]})
+
+
+def menciona_otro_barrio(titulo, barrio_busqueda, oficiales):
+    """Barrios oficiales distintos al de búsqueda que el título nombra (lista vacía si ninguno)."""
+    t = normalizar(titulo)
+    propio = normalizar(barrio_busqueda)
+    propio = EQUIVALENCIAS_BARRIO.get(propio, propio)
+    patrones = {b: re.compile(r"(?<![a-z])" + re.escape(b).replace(r"\ ", r"\s+") + r"(?![a-z])") for b in oficiales}
+    if propio in patrones and patrones[propio].search(t):
+        return []
+    otros = []
+    for b, p in patrones.items():
+        if b == propio or b in propio or propio in b:
+            continue
+        for m in p.finditer(t):
+            if REGEX_CALLE_ANTES.search(t[:m.start()]):
+                continue
+            despues = re.match(r"\s+y\s+([a-z]+)", t[m.end():])
+            if despues and not any(o.startswith(despues.group(1)) for o in oficiales):
+                continue
+            otros.append(b)
+            break
+    return otros
+
+
+def posible_varias_unidades(titulo):
+    """True si el título sugiere una venta en block o varias unidades (y no "unidos" o "unificados")."""
+    t = normalizar(titulo)
+    return bool(re.search(REGEX_VARIAS_UNIDADES, t)) and not re.search(REGEX_UNA_UNIDAD, t)
 
 
 def _limpio(v):
@@ -102,16 +166,25 @@ def distancia_a_barrio_popular(lista, cfg_fe):
     return distancia
 
 
-def exclusiones_del_destacado(lista):
-    """Por aviso, la lista de motivos por los que no entra a la lista destacada (vacía si entra)."""
+def exclusiones_del_destacado(lista, oficiales):
+    """Por aviso, la lista de motivos por los que no entra a la lista destacada (vacía si entra).
+    `oficiales`: nombres normalizados de los barrios oficiales, para la regla de barrio dudoso."""
     titulo = lista["titulo"].fillna("").astype(str)
     en_popular = lista["titulo_barrio_popular"].astype(bool) | (lista["en_barrio_popular"].fillna(0) == 1)
     cerca_popular = ~en_popular & (lista["dist_barrio_popular_m"] < RADIO_BARRIO_POPULAR_M)
     casa = lista["titulo_casa"].astype(bool) | lista["titulo_tipo_casa"].astype(bool)
     ph = titulo.str.contains(REGEX_PH, case=False, regex=True)
     uso = titulo.str.contains(REGEX_USO_NO_RESIDENCIAL, case=False, regex=True)
+    sin_coordenadas = lista["lat"].isna()
+    dudoso = pd.Series([bool(sin) and bool(menciona_otro_barrio(t, nombre_barrio(b), oficiales))
+                        for sin, t, b in zip(sin_coordenadas, titulo, lista["barrio"])], index=lista.index)
+    varias = titulo.map(posible_varias_unidades)
+    financiacion = titulo.map(normalizar).str.contains(REGEX_FINANCIACION, regex=True)
+    en_pozo = lista["riesgo_en_pozo"].astype(bool)
     motivos = [("barrio popular", en_popular), (f"a menos de {RADIO_BARRIO_POPULAR_M} m de un barrio popular", cerca_popular),
-               ("casa", casa), ("PH", ph), ("uso comercial u oficina", uso)]
+               ("casa", casa), ("PH", ph), ("uso comercial u oficina", uso),
+               (EXCLUSION_BARRIO_DUDOSO, dudoso), (EXCLUSION_VARIAS_UNIDADES, varias),
+               (EXCLUSION_FINANCIACION, financiacion), (EXCLUSION_EN_POZO, en_pozo)]
     return [[nombre for nombre, marca in motivos if bool(marca.iloc[i])] for i in range(len(lista))]
 
 
@@ -129,7 +202,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=fr
     lista = lista.merge(explicacion.drop(columns=["precio_m2_esperado"]), on="id_aviso", how="left")
     niveles = {v: regla.nivel_de_refaccion(lista["estado_titulo"], costos, v) for v in ["central", "baja", "alta"]}
     lista["dist_barrio_popular_m"] = distancia_a_barrio_popular(lista, cfg_fe)
-    exclusiones = exclusiones_del_destacado(lista)
+    exclusiones = exclusiones_del_destacado(lista, barrios_oficiales(cfg_fe))
     filas = []
     for i, f in lista.iterrows():
         factores = [{"factor": f[f"{s}_{k}"], "efecto_pct": _limpio(f[f"{s}_{k}_%"])}

@@ -121,7 +121,8 @@
                                     detalle: `${p.filtro}: ${num(p.unidades)} unidades (${num(p.avisos)} avisos)` }));
     filas.push({ etiqueta: "Y también al piso del rango: firmes", valor: i.candidatos_firmes_unidades, color: COLOR.firme,
                  detalle: `Candidatos que siguen dejando margen vendiendo al límite inferior del rango del 80%: ${num(i.candidatos_firmes_unidades)} unidades` });
-    Graficos.barrasHorizontales(contenedor, filas, { margenIzq: 275, ancho: 660, altoFila: 30 });
+    // Ancho del viewBox parecido al del contenedor, para que el texto quede del tamaño del resto de la página
+    Graficos.barrasHorizontales(contenedor, filas, { margenIzq: 300, ancho: 1100, altoFila: 26 });
   }
 
   /* ---------- buscador ---------- */
@@ -253,7 +254,6 @@
 
   /* ---------- tendencias ---------- */
   function armarTendencias() {
-    graficoEmbudo(document.getElementById("g-embudo"));
     const deciles = D.resumen.salida_por_brecha || [];
     Graficos.barrasVerticales(document.getElementById("g-salida"), deciles.map(d => ({
       etiqueta: pct(d.brecha_mediana_pct, 0, true), valor: d.tasa_pct, inf: d.ic_inf_pct, sup: d.ic_sup_pct,
@@ -269,6 +269,15 @@
       etiqueta: b.nombre, valor: b.senales, color: COLOR.senal, extra: plural(b.firmes, "firme", "firmes"),
       detalle: `${b.nombre}: ${plural(b.senales, "señal", "señales")} de ${num(b.unidades)} unidades (${pct(100 * b.senales / b.unidades)}); ${plural(b.candidatos, "candidato", "candidatos")}, ${plural(b.firmes, "firme", "firmes")}; error del modelo ${pct(b.error_mediano_pct)}` })),
       { margenIzq: 130, margenDer: 60, extraAncho: 70, altoFila: 24 });
+
+    // Error del modelo por barrio, mismos barrios y mismo orden que el gráfico de señales (responde "dónde confiar")
+    const errorCiudad = D.resumen.indicadores.error_mediano_pct;
+    Graficos.barrasHorizontales(document.getElementById("g-error"), top.map(b => ({
+      etiqueta: b.nombre, valor: b.error_mediano_pct, color: b.error_mediano_pct > errorCiudad ? "#5c6b62" : COLOR.gris,   // no es un nivel: sin el ocre de los firmes
+      detalle: `${b.nombre}: error mediano ${pct(b.error_mediano_pct)} sobre ${num(b.avisos)} avisos (ciudad: ${pct(errorCiudad)})` })),
+      { margenIzq: 130, margenDer: 60, altoFila: 24, formato: (v) => pct(v), maximo: 25 });
+    document.getElementById("g-error").insertAdjacentHTML("beforeend",
+      `<p class="nota">En gris oscuro, los barrios con error mayor que el de la ciudad (${pct(errorCiudad)}).</p>`);
 
     const s = D.resumen.sensibilidad;
     const esc_ = [["Base", s.base, COLOR.candidato], ["Costos optimistas", s.costos_optimistas], ["Costos pesimistas", s.costos_pesimistas],
