@@ -299,7 +299,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── eda.py                       Funciones del análisis exploratorio
 │   ├── indice_confort.py            Índice de la PreEntrega 1, usado en el diagnóstico de la devolución
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           161 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           187 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -320,7 +320,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 161 tests, unos 2 minutos, sin red
+python3 -m pytest -q                                   # 187 tests, unos 2 minutos, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
@@ -356,15 +356,17 @@ del fondo, no para quien corrige: no repite los notebooks, los resume en una dec
 
 | Pestaña | Qué muestra |
 |---|---|
-| Resumen | Los indicadores (avisos analizados, señales, candidatos, candidatos firmes, error del modelo), la advertencia de que son señales a revisar y no oportunidades, la lista "los que más vale la pena mirar" (candidatos de los dos modelos, sin barrio popular a menos de 500 m, casas o PH ni usos comerciales, que siguen en el mapa y el buscador con su alerta) y el embudo |
+| Resumen | Los indicadores (avisos analizados, señales, candidatos, candidatos firmes, error del modelo), la advertencia de que son señales a revisar y no oportunidades, la lista "los que más vale la pena mirar" (candidatos de los dos modelos, sin barrio popular a menos de 500 m, casas o PH, usos comerciales, oficinas u hoteles, avisos sin coordenadas con otro barrio en el título, posibles ventas de varias unidades, precio posiblemente con financiación ni en pozo; esos siguen en el mapa y el buscador con su alerta) y el embudo |
 | Mapa | Todos los avisos de fondo en gris, señales, candidatos y firmes con color y forma propios, filtro por barrio y capas de subte, tren, Metrobus y premetro; el clic abre la ficha |
 | Buscador | Filtros por barrio, ambientes, precio, m², estado del título, nivel, riesgo legal, consenso de modelos y alertas; mismo orden que el resumen |
-| Tendencias | El embudo, la tasa de salida del portal por decil de brecha (H1), señales por barrio, la sensibilidad de la regla y el simulador "¿y si…?" (negociación, costos, refacción, Ganancias, margen mínimo y valor de salida) |
+| Tendencias | La tasa de salida del portal por decil de brecha (H1), el error del modelo por barrio (dónde la brecha es más confiable), señales por barrio, la sensibilidad de la regla y el simulador "¿y si…?" (negociación, costos, refacción, Ganancias, margen mínimo y valor de salida) |
 | Cómo leer este tablero | Los límites en palabras simples y los links a los notebooks |
 | Ficha del aviso | Publicado contra esperado con el rango del 80%, qué suma y qué resta, la cascada de costos hasta la brecha neta, alertas, consenso, liquidez por ambientes y el link al aviso |
 
 El tercer nivel, **candidato firme**, es el escenario conservador del notebook 07 (candidato aun vendiendo al piso del
-rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`.
+rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`. Las exclusiones de la lista destacada
+también se calculan ahí y no tocan la lista oficial: de las 1.375 señales, 327 tienen alguna alerta y 486 candidatos
+de los dos modelos quedan destacados (38 firmes).
 
 **Por qué una página estática y no una herramienta de BI.** El criterio fue el del profesor: lo más fácil de armar,
 mantener y desplegar con nuestro modelo de datos y nuestro volumen. El dashboard es HTML, CSS y JavaScript sin

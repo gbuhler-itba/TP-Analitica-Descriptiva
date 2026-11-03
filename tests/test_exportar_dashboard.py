@@ -46,6 +46,89 @@ def test_conteos_coinciden_con_el_embudo(exportado):
             assert any("barrio popular" in e for e in a["exclusiones"])
     assert any("PH" in a["exclusiones"] for a in avisos)
     assert any("uso comercial u oficina" in a["exclusiones"] for a in avisos)
+
+
+OFICIALES = ["almagro", "balvanera", "belgrano", "boedo", "caballito", "flores", "nunez", "palermo", "parque patricios",
+             "puerto madero", "recoleta", "retiro", "san cristobal", "villa crespo", "villa general mitre", "villa lugano"]
+
+
+@pytest.mark.parametrize("titulo, barrio, esperado", [
+    ("Departamento 5amb En Villa Lugano Av. General Paz 14600", "villa-general-mitre", ["villa lugano"]),   # testigo
+    ("Departamento 2 Ambientes Venta Nuñez", "belgrano", ["nunez"]),                                       # sin tilde
+    ("Venta 3 Ambientes En Boedo / Almagro Apto Crédito", "caballito", ["almagro", "boedo"]),
+    ("Almagro: Boedo Y Rivadavia", "almagro", []),                 # nombra el barrio propio; además es una esquina
+    ("2 Ambientes Sobre Av. Boedo", "almagro", []),                 # calle que se llama como un barrio
+    ("Apto Credito - 3 Amb - Recoleta / Retiro", "recoleta", []),   # nombra el barrio propio
+    ("Dúplex 6 Ambientes Vista Al Río - Recoleta", "barrio-norte", []),   # Barrio Norte equivale a Recoleta
+    ("Departamento En Venta En Palermo Soho", "palermo", []),
+    ("Monoambiente En Villa Crespo A Metros De Palermo", "villa-crespo", []),   # nombra el barrio propio
+    ("Monoambiente A Metros De Palermo", "villa-crespo", ["palermo"]),
+])
+def test_barrio_dudoso_por_el_titulo(titulo, barrio, esperado):
+    from src.eda import nombre_barrio
+    assert exportar_dashboard.menciona_otro_barrio(titulo, nombre_barrio(barrio), OFICIALES) == esperado
+
+
+@pytest.mark.parametrize("titulo, esperado", [
+    ("4 Departamentos En Block En Venta En Liniers", True),        # testigo
+    ("Departamentos Venta Puerto Madero", True),                    # plural: posible, no confirmado
+    ("Venta 7 Deptos En Block Congreso Renta 10% Anual", True),
+    ("Deptos A Estrenar En Venta - 1, Y 2 Ambientes - Piedrabuena 4700", True),
+    ("Oportunidad!! Recoleta Venta Dos Departamentos Unidos (2 Y 3 Amb.) Apto Profesional", False),   # una sola unidad
+    ("Semipiso 4 Ambientes Unificados Con Cochera", False),
+    ("Departamento 3 Ambientes En Venta En Flores", False),
+])
+def test_posible_venta_de_varias_unidades(titulo, esperado):
+    assert exportar_dashboard.posible_varias_unidades(titulo) is esperado
+
+
+@pytest.mark.parametrize("titulo, esperado", [
+    ("Venta Hotel 24 Habilitado Constitucion Permuta Financia", True),
+    ("Apart Hotel En Venta Recoleta", True),
+    ("Oficina En Venta En Retiro", True),
+    ("Departamento 3 Ambientes Con Balcón", False),
+])
+def test_uso_no_residencial_incluye_hoteles(titulo, esperado):
+    import re
+    assert bool(re.search(exportar_dashboard.REGEX_USO_NO_RESIDENCIAL, titulo, re.I)) is esperado
+
+
+@pytest.mark.parametrize("titulo, esperado", [
+    ("Venta Departamento Monoambiente Constitución A Estrenar Con Financiacion", True),
+    ("Monoambiente En Venta - Recoleta- Anticipo + Cuotas Fijas", True),
+    ("3 Ambientes 64 M2 Reciclado Financiamiento Directo", True),
+    ("Venta Departamento 4 Ambientes Apto Crédito", False),   # apto crédito no es financiación del vendedor
+])
+def test_precio_posiblemente_con_financiacion(titulo, esperado):
+    import re
+    assert bool(re.search(exportar_dashboard.REGEX_FINANCIACION, exportar_dashboard.normalizar(titulo))) is esperado
+
+
+def test_exclusiones_nuevas_en_los_casos_testigo(exportado):
+    """Las reglas de barrio dudoso y varias unidades marcan los testigos y no tocan la lista oficial."""
+    cfg, avisos, resumen, salida = exportado
+    por_id = {a["id"]: a for a in avisos}
+    if "MLA3650073484" in por_id:
+        assert exportar_dashboard.EXCLUSION_BARRIO_DUDOSO in por_id["MLA3650073484"]["exclusiones"]
+        assert por_id["MLA3650073484"]["lat"] is None
+    if "MLA2837616540" in por_id:
+        assert exportar_dashboard.EXCLUSION_VARIAS_UNIDADES in por_id["MLA2837616540"]["exclusiones"]
+    if "MLA1942707213" in por_id:   # "dos departamentos unidos": una sola unidad, no se marca
+        assert exportar_dashboard.EXCLUSION_VARIAS_UNIDADES not in por_id["MLA1942707213"]["exclusiones"]
+    if "MLA1961460081" in por_id:   # monoambiente a estrenar con financiación: sale del top, sigue en la lista
+        assert exportar_dashboard.EXCLUSION_FINANCIACION in por_id["MLA1961460081"]["exclusiones"]
+    if "MLA3571943468" in por_id:   # hotel: uso no residencial
+        assert "uso comercial u oficina" in por_id["MLA3571943468"]["exclusiones"]
+    # Barrio dudoso solo aplica a avisos sin coordenadas
+    assert all(a["lat"] is None for a in avisos if exportar_dashboard.EXCLUSION_BARRIO_DUDOSO in a["exclusiones"])
+    # Financiación coincide con la señal de revisión del pipeline; en pozo nunca es candidato
+    assert all(("financ" in a["riesgo_revisar"]) == (exportar_dashboard.EXCLUSION_FINANCIACION in a["exclusiones"]) for a in avisos)
+    assert all(a["nivel"] != regla.CANDIDATO for a in avisos if exportar_dashboard.EXCLUSION_EN_POZO in a["exclusiones"])
+    # Las exclusiones no cambian señales, candidatos ni firmes: esos vienen de la etapa 6 y del escenario conservador
+    embudo = {e["paso"]: e["unidades"] for e in resumen["embudo"]}
+    assert len(avisos) == embudo["cumple_regla"]
+    assert sum(a["nivel"] == regla.CANDIDATO for a in avisos) == embudo["candidato"]
+    assert sum(a["firme"] for a in avisos) == resumen["sensibilidad"]["conservador"]
     # El resumen por barrio suma lo mismo que el total
     barrios = resumen["barrios"]
     assert sum(b["senales"] for b in barrios) == embudo["cumple_regla"]

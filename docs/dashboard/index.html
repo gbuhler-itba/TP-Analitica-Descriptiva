@@ -41,16 +41,17 @@
       <section class="bloque">
         <h2>Los que más vale la pena mirar</h2>
         <p class="nota">Candidatos después de costos que marcan los dos modelos, sin los casos que el análisis mostró como
-          especiales: en un barrio popular o a menos de 500 m de uno, casas o PH, y usos comerciales u oficinas (esos
-          siguen en el mapa y en el buscador, con su alerta). Primero los
+          especiales: en un barrio popular o a menos de 500 m de uno, casas o PH, usos comerciales, oficinas u hoteles,
+          sin coordenadas y con otro barrio en el título, posibles ventas de varias unidades, precio posiblemente con
+          financiación y en pozo (esos siguen en el mapa y en el buscador, con su alerta). Primero los
           <span class="chip chip-firme">firmes</span>, que dejan margen aun vendiendo al piso del rango del 80%; después,
           por brecha neta.</p>
         <div id="lista-resumen"></div>
       </section>
       <section class="bloque">
         <h2>Cómo se llega a la lista</h2>
-        <p class="nota">Unidades (un departamento puede estar publicado varias veces). El criterio de cada paso está en
-          <a href="#tendencias">Tendencias</a>.</p>
+        <p class="nota">Unidades (un departamento puede estar publicado varias veces). Cada paso agrega una condición a la
+          anterior; el criterio de cada uno está en <a href="#leer">Cómo leer este tablero</a>.</p>
         <div id="embudo-resumen" class="grafico"></div>
       </section>
     </section>
@@ -93,7 +94,7 @@
           <option value="candidato">Candidatos después de costos</option><option value="firme">Candidatos firmes</option></select></label>
         <label class="caja"><input type="checkbox" id="f-sinriesgo"> Sin señales de riesgo legal</label>
         <label class="caja"><input type="checkbox" id="f-consenso"> Lo marcan los dos modelos</label>
-        <label class="caja"><input type="checkbox" id="f-sinalertas"> Sin barrio popular, casa, PH ni uso comercial</label>
+        <label class="caja"><input type="checkbox" id="f-sinalertas"> Sin alertas (barrio popular, casa o PH, uso comercial, barrio dudoso, varias unidades, financiación, en pozo)</label>
         <button type="reset" class="secundario">Limpiar</button>
       </form>
       <p class="nota" id="buscador-conteo"></p>
@@ -103,9 +104,11 @@
     <section class="pagina" id="pagina-tendencias" hidden>
       <div class="grilla-2">
         <section class="bloque">
-          <h2>De los avisos analizados a los candidatos firmes</h2>
-          <p class="nota">Unidades en cada paso. Cada paso agrega una condición a la anterior.</p>
-          <div id="g-embudo" class="grafico"></div>
+          <h2>Dónde el precio esperado es más confiable</h2>
+          <p class="nota">Error mediano del modelo fuera de muestra, por barrio, en los 15 barrios con más señales (mismo
+            orden que el gráfico de señales por barrio). En toda la ciudad es 12,5%: donde el error es mayor, la brecha
+            de un aviso dice menos.</p>
+          <div id="g-error" class="grafico"></div>
         </section>
         <section class="bloque">
           <h2>Cuanto más por debajo del esperado, más salen del portal</h2>
