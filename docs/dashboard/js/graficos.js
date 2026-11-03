@@ -115,22 +115,55 @@
     contenedor.appendChild(svg);
   }
 
-  /* Rango del precio esperado por m²: [inf, sup] con la marca del esperado y la del publicado. */
+  /* Rango del precio esperado por m²: una línea base con toda la escala y, sobre ella y a la misma altura,
+     la banda del rango del 80% [inf, sup], la marca del esperado y el rombo del publicado.
+     Etiquetas: "esperado" y "publicado" arriba, "piso" y "techo" abajo; si dos chocan, se corre una. */
   function rangoPrecio(contenedor, publicado, esperado, inf, sup, formato) {
-    const ancho = 600, alto = 64;
-    const min = Math.min(publicado, inf) * 0.9, max = Math.max(publicado, sup) * 1.05;
-    const x = v => 10 + (ancho - 20) * (v - min) / (max - min);
+    const ancho = 600, alto = 96, yBase = 52, margen = 10, anchoLetra = 6.6;
+    const lo = Math.min(publicado, inf), hi = Math.max(publicado, sup);
+    const holgura = (hi - lo) * 0.04 || 1;
+    const x = v => margen + (ancho - 2 * margen) * (v - lo + holgura) / (hi - lo + 2 * holgura);
     const svg = el("svg", { viewBox: `0 0 ${ancho} ${alto}` });
-    svg.appendChild(el("rect", { x: x(inf), y: 26, width: x(sup) - x(inf), height: 14, fill: "var(--linea)" }));
-    svg.appendChild(el("line", { x1: x(esperado), x2: x(esperado), y1: 20, y2: 46, stroke: "var(--tinta-2)", "stroke-width": 3 }));
-    svg.appendChild(el("text", { x: x(esperado), y: 14, "text-anchor": "middle", class: "etiqueta-cat" }, `esperado ${formato(esperado)}`));
-    svg.appendChild(el("text", { x: x(inf), y: 58, "text-anchor": "start", class: "etiqueta-cat" }, `piso ${formato(inf)}`));
-    svg.appendChild(el("text", { x: x(sup), y: 58, "text-anchor": "end", class: "etiqueta-cat" }, `techo ${formato(sup)}`));
-    const g = el("g");
+
+    svg.appendChild(el("line", { x1: x(lo) - 6, x2: x(hi) + 6, y1: yBase, y2: yBase, stroke: "var(--linea)", "stroke-width": 1.5 }));
+    svg.appendChild(el("rect", { x: x(inf), y: yBase - 7, width: x(sup) - x(inf), height: 14, fill: "var(--linea)" }));
+    svg.appendChild(el("line", { x1: x(esperado), x2: x(esperado), y1: yBase - 12, y2: yBase + 12, stroke: "var(--tinta-2)", "stroke-width": 3 }));
     // El publicado es un rombo en tinta: no usa la forma ni el color de ningún nivel
-    g.appendChild(el("polygon", { points: `${x(publicado)},22 ${x(publicado) + 7},33 ${x(publicado)},44 ${x(publicado) - 7},33`, fill: "var(--tinta)", stroke: "var(--crema)", "stroke-width": 1.5 }));
-    g.appendChild(el("text", { x: x(publicado), y: 48, "text-anchor": "middle", class: "etiqueta-valor" }, `publicado ${formato(publicado)}`));
-    svg.appendChild(g);
+    const xp = x(publicado);
+    svg.appendChild(el("polygon", { points: `${xp},${yBase - 8} ${xp + 8},${yBase} ${xp},${yBase + 8} ${xp - 8},${yBase}`,
+                                    fill: "var(--tinta)", stroke: "var(--crema)", "stroke-width": 1.5 }));
+
+    // Una etiqueta ocupa [izq, der]; se ancla al centro y se corre si se sale del gráfico o choca con otra
+    const caja = (cx, texto, anclaPreferida) => {
+      const w = texto.length * anchoLetra;
+      let izq = anclaPreferida === "end" ? cx - w : anclaPreferida === "start" ? cx : cx - w / 2;
+      izq = Math.max(2, Math.min(ancho - 2 - w, izq));
+      return { izq, der: izq + w, w, texto };
+    };
+    const chocan = (a, b) => a.izq < b.der + 6 && b.izq < a.der + 6;
+    const correr = (movil, fija) => {   // corre la móvil al lado de la fija que tenga lugar; si no hay, baja de fila
+      const aIzq = fija.izq - 6 - movil.w, aDer = fija.der + 6;
+      if (movil.izq + movil.w / 2 <= fija.izq + fija.w / 2 && aIzq >= 2) { movil.izq = aIzq; movil.der = aIzq + movil.w; return false; }
+      if (aDer + movil.w <= ancho - 2) { movil.izq = aDer; movil.der = aDer + movil.w; return false; }
+      if (aIzq >= 2) { movil.izq = aIzq; movil.der = aIzq + movil.w; return false; }
+      return true;
+    };
+    const dibujar = (c, y, clase) => svg.appendChild(el("text", { x: c.izq, y, "text-anchor": "start", class: clase }, c.texto));
+
+    const eEsperado = caja(x(esperado), `esperado ${formato(esperado)}`, "middle");
+    const ePublicado = caja(xp, `publicado ${formato(publicado)}`, "middle");
+    let filaAparte = false;
+    if (chocan(ePublicado, eEsperado)) filaAparte = correr(ePublicado, eEsperado);
+    dibujar(eEsperado, 18, "etiqueta-cat");
+    dibujar(ePublicado, filaAparte ? 34 : 18, "etiqueta-valor");
+
+    const ePiso = caja(x(inf), `piso ${formato(inf)}`, "start");
+    const eTecho = caja(x(sup), `techo ${formato(sup)}`, "end");
+    let techoAparte = false;
+    if (chocan(ePiso, eTecho)) techoAparte = correr(eTecho, ePiso);
+    dibujar(ePiso, 78, "etiqueta-cat");
+    dibujar(eTecho, techoAparte ? 92 : 78, "etiqueta-cat");
+
     contenedor.innerHTML = "";
     contenedor.appendChild(svg);
   }
