@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avisos a investigar en CABA</title>
+  <meta name="description" content="Tablero para el analista del fondo: avisos de departamentos en venta en CABA publicados por debajo de su precio esperado. Señales para revisar, no oportunidades confirmadas.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="marca">
+      <span class="marca-titulo">Avisos a investigar en CABA</span>
+      <span class="marca-sub">Departamentos usados en venta publicados por debajo de su precio esperado</span>
+    </div>
+    <nav class="pestanas" aria-label="Páginas">
+      <a href="#resumen" data-pagina="resumen">Resumen</a>
+      <a href="#mapa" data-pagina="mapa">Mapa</a>
+      <a href="#buscador" data-pagina="buscador">Buscador</a>
+      <a href="#tendencias" data-pagina="tendencias">Tendencias</a>
+      <a href="#leer" data-pagina="leer">Cómo leer este tablero</a>
+    </nav>
+  </header>
+
+  <main id="contenido">
+    <p class="cargando" id="cargando">Cargando los datos…</p>
+
+    <section class="pagina" id="pagina-resumen" hidden>
+      <div class="aviso-importante" role="note">
+        <strong>Son señales para revisar, no oportunidades confirmadas.</strong>
+        El precio esperado de un aviso tiene un rango de alrededor de ±32%: la brecha ordena qué mirar primero,
+        no prueba que un departamento esté barato. Nada de este tablero reemplaza la visita ni la tasación.
+      </div>
+      <div class="indicadores" id="indicadores"></div>
+      <section class="bloque">
+        <h2>Los que más vale la pena mirar</h2>
+        <p class="nota">Candidatos después de costos que los dos modelos marcan, ordenados por brecha neta. Los
+          <span class="chip chip-firme">firmes</span> dejan margen aun vendiendo al piso del rango del 80%.</p>
+        <div id="lista-resumen"></div>
+      </section>
+      <section class="bloque">
+        <h2>Cómo se llega a la lista</h2>
+        <p class="nota">Unidades (un departamento puede estar publicado varias veces). El criterio de cada paso está en
+          <a href="#tendencias">Tendencias</a>.</p>
+        <div id="embudo-resumen" class="grafico"></div>
+      </section>
+    </section>
+
+    <section class="pagina pagina-mapa" id="pagina-mapa" hidden>
+      <div id="mapa" aria-label="Mapa de avisos"></div>
+      <aside class="panel-mapa" id="panel-mapa">
+        <h2>Capas</h2>
+        <label><input type="checkbox" id="capa-fondo" checked> Todos los avisos (fondo)</label>
+        <label><input type="checkbox" id="capa-senal" checked> <span class="leyenda-senal"></span> Señal a investigar</label>
+        <label><input type="checkbox" id="capa-candidato" checked> <span class="leyenda-candidato"></span> Candidato después de costos</label>
+        <label><input type="checkbox" id="capa-firme" checked> <span class="leyenda-firme"></span> Candidato firme</label>
+        <h3>Transporte</h3>
+        <label><input type="checkbox" id="capa-subte"> Subte</label>
+        <label><input type="checkbox" id="capa-tren"> Tren</label>
+        <label><input type="checkbox" id="capa-metrobus"> Metrobus</label>
+        <label><input type="checkbox" id="capa-premetro"> Premetro</label>
+        <h3>Barrio</h3>
+        <select id="mapa-barrio"><option value="">Toda la ciudad</option></select>
+        <p class="nota" id="mapa-conteo"></p>
+        <p class="nota">Clic en un punto abre la ficha. Los avisos sin coordenadas (18% del total) no están en el mapa,
+          pero sí en el buscador.</p>
+      </aside>
+    </section>
+
+    <section class="pagina" id="pagina-buscador" hidden>
+      <h2>Buscador</h2>
+      <p class="nota">Elegí las características y mirá las mejores opciones, con el mismo orden que el resumen:
+        primero los candidatos firmes, después los candidatos, dentro de cada grupo los que marcan los dos modelos y,
+        por último, la brecha neta.</p>
+      <form class="filtros" id="filtros" autocomplete="off">
+        <label>Barrio <select id="f-barrio"><option value="">Todos</option></select></label>
+        <label>Ambientes <select id="f-ambientes"><option value="">Todos</option><option value="1">1</option>
+          <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 o más</option></select></label>
+        <label>Precio máximo (USD) <input type="number" id="f-precio" min="0" step="10000" placeholder="sin tope"></label>
+        <label>m² mínimo <input type="number" id="f-m2min" min="0" step="5" placeholder="0"></label>
+        <label>m² máximo <input type="number" id="f-m2max" min="0" step="5" placeholder="sin tope"></label>
+        <label>Estado (título) <select id="f-estado"><option value="">Todos</option></select></label>
+        <label>Nivel <select id="f-nivel"><option value="">Todas las señales</option>
+          <option value="candidato">Candidatos después de costos</option><option value="firme">Candidatos firmes</option></select></label>
+        <label class="caja"><input type="checkbox" id="f-sinriesgo"> Sin señales de riesgo legal</label>
+        <label class="caja"><input type="checkbox" id="f-consenso"> Lo marcan los dos modelos</label>
+        <button type="reset" class="secundario">Limpiar</button>
+      </form>
+      <p class="nota" id="buscador-conteo"></p>
+      <div id="lista-buscador"></div>
+    </section>
+
+    <section class="pagina" id="pagina-tendencias" hidden>
+      <div class="grilla-2">
+        <section class="bloque">
+          <h2>De los avisos analizados a los candidatos firmes</h2>
+          <p class="nota">Unidades en cada paso. Cada paso agrega una condición a la anterior.</p>
+          <div id="g-embudo" class="grafico"></div>
+        </section>
+        <section class="bloque">
+          <h2>Cuanto más por debajo del esperado, más salen del portal</h2>
+          <p class="nota">Avisos que ya no estaban 74 días después, por decil de brecha (mediana del decil). Barras
+            con IC 95%. Sin los cuatro barrios truncados. Salir del portal no es lo mismo que venderse.</p>
+          <div id="g-salida" class="grafico"></div>
+        </section>
+        <section class="bloque">
+          <h2>Señales por barrio</h2>
+          <p class="nota">Unidades que cumplen la regla, en los barrios con más señales. El número de la derecha son los
+            candidatos firmes.</p>
+          <div id="g-barrios" class="grafico"></div>
+        </section>
+        <section class="bloque">
+          <h2>Cuántos candidatos quedan si cambian los supuestos</h2>
+          <p class="nota">Unidades candidatas moviendo un supuesto por vez desde el escenario base (840).</p>
+          <div id="g-sensibilidad" class="grafico"></div>
+        </section>
+      </div>
+      <section class="bloque simulador">
+        <h2>¿Y si…? Simulador de la regla de decisión</h2>
+        <p class="nota">Recalcula en el navegador, para las 1.375 señales, cuántas quedan como candidatas con los
+          supuestos que elijas. Usa los mismos parámetros de <code>config/costos.yaml</code>.</p>
+        <form class="filtros" id="simulador" autocomplete="off">
+          <label>Negociación al vender <span class="valor" id="s-negociacion-valor"></span>
+            <input type="range" id="s-negociacion" min="0" max="15" step="0.01"></label>
+          <label>Costos <select id="s-costos"><option value="optimista">Optimistas</option>
+            <option value="base" selected>Base</option><option value="pesimista">Pesimistas</option></select></label>
+          <label>Refacción <select id="s-refaccion"><option value="baja">Baja</option>
+            <option value="central" selected>Central</option><option value="alta">Alta</option></select></label>
+          <label>Impuesto a las ganancias <select id="s-ganancias"><option value="0" selected>0% (base, supuesto)</option>
+            <option value="0.15">15%</option><option value="0.35">35%</option></select></label>
+          <label>Margen mínimo (brecha neta) <span class="valor" id="s-umbral-valor"></span>
+            <input type="range" id="s-umbral" min="0" max="30" step="1"></label>
+          <label>Valor de salida <select id="s-salida"><option value="esperado" selected>Precio esperado</option>
+            <option value="piso">Piso del rango del 80% (conservador)</option></select></label>
+        </form>
+        <div class="resultado-simulador" id="s-resultado"></div>
+        <p class="nota">El impuesto a las ganancias se deja en 0 en el escenario base porque depende de la forma
+          jurídica del fondo. La brecha neta no incluye el costo de tenencia (expensas e impuestos hasta la venta).</p>
+      </section>
+    </section>
+
+    <section class="pagina pagina-texto" id="pagina-leer" hidden>
+      <h2>Cómo leer este tablero</h2>
+      <ul class="limites">
+        <li><strong>Qué es una señal.</strong> Un aviso publicado más de 25% por debajo del precio que el modelo espera para sus
+          características y su zona, también por debajo del umbral de su barrio, y sin señales de error de carga.
+          <strong>No es una oportunidad:</strong> es un aviso para revisar.</li>
+        <li><strong>Qué es un candidato.</strong> Una señal que, comprándola al precio publicado, refaccionándola según lo que dice
+          el título y vendiéndola al precio esperado menos la negociación, deja un margen de al menos 10% después de todos los
+          costos, y sin un riesgo legal que la descarte. <strong>Firme</strong>: sigue dejando ese margen aun vendiendo al piso del
+          rango del 80%. Tampoco es una oportunidad confirmada.</li>
+        <li><strong>El precio esperado tiene error.</strong> Se equivoca 12,5% en la mediana y el rango del 80% de un aviso es de
+          alrededor de ±32%. Sirve para ordenar avisos, no para tasar uno.</li>
+        <li><strong>Un solo portal y dos fechas.</strong> Avisos de MercadoLibre del 14/08/2026; el segundo relevamiento, del
+          27 y 28/10/2026, solo se usa para ver qué avisos siguen publicados. Palermo, Belgrano, Caballito y Recoleta
+          llegaron al tope de resultados del portal: son una muestra.</li>
+        <li><strong>Precio publicado, no de cierre.</strong> La regla descuenta 4,79% al vender (brecha publicado-cierre) y compra
+          al precio publicado, un supuesto conservador.</li>
+        <li><strong>Salir del portal no es venderse.</strong> Puede ser una venta, un retiro o una republicación que no
+          detectamos.</li>
+        <li><strong>Costos supuestos.</strong> Escribano, Sellos, comisiones y refacción salen de fuentes públicas con un rango,
+          no de operaciones del fondo. El impuesto a las ganancias se deja en 0 (depende de la forma jurídica); el simulador
+          muestra 15% y 35%. No incluye el costo de tenencia.</li>
+        <li><strong>La refacción se estima por el título.</strong> "A reciclar" asume una refacción integral; "a refaccionar", baño
+          y cocina; sin marca, una liviana. Un aviso que no lo dice puede necesitar más.</li>
+        <li><strong>Barrio de búsqueda, no polígono oficial.</strong> El barrio es la categoría de MercadoLibre donde aparece el
+          aviso: 18% de los avisos con coordenadas caen en otro polígono oficial, casi todos de borde. Los 249 avisos a más de
+          1 km de su barrio se tratan como sin coordenadas.</li>
+        <li><strong>Los dos modelos.</strong> El precio esperado oficial es un modelo lineal (se explica aviso por aviso). Un
+          gradient boosting da una segunda opinión: cuando los dos marcan, la señal es más robusta.</li>
+      </ul>
+      <h3>Dónde está el análisis</h3>
+      <ul class="enlaces" id="enlaces-notebooks"></ul>
+      <p class="nota" id="pie-datos"></p>
+    </section>
+  </main>
+
+  <dialog id="ficha" class="ficha" aria-labelledby="ficha-titulo">
+    <div class="ficha-contenido" id="ficha-contenido"></div>
+  </dialog>
+
+  <div id="tooltip" class="tooltip" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="js/regla.js"></script>
+  <script src="js/graficos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
