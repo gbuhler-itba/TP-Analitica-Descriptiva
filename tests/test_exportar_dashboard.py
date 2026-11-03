@@ -35,6 +35,17 @@ def test_conteos_coinciden_con_el_embudo(exportado):
     assert all(a["nivel"] == regla.CANDIDATO for a in avisos if a["firme"])
     assert sum(b["firmes"] for b in resumen["barrios"]) == firmes
     assert all(b["firmes"] <= b["candidatos"] for b in resumen["barrios"])
+    # Lista destacada: candidatos de los dos modelos sin exclusiones; los motivos salen de las marcas exportadas
+    destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
+    assert len(destacados) == resumen["indicadores"]["destacados_unidades"] > 0
+    assert sum(a["firme"] for a in destacados) == resumen["indicadores"]["destacados_firmes_unidades"]
+    for a in avisos:
+        assert ("barrio popular" in a["exclusiones"]) >= a["titulo_barrio_popular"]
+        assert ("casa" in a["exclusiones"]) >= a["titulo_casa"]
+        if a["dist_barrio_popular_m"] is not None and a["dist_barrio_popular_m"] < exportar_dashboard.RADIO_BARRIO_POPULAR_M:
+            assert any("barrio popular" in e for e in a["exclusiones"])
+    assert any("PH" in a["exclusiones"] for a in avisos)
+    assert any("uso comercial u oficina" in a["exclusiones"] for a in avisos)
     # El resumen por barrio suma lo mismo que el total
     barrios = resumen["barrios"]
     assert sum(b["senales"] for b in barrios) == embudo["cumple_regla"]

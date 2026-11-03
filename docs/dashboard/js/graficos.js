@@ -40,7 +40,7 @@
       const w = Math.max(0, anchoBarra * f.valor / max);
       svg.appendChild(el("text", { x: o.margenIzq - 8, y: y + o.altoFila * 0.62, "text-anchor": "end", class: "etiqueta-cat" },
                          f.etiqueta));
-      const barra = el("rect", { x: o.margenIzq, y, width: w, height: o.altoFila - 8, rx: 3,
+      const barra = el("rect", { x: o.margenIzq, y, width: w, height: o.altoFila - 8,
                                  fill: f.color || "var(--senal)", class: "barra" });
       svg.appendChild(barra);
       svg.appendChild(el("text", { x: o.margenIzq + w + 6, y: y + o.altoFila * 0.62, class: "etiqueta-valor" }, o.formato(f.valor)));
@@ -77,7 +77,7 @@
       const x = o.margenIzq + i * paso + paso * 0.18;
       const w = paso * 0.64;
       const y = escala(c.valor);
-      const barra = el("rect", { x, y, width: w, height: o.margenSup + areaAlto - y, rx: 3,
+      const barra = el("rect", { x, y, width: w, height: o.margenSup + areaAlto - y,
                                  fill: c.color || "var(--senal)", class: "barra" });
       svg.appendChild(barra);
       if (c.inf !== undefined && c.sup !== undefined) {
@@ -102,8 +102,8 @@
   function barraProporcion(contenedor, valor, total, referencia, etiquetaRef) {
     const ancho = 600, alto = 44;
     const svg = el("svg", { viewBox: `0 0 ${ancho} ${alto}` });
-    svg.appendChild(el("rect", { x: 0, y: 14, width: ancho, height: 16, rx: 4, fill: "#eceef1" }));
-    svg.appendChild(el("rect", { x: 0, y: 14, width: ancho * valor / total, height: 16, rx: 4, fill: "var(--candidato)" }));
+    svg.appendChild(el("rect", { x: 0, y: 14, width: ancho, height: 16, fill: "var(--linea-suave)" }));
+    svg.appendChild(el("rect", { x: 0, y: 14, width: ancho * valor / total, height: 16, fill: "var(--candidato)" }));
     if (referencia !== undefined) {
       const xr = ancho * referencia / total;
       svg.appendChild(el("line", { x1: xr, x2: xr, y1: 8, y2: 36, stroke: "#333", "stroke-width": 2 }));
@@ -121,13 +121,14 @@
     const min = Math.min(publicado, inf) * 0.9, max = Math.max(publicado, sup) * 1.05;
     const x = v => 10 + (ancho - 20) * (v - min) / (max - min);
     const svg = el("svg", { viewBox: `0 0 ${ancho} ${alto}` });
-    svg.appendChild(el("rect", { x: x(inf), y: 26, width: x(sup) - x(inf), height: 14, rx: 3, fill: "#d9e4f0" }));
-    svg.appendChild(el("line", { x1: x(esperado), x2: x(esperado), y1: 20, y2: 46, stroke: "var(--senal)", "stroke-width": 3 }));
+    svg.appendChild(el("rect", { x: x(inf), y: 26, width: x(sup) - x(inf), height: 14, fill: "var(--linea)" }));
+    svg.appendChild(el("line", { x1: x(esperado), x2: x(esperado), y1: 20, y2: 46, stroke: "var(--tinta-2)", "stroke-width": 3 }));
     svg.appendChild(el("text", { x: x(esperado), y: 14, "text-anchor": "middle", class: "etiqueta-cat" }, `esperado ${formato(esperado)}`));
     svg.appendChild(el("text", { x: x(inf), y: 58, "text-anchor": "start", class: "etiqueta-cat" }, `piso ${formato(inf)}`));
     svg.appendChild(el("text", { x: x(sup), y: 58, "text-anchor": "end", class: "etiqueta-cat" }, `techo ${formato(sup)}`));
     const g = el("g");
-    g.appendChild(el("polygon", { points: `${x(publicado)},22 ${x(publicado) - 7},34 ${x(publicado) + 7},34`, fill: "var(--firme)", stroke: "#333" }));
+    // El publicado es un rombo en tinta: no usa la forma ni el color de ningún nivel
+    g.appendChild(el("polygon", { points: `${x(publicado)},22 ${x(publicado) + 7},33 ${x(publicado)},44 ${x(publicado) - 7},33`, fill: "var(--tinta)", stroke: "var(--crema)", "stroke-width": 1.5 }));
     g.appendChild(el("text", { x: x(publicado), y: 48, "text-anchor": "middle", class: "etiqueta-valor" }, `publicado ${formato(publicado)}`));
     svg.appendChild(g);
     contenedor.innerHTML = "";

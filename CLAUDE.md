@@ -167,9 +167,14 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
   Gonzalo en las conclusiones del 04 (sección 8): 1,2 puntos menos preciso que el GBM, pero cada prima se explica y
   la explicación por aviso es exacta. El GBM se usa para la marca de consenso.
 
-**Dashboard:** HTML estático en GitHub Pages (`docs/dashboard/`). Paleta Okabe-Ito más formas (señal círculo azul,
-candidato cuadrado naranja, firme triángulo bermellón); mapa con tiles de OpenStreetMap (CARTO pide clave); el
-simulador reproduce en JS la regla de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`.
+**Dashboard:** HTML estático en GitHub Pages (`docs/dashboard/`), "Radar de avisos · CABA", estética de informe
+financiero (diseño de Gonzalo, 03/11): verde oscuro #1F3A2E, crema #F7F4EE, oro #C9A227 para candidatos y ocre
+#B5651D para firmes, serif (Source Serif 4) en títulos y números, sin tarjetas ni sombras, tiles en gris. Los tres
+niveles se separan por luminancia y por forma (círculo, cuadrado, triángulo; validador de paleta: ΔE ≥ 14 para
+deutan, protan y tritan). La lista destacada del resumen excluye barrio popular o a menos de 500 m de uno, casas o
+PH y usos comerciales u oficinas (campo `exclusiones` de `avisos.json`, calculado en el exportador; esos avisos
+siguen en el mapa y el buscador con la alerta). No existe una marca de "brecha extrema" en el pipeline. El simulador
+reproduce en JS la regla de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`.
 
 ## 6. Resultados actuales (para no recalcular de memoria; verificá contra los datos si los usás)
 
@@ -258,12 +263,12 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
 5. ~~Dashboard HTML~~ (primera versión navegable el 03/11, diseño de Gonzalo: `docs/dashboard/`, HTML + CSS +
    JS plano + Leaflet, sin build; páginas Resumen, Mapa, Buscador, Tendencias con simulador y Cómo leer, más la
    ficha). Tercer nivel "candidato firme" (83) calculado en `src/exportar_dashboard.py`. En local:
-   `cd docs/dashboard && python3 -m http.server 8765`. Queda: que Gonzalo lo revise, active GitHub Pages y
-   reemplace las marcas `[DASHBOARD]` del README con el link.
+   `cd docs/dashboard && python3 -m http.server 8765`. Revisado por Gonzalo el 03/11 (estética de informe, lista
+   destacada con exclusiones, README con la justificación de la herramienta). Queda: que active GitHub Pages y
+   reemplace las dos marcas `[DASHBOARD: link ...]` del README con el link.
 6. ~~Documentación~~ (hecho el 03/11: `docs/pipeline.md` con etapas 5 y 6 y scripts auxiliares, diccionario con
-   todas las columnas de la PE3, README reescrito como borrador de la PE3 y `run_pipeline.py`). Queda: reemplazar
-   las marcas `[DASHBOARD]` del README cuando Gonzalo termine el dashboard, y las interpretaciones del 07
-   (secciones 3 y 4, todavía "a completar").
+   todas las columnas de la PE3, README reescrito como borrador de la PE3 con la sección del dashboard y
+   `run_pipeline.py`; interpretaciones del 07 completas). Queda: el link de GitHub Pages en el README.
 7. **Revisión final:** correr todo de cero (etapas 5 y 6, notebooks, tests), revisar que los números coincidan
    en README, notebooks y dashboard, buscar rayas (`grep -rn "—"`), y una revisión independiente (un subagente
    que no haya hecho el trabajo).

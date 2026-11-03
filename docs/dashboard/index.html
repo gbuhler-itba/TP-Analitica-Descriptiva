@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Avisos a investigar en CABA</title>
-  <meta name="description" content="Tablero para el analista del fondo: avisos de departamentos en venta en CABA publicados por debajo de su precio esperado. Señales para revisar, no oportunidades confirmadas.">
+  <title>Radar de avisos · CABA</title>
+  <meta name="description" content="Radar para el analista de un fondo de inversión inmobiliario: departamentos en venta en CABA publicados por debajo de su precio esperado. Señales para revisar, no oportunidades confirmadas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="css/estilos.css">
@@ -12,8 +15,9 @@
 <body>
   <header class="cabecera">
     <div class="marca">
-      <span class="marca-titulo">Avisos a investigar en CABA</span>
-      <span class="marca-sub">Departamentos usados en venta publicados por debajo de su precio esperado</span>
+      <h1 class="marca-titulo">Radar de avisos · CABA</h1>
+      <span class="marca-sub">Fondo de inversión inmobiliario · Departamentos usados en venta publicados por debajo de su precio
+        esperado · MercadoLibre, relevamientos del 14/08/2026 y del 27 y 28/10/2026</span>
     </div>
     <nav class="pestanas" aria-label="Páginas">
       <a href="#resumen" data-pagina="resumen">Resumen</a>
@@ -36,8 +40,11 @@
       <div class="indicadores" id="indicadores"></div>
       <section class="bloque">
         <h2>Los que más vale la pena mirar</h2>
-        <p class="nota">Candidatos después de costos que los dos modelos marcan, ordenados por brecha neta. Los
-          <span class="chip chip-firme">firmes</span> dejan margen aun vendiendo al piso del rango del 80%.</p>
+        <p class="nota">Candidatos después de costos que marcan los dos modelos, sin los casos que el análisis mostró como
+          especiales: en un barrio popular o a menos de 500 m de uno, casas o PH, y usos comerciales u oficinas (esos
+          siguen en el mapa y en el buscador, con su alerta). Primero los
+          <span class="chip chip-firme">firmes</span>, que dejan margen aun vendiendo al piso del rango del 80%; después,
+          por brecha neta.</p>
         <div id="lista-resumen"></div>
       </section>
       <section class="bloque">
@@ -86,6 +93,7 @@
           <option value="candidato">Candidatos después de costos</option><option value="firme">Candidatos firmes</option></select></label>
         <label class="caja"><input type="checkbox" id="f-sinriesgo"> Sin señales de riesgo legal</label>
         <label class="caja"><input type="checkbox" id="f-consenso"> Lo marcan los dos modelos</label>
+        <label class="caja"><input type="checkbox" id="f-sinalertas"> Sin barrio popular, casa, PH ni uso comercial</label>
         <button type="reset" class="secundario">Limpiar</button>
       </form>
       <p class="nota" id="buscador-conteo"></p>

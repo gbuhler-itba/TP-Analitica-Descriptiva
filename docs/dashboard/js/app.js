@@ -4,7 +4,8 @@
   "use strict";
 
   const REPO = "https://github.com/gbuhler-itba/TP-Analitica-Descriptiva/blob/main/";
-  const COLOR = { senal: "#0072b2", candidato: "#e69f00", firme: "#d55e00", gris: "#b8bcc2", fondo: "#9aa0a6" };
+  // Paleta del informe: verde oscuro, oro y ocre (separables por luminancia y por forma), grises cálidos
+  const COLOR = { senal: "#1f3a2e", candidato: "#c9a227", firme: "#b5651d", gris: "#b8afa0", fondo: "#9e968a" };
   const NOMBRE_NIVEL = { senal: "Señal a investigar", candidato: "Candidato después de costos", firme: "Candidato firme" };
   const D = {};            // datos cargados
   let mapa = null;         // estado del mapa (se arma la primera vez que se abre)
@@ -21,6 +22,7 @@
     const s = menos((dec ? F1 : F0).format(v)) + "%";
     return signo && v > 0 ? "+" + s : s;
   };
+  const plural = (n, singular, pl) => `${num(n)} ${n === 1 ? singular : pl}`;
   const html = (strings, ...vals) => strings.reduce((a, s, i) => a + s + (i < vals.length ? vals[i] : ""), "");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -28,8 +30,13 @@
   const esCandidato = (a) => a.nivel === "candidato después de costos";
   const nivelDe = (a) => a.firme ? "firme" : esCandidato(a) ? "candidato" : "senal";
   const chipNivel = (a) => { const n = nivelDe(a); return `<span class="chip chip-${n}">${NOMBRE_NIVEL[n]}</span>`; };
+  // Motivos por los que un aviso no entra a la lista destacada (vienen del exportador): se muestran siempre
+  const chipsExclusion = (a) => a.exclusiones.map(e => `<span class="chip chip-exclusion" title="No entra a la lista destacada del resumen">${esc(e[0].toUpperCase() + e.slice(1))}</span>`).join("");
+  const destacable = (a) => esCandidato(a) && a.consenso && a.exclusiones.length === 0;
   const prioridad = (a) => (a.firme ? 2 : esCandidato(a) ? 1 : 0) * 10 + (a.consenso ? 1 : 0);
   const ordenar = (lista) => lista.slice().sort((x, y) => prioridad(y) - prioridad(x) || (y.brecha_neta_pct ?? -999) - (x.brecha_neta_pct ?? -999));
+  // Lista destacada: primero los firmes, después por brecha neta
+  const ordenarDestacados = (lista) => lista.slice().sort((x, y) => (y.firme - x.firme) || (y.brecha_neta_pct ?? -999) - (x.brecha_neta_pct ?? -999));
 
   /* ---------- carga ---------- */
   async function cargar() {
@@ -64,7 +71,7 @@
     if (!lista.length) { contenedor.innerHTML = '<p class="vacio">Ningún aviso cumple con esos filtros.</p>'; return; }
     const filas = lista.slice(0, maximo || lista.length).map(a => html`
       <tr class="fila" data-id="${a.id}">
-        <td>${chipNivel(a)}${a.consenso ? ' <span class="chip chip-consenso" title="Lo marcan los dos modelos">2 modelos</span>' : ""}</td>
+        <td><div class="chips-fila">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso" title="Lo marcan los dos modelos">2 modelos</span>' : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal</span>` : ""}</div></td>
         <td>${esc(a.barrio_nombre)}<span class="titulo-aviso" title="${esc(a.titulo)}">${esc(a.titulo)}</span></td>
         <td class="num">${usd(a.precio_usd)}</td>
         <td class="num">${num(a.m2)} m² · ${num(a.ambientes)} amb.</td>
@@ -94,8 +101,10 @@
         <div class="detalle">el margen se sostiene vendiendo al piso del rango del 80%</div></div>
       <div class="tarjeta"><div class="etiqueta">Error del precio esperado</div><div class="numero">${pct(i.error_mediano_pct)}</div>
         <div class="detalle">mediano, fuera de muestra; el rango del 80% cubre el publicado el ${pct(i.cobertura_intervalo_pct, 1)} de las veces</div></div>`;
-    const lista = ordenar(D.avisos.filter(a => esCandidato(a) && a.consenso));
+    const lista = ordenarDestacados(D.avisos.filter(destacable));
     tablaAvisos(lista, document.getElementById("lista-resumen"), 10);
+    document.getElementById("lista-resumen").insertAdjacentHTML("beforeend",
+      `<p class="nota">Se muestran 10 de ${plural(lista.length, "aviso destacado", "avisos destacados")} (${plural(lista.filter(a => a.firme).length, "firme", "firmes")}). Los ${num(D.avisos.filter(a => esCandidato(a) && a.consenso && a.exclusiones.length).length)} candidatos de los dos modelos con alguna de esas alertas están en el <a href="#buscador">buscador</a>.</p>`);
     graficoEmbudo(document.getElementById("embudo-resumen"));
   }
 
@@ -141,11 +150,12 @@
       (!estado || a.estado === estado) &&
       (!nivel || (nivel === "firme" ? a.firme : esCandidato(a))) &&
       (!chk("f-sinriesgo") || (!a.riesgo_descartar && !a.riesgo_revisar)) &&
-      (!chk("f-consenso") || a.consenso));
+      (!chk("f-consenso") || a.consenso) &&
+      (!chk("f-sinalertas") || a.exclusiones.length === 0));
     const ordenada = ordenar(lista);
     const tope = 60;
     document.getElementById("buscador-conteo").textContent =
-      `${num(lista.length)} de ${num(D.avisos.length)} señales cumplen los filtros` + (lista.length > tope ? `; se muestran las ${tope} mejores.` : ".");
+      `${plural(lista.length, "señal cumple", "señales cumplen")} los filtros, de ${num(D.avisos.length)}` + (lista.length > tope ? `; se muestran las ${tope} mejores.` : ".");
     tablaAvisos(ordenada, document.getElementById("lista-buscador"), tope);
   }
 
@@ -224,7 +234,7 @@
     const conCoord = lista.filter(a => a.lat !== null).length;
     const b = slug ? D.resumen.barrios.find(x => x.barrio === slug) : null;
     document.getElementById("mapa-conteo").textContent = (b ? `${b.nombre}: ` : "Toda la ciudad: ") +
-      `${num(lista.length)} señales (${num(conCoord)} en el mapa), ${num(lista.filter(esCandidato).length)} candidatos, ${num(lista.filter(a => a.firme).length)} firmes.`;
+      `${plural(lista.length, "señal", "señales")} (${num(conCoord)} en el mapa), ${plural(lista.filter(esCandidato).length, "candidato", "candidatos")}, ${plural(lista.filter(a => a.firme).length, "firme", "firmes")}.`;
   }
 
   function volar(id) {
@@ -249,15 +259,15 @@
       etiqueta: pct(d.brecha_mediana_pct, 0, true), valor: d.tasa_pct, inf: d.ic_inf_pct, sup: d.ic_sup_pct,
       color: d.marcado ? COLOR.senal : COLOR.gris,
       detalle: `Decil ${d.decil} (brecha de ${pct(d.brecha_min_pct, 0)} a ${pct(d.brecha_max_pct, 0)}): salieron ${pct(d.tasa_pct)} de ${num(d.avisos)} avisos (IC ${pct(d.ic_inf_pct)} a ${pct(d.ic_sup_pct)})` })),
-      { maximo: 60, tituloY: "Decil de brecha (mediana). Azul: más de 25% por debajo del esperado." });
+      { maximo: 60, tituloY: "Decil de brecha (mediana). Verde oscuro: más de 25% por debajo del esperado." });
     const i = D.resumen.indicadores;
     document.getElementById("g-salida").insertAdjacentHTML("beforeend",
       `<p class="nota">En total salieron ${pct(i.tasa_salida_marcados_pct)} de los avisos marcados contra ${pct(i.tasa_salida_resto_pct)} del resto.</p>`);
 
     const top = D.resumen.barrios.filter(b => b.senales > 0).sort((x, y) => y.senales - x.senales).slice(0, 15);
     Graficos.barrasHorizontales(document.getElementById("g-barrios"), top.map(b => ({
-      etiqueta: b.nombre, valor: b.senales, color: COLOR.senal, extra: `${b.firmes} firmes`,
-      detalle: `${b.nombre}: ${num(b.senales)} señales de ${num(b.unidades)} unidades (${pct(100 * b.senales / b.unidades)}); ${b.candidatos} candidatos, ${b.firmes} firmes; error del modelo ${pct(b.error_mediano_pct)}` })),
+      etiqueta: b.nombre, valor: b.senales, color: COLOR.senal, extra: plural(b.firmes, "firme", "firmes"),
+      detalle: `${b.nombre}: ${plural(b.senales, "señal", "señales")} de ${num(b.unidades)} unidades (${pct(100 * b.senales / b.unidades)}); ${plural(b.candidatos, "candidato", "candidatos")}, ${plural(b.firmes, "firme", "firmes")}; error del modelo ${pct(b.error_mediano_pct)}` })),
       { margenIzq: 130, margenDer: 60, extraAncho: 70, altoFila: 24 });
 
     const s = D.resumen.sensibilidad;
@@ -293,7 +303,7 @@
     for (const a of D.avisos) if (Regla.esCandidato(a, Regla.calcular(a, opciones), umbral)) candidatos++;
     const total = D.avisos.length, base = D.resumen.sensibilidad.base;
     const r = document.getElementById("s-resultado");
-    r.innerHTML = html`<div><div class="numero">${num(candidatos)}</div><div class="nota">candidatos de ${num(total)} señales (${pct(100 * candidatos / total, 0)})</div></div>
+    r.innerHTML = html`<div><div class="numero">${num(candidatos)}</div><div class="nota">${candidatos === 1 ? "candidato" : "candidatos"} de ${num(total)} señales (${pct(100 * candidatos / total, 0)})</div></div>
       <div class="barra-sim"></div>`;
     Graficos.barraProporcion(r.querySelector(".barra-sim"), candidatos, total, base, `base: ${num(base)}`);
   }
@@ -323,12 +333,9 @@
     const suben = a.factores.filter(f => f.efecto_pct > 0), bajan = a.factores.filter(f => f.efecto_pct < 0);
     const c = a.costos;
     const alertas = [];
-    if (a.riesgo_descartar) alertas.push(`<span class="chip chip-alerta">Riesgo legal (descarta): ${esc(a.riesgo_descartar)}</span>`);
-    if (a.riesgo_revisar) alertas.push(`<span class="chip chip-revisar">Revisar: ${esc(a.riesgo_revisar)}</span>`);
     if (a.estado !== "sin_marca") alertas.push(`<span class="chip">Título: ${esc(a.estado_nombre)}</span>`);
     if (a.bajo_de_precio) alertas.push(`<span class="chip">Bajó de precio</span>`);
-    if (a.titulo_casa) alertas.push(`<span class="chip chip-revisar">El título dice "casa"</span>`);
-    if (a.titulo_barrio_popular) alertas.push(`<span class="chip chip-revisar">Menciona un barrio popular</span>`);
+    if (a.dist_barrio_popular_m !== null && a.dist_barrio_popular_m < 1000) alertas.push(`<span class="chip">Barrio popular más cercano a ${num(a.dist_barrio_popular_m)} m</span>`);
     if (a.avisos_discordantes) alertas.push(`<span class="chip chip-revisar">Otros avisos de la unidad no están marcados</span>`);
     if (a.avisos_de_la_unidad > 1) alertas.push(`<span class="chip">${a.avisos_de_la_unidad} avisos de la misma unidad</span>`);
     if (a.geo_dudoso) alertas.push(`<span class="chip chip-revisar">Geocodificación dudosa</span>`);
@@ -340,7 +347,8 @@
       <div class="ficha-cabecera">
         <div><h2 id="ficha-titulo">${esc(a.titulo)}</h2>
           <div class="sub">${esc(a.barrio_nombre)} · ${usd(a.precio_usd)} · ${num(a.m2)} m² · ${num(a.ambientes)} ambientes · ${a.antiguedad === null ? "antigüedad s/d" : num(a.antiguedad) + " años"} · posición ${a.posicion} de ${num(D.avisos.length)}</div>
-          <div class="chips">${chipNivel(a)}${a.motivo ? `<span class="chip">${esc(a.motivo)}</span>` : ""}</div></div>
+          <div class="chips">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso">2 modelos</span>' : ""}${a.motivo ? `<span class="chip">${esc(a.motivo)}</span>` : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal (descarta): ${esc(a.riesgo_descartar)}</span>` : ""}${a.riesgo_revisar ? `<span class="chip chip-revisar">Revisar: ${esc(a.riesgo_revisar)}</span>` : ""}</div>
+          ${a.exclusiones.length ? `<p class="nota">No entra a la lista destacada del resumen: ${esc(a.exclusiones.join(", "))}. El modelo lo compara con departamentos comunes de su zona y ese comparable puede no aplicar.</p>` : ""}</div>
         <div class="ficha-acciones">
           <a class="boton secundario" href="${esc(a.link)}" target="_blank" rel="noopener">Ver en MercadoLibre</a>
           <button class="secundario" id="ficha-mapa" ${a.lat === null ? "disabled title='Sin coordenadas'" : ""}>Ver en el mapa</button>
@@ -374,7 +382,7 @@
             <tr class="total"><td>Brecha neta (resultado sobre costo total)</td><td class="num ${a.brecha_neta_pct >= 0 ? "pos" : "neg"}">${pct(a.brecha_neta_pct, 1, true)}</td></tr>
           </table>
           <p class="nota">Vendiendo al piso del rango del 80%: ${pct(100 * Regla.calcular(a, { parametros: D.resumen.parametros_costos.base, valorSalida: "piso" }).brecha_neta, 0, true)} de brecha neta${a.firme ? " (candidato firme)" : ""}. No incluye el costo de tenencia.</p></div>
-        <div class="ficha-bloque-ancho"><h3>Alertas y contexto</h3><div class="chips">${alertas.join("")}</div>
+        <div class="ficha-bloque-ancho"><h3>Contexto</h3><div class="chips">${alertas.join("")}</div>
           <p class="nota">Liquidez de referencia: de los avisos de ${num(a.ambientes)} ambientes, el ${pct(a.tasa_salida_ambientes_pct, 0)} salió del portal en 74 días (salir no es venderse). Completitud de la ficha: ${pct(100 * a.tasa_completitud, 0)}.</p></div>
       </div>`;
     Graficos.rangoPrecio(document.getElementById("ficha-rango"), a.precio_m2, a.precio_m2_esperado, a.precio_m2_inf, a.precio_m2_sup, (v) => num(v));

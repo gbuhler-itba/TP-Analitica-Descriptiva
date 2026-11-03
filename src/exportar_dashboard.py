@@ -20,6 +20,13 @@ dejando el margen mínimo aun vendiendo al límite inferior del rango del 80% (e
 escenario conservador del notebook 07). Se calcula acá, por unidad, con la misma
 regla.
 
+Lista destacada del resumen: candidatos que marcan los dos modelos, sin los casos
+que la PE2 mostró como especiales (barrio popular o a menos de 500 m de uno, casa
+o PH) ni usos que no son vivienda (oficina, comercial, local). Cada aviso lleva
+sus `exclusiones` (vacías si entra); el dashboard las muestra en la tabla y en la
+ficha. No existe una marca de "brecha extrema" en el pipeline: los casos extremos
+se filtran antes como errores de carga (`senal_error_carga`).
+
 Uso:  python3 src/exportar_dashboard.py
 """
 
@@ -46,6 +53,12 @@ SALIDA = RAIZ / "docs" / "dashboard" / "data"
 ESCENARIOS = ["optimista", "base", "pesimista"]
 ESTADOS = {"sin_marca": "sin marca en el título", "a_reciclar": "a reciclar", "a_refaccionar": "a refaccionar",
            "ya_reformado": "ya reformado", "a_estrenar": "a estrenar"}
+# Motivos por los que un aviso no entra a la lista destacada del resumen ("los que más vale la pena mirar"):
+# casos que la PE2 mostró como especiales (barrio popular, PH o casa) y usos que no son vivienda. Siguen en el
+# mapa, en el buscador y en la ficha, con el motivo a la vista.
+RADIO_BARRIO_POPULAR_M = 500
+REGEX_PH = r"\bph\b"
+REGEX_USO_NO_RESIDENCIAL = r"\boficinas?\b|comercial|\blocal(?:es)?\b"
 
 
 def _limpio(v):
@@ -76,7 +89,33 @@ def unidades_firmes(precio, costos, umbral):
     return set(senales.loc[candidato, "unidad"])
 
 
-def tabla_avisos(ranking, precio, limpio, explicacion, costos, firmes=frozenset()):
+def distancia_a_barrio_popular(lista, cfg_fe):
+    """Metros desde cada aviso con coordenadas al barrio popular más cercano (como en el notebook 05, H3)."""
+    import geopandas as gpd
+
+    crs = cfg_fe["crs_metrico"]
+    populares = gpd.read_file(resolver(cfg_fe["rutas"]["barrios_populares"])).to_crs(crs)
+    con = lista["lat"].notna() & lista["lon"].notna()
+    puntos = gpd.GeoSeries(gpd.points_from_xy(lista.loc[con, "lon"], lista.loc[con, "lat"]), crs="EPSG:4326").to_crs(crs)
+    distancia = pd.Series(np.nan, index=lista.index)
+    distancia[con] = puntos.distance(populares.union_all()).to_numpy()
+    return distancia
+
+
+def exclusiones_del_destacado(lista):
+    """Por aviso, la lista de motivos por los que no entra a la lista destacada (vacía si entra)."""
+    titulo = lista["titulo"].fillna("").astype(str)
+    en_popular = lista["titulo_barrio_popular"].astype(bool) | (lista["en_barrio_popular"].fillna(0) == 1)
+    cerca_popular = ~en_popular & (lista["dist_barrio_popular_m"] < RADIO_BARRIO_POPULAR_M)
+    casa = lista["titulo_casa"].astype(bool) | lista["titulo_tipo_casa"].astype(bool)
+    ph = titulo.str.contains(REGEX_PH, case=False, regex=True)
+    uso = titulo.str.contains(REGEX_USO_NO_RESIDENCIAL, case=False, regex=True)
+    motivos = [("barrio popular", en_popular), (f"a menos de {RADIO_BARRIO_POPULAR_M} m de un barrio popular", cerca_popular),
+               ("casa", casa), ("PH", ph), ("uso comercial u oficina", uso)]
+    return [[nombre for nombre, marca in motivos if bool(marca.iloc[i])] for i in range(len(lista))]
+
+
+def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset()):
     """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador.
     `firmes`: unidades que son candidato firme."""
     # De la lista: la posición y lo que solo está ahí; el resto, sin redondear, de precio_esperado.tsv
@@ -89,6 +128,8 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, firmes=frozenset(
     lista = lista.merge(limpio[["id_aviso", "titulo", "dormitorios"]], on="id_aviso", how="left")
     lista = lista.merge(explicacion.drop(columns=["precio_m2_esperado"]), on="id_aviso", how="left")
     niveles = {v: regla.nivel_de_refaccion(lista["estado_titulo"], costos, v) for v in ["central", "baja", "alta"]}
+    lista["dist_barrio_popular_m"] = distancia_a_barrio_popular(lista, cfg_fe)
+    exclusiones = exclusiones_del_destacado(lista)
     filas = []
     for i, f in lista.iterrows():
         factores = [{"factor": f[f"{s}_{k}"], "efecto_pct": _limpio(f[f"{s}_{k}_%"])}
@@ -115,6 +156,8 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, firmes=frozenset(
             "riesgo_revisar": f["riesgo_revisar"] if isinstance(f["riesgo_revisar"], str) else "",
             "titulo_casa": bool(f["titulo_casa"]), "titulo_barrio_popular": bool(f["titulo_barrio_popular"]),
             "geo_dudoso": bool(f["geo_dudoso"]) if pd.notna(f["geo_dudoso"]) else False,
+            "dist_barrio_popular_m": None if pd.isna(f["dist_barrio_popular_m"]) else int(round(f["dist_barrio_popular_m"])),
+            "exclusiones": exclusiones[i],
             "brecha_neta_pct": _limpio(f["brecha_neta_%"]), "nivel": f["nivel_decision"],
             "firme": bool(f["unidad"] in firmes),
             "motivo": f["motivo_decision"] if isinstance(f["motivo_decision"], str) else "",
@@ -245,7 +288,8 @@ def exportar(cfg, salida=SALIDA):
     embudo = pd.read_csv(resolver(rutas["embudo"]))
 
     firmes = unidades_firmes(precio, costos, cfg_an["umbral_brecha_neta"])
-    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, firmes)
+    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg["fuentes_externas"], firmes)
+    destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
     error = precio["brecha"].abs().median()
     resumen = {
         "metadatos": {
@@ -260,6 +304,8 @@ def exportar(cfg, salida=SALIDA):
             "avisos_analizados": int(len(precio)), "unidades_analizadas": int(precio["unidad"].nunique()),
             "senales_unidades": int(len(ranking)), "candidatos_unidades": int((ranking["nivel_decision"] == regla.CANDIDATO).sum()),
             "candidatos_firmes_unidades": int(len(firmes)),
+            "destacados_unidades": len(destacados),
+            "destacados_firmes_unidades": sum(a["firme"] for a in destacados),
             "error_mediano_pct": round(100 * error, 1),
             "cobertura_intervalo_pct": round(100 * float((precio["precio_m2_usd"].between(
                 precio["precio_m2_esperado_inf"], precio["precio_m2_esperado_sup"])).mean()), 1),
@@ -303,7 +349,8 @@ def main(argv=None) -> int:
     avisos, resumen = exportar(cargar_config(args.config))
     tam = {f.name: f"{f.stat().st_size / 1024:.0f} KB" for f in SALIDA.glob("*.json")}
     print(f"Unidades exportadas: {len(avisos):,} | candidatos: {resumen['indicadores']['candidatos_unidades']:,} | "
-          f"firmes: {resumen['indicadores']['candidatos_firmes_unidades']:,} | archivos: {tam}")
+          f"firmes: {resumen['indicadores']['candidatos_firmes_unidades']:,} | "
+          f"destacados en el resumen: {resumen['indicadores']['destacados_unidades']:,} | archivos: {tam}")
     return 0
 
 

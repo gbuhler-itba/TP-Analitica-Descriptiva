@@ -89,7 +89,7 @@ de candidatos que eleva al comité. Su problema es de volumen: hay decenas de mi
 puede leerlos todos. La herramienta le devuelve una lista corta de avisos con precio atípicamente bajo para su zona y
 sus características, con el rango del precio esperado, qué características lo explican, señales de qué revisar
 primero (posible error de carga, baja de precio, estado, riesgo legal) y la brecha neta de costos.
-[DASHBOARD: el dashboard es la vista del analista: mapa, embudo, ficha del aviso y simulador de la regla.]
+El dashboard es la vista del analista: mapa, embudo, ficha del aviso y simulador de la regla (sección 9).
 
 **Usuario secundario: el comité de inversión**, que recibe los casos ya verificados por el analista y decide la
 compra. Usa además el análisis por zona para decidir dónde concentrar el capital.
@@ -161,7 +161,7 @@ Versión completa, con el porqué de cada nivel, en [`preguntas_y_alcance.md`](d
 | | P4 | Si se repite el scraping, ¿los avisos marcados salen del portal antes que sus comparables? | Respondida con el segundo relevamiento (H1b, notebook 05): sí, +9,4 puntos dentro del barrio |
 | Prescriptivo | R1 | ¿Qué regla decide qué avisos pasan a revisión? | Implementada en dos niveles: **señal a investigar** (regla R1: brecha menor a −25%, umbral por barrio, sin señales de error de carga; 1.375 unidades) y **candidato después de costos** (brecha neta de costos de 10% o más y sin riesgo legal de descarte; 840 unidades, 83 en el escenario conservador). Notebook 07 y `src/regla.py` |
 | | R2 | ¿Conviene ponderar distinto un aviso bien ubicado que uno periférico? | Replanteada: la ubicación ya está en el precio esperado (H3); lo que cambia por zona es la precisión, que la ficha muestra con el rango |
-| | R3 | ¿En qué zonas concentrar el análisis? | Parcial: el error del modelo por barrio y por segmento indica dónde la brecha es más confiable [DASHBOARD: resumen por barrio] |
+| | R3 | ¿En qué zonas concentrar el análisis? | Parcial: el error del modelo por barrio y por segmento indica dónde la brecha es más confiable (pestaña Tendencias del dashboard: señales por barrio) |
 
 ## 6. Hipótesis y KPIs
 
@@ -216,7 +216,7 @@ y distancias. El detalle de cada columna está en el
 | `data/processed/explicacion_avisos.tsv` | 1.819 | Por aviso marcado: referencia de la zona y las 3 características que más suben y bajan su precio esperado |
 | `data/raw/relevamiento_2/`, `data/processed/relevamiento_2.tsv` | 27.516 | Segundo relevamiento (27 y 28/10/2026) |
 | `data/processed/seguimiento_avisos.csv` | 27.578 | Estado de cada aviso del primer relevamiento en el segundo: sigue, republicado o salió |
-| `docs/dashboard/data/*.json` | 1.375 unidades | Capa de datos del dashboard, exportada de la etapa 6 [DASHBOARD] |
+| `docs/dashboard/data/*.json` | 1.375 unidades | Capa de datos del dashboard, exportada de la etapa 6 (sección 9) |
 
 **Del crudo al limpio.** Se excluyen 344 avisos: 68 duplicados por ID de aviso (entre dos filas del mismo ID queda
 la que coincide con el polígono oficial del barrio), 237 en pozo, 28 con superficie inválida, 5 con precio en pesos,
@@ -302,7 +302,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 ├── tests/                           161 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
-    ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos [DASHBOARD]
+    ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
     ├── entregas_grupo/              Contexto, preguntas, diccionario, fuentes externas, controles, costos
     ├── correcciones_pe1/            Diagnóstico de la devolución de la PE1 y estado de las correcciones
     ├── pipeline.md                  Pipeline: instalación, ejecución, controles, tests y limitaciones técnicas
@@ -349,7 +349,35 @@ que el resultado no dependa de una celda). Orden de lectura sugerido para correg
 | 5 | `06_segmentos_exploratorio` | Índice con MCA y micro-mercados con K-means: codo, silhouette, **estabilidad (ARI 0,99)**, nombres, utilidad frente a la alternativa simple, y por qué no entran a la lista | Segmentos e índices con estabilidad verificada; qué agrega frente a lo simple |
 | 6 | `02_eda`, `03_precio_esperado` | El análisis exploratorio y el modelo de la PE2, con los números actualizados a la limpieza nueva (banner al principio) | Contexto |
 
-[DASHBOARD: agregar una fila o párrafo con el link, qué muestra cada pestaña y que no es una copia de los notebooks.]
+### El dashboard: "Radar de avisos · CABA"
+
+[DASHBOARD: link a GitHub Pages]. Código y datos en [`docs/dashboard/`](docs/dashboard/). Está pensado para el analista
+del fondo, no para quien corrige: no repite los notebooks, los resume en una decisión. Tiene cinco pestañas y una ficha:
+
+| Pestaña | Qué muestra |
+|---|---|
+| Resumen | Los indicadores (avisos analizados, señales, candidatos, candidatos firmes, error del modelo), la advertencia de que son señales a revisar y no oportunidades, la lista "los que más vale la pena mirar" (candidatos de los dos modelos, sin barrio popular a menos de 500 m, casas o PH ni usos comerciales, que siguen en el mapa y el buscador con su alerta) y el embudo |
+| Mapa | Todos los avisos de fondo en gris, señales, candidatos y firmes con color y forma propios, filtro por barrio y capas de subte, tren, Metrobus y premetro; el clic abre la ficha |
+| Buscador | Filtros por barrio, ambientes, precio, m², estado del título, nivel, riesgo legal, consenso de modelos y alertas; mismo orden que el resumen |
+| Tendencias | El embudo, la tasa de salida del portal por decil de brecha (H1), señales por barrio, la sensibilidad de la regla y el simulador "¿y si…?" (negociación, costos, refacción, Ganancias, margen mínimo y valor de salida) |
+| Cómo leer este tablero | Los límites en palabras simples y los links a los notebooks |
+| Ficha del aviso | Publicado contra esperado con el rango del 80%, qué suma y qué resta, la cascada de costos hasta la brecha neta, alertas, consenso, liquidez por ambientes y el link al aviso |
+
+El tercer nivel, **candidato firme**, es el escenario conservador del notebook 07 (candidato aun vendiendo al piso del
+rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`.
+
+**Por qué una página estática y no una herramienta de BI.** El criterio fue el del profesor: lo más fácil de armar,
+mantener y desplegar con nuestro modelo de datos y nuestro volumen. El dashboard es HTML, CSS y JavaScript sin
+dependencias de build (solo Leaflet para el mapa) que lee los JSON que genera el pipeline (`docs/dashboard/data/`,
+2,6 MB para 1.375 unidades y el fondo de 22.389 puntos). Se actualiza con regenerar los datos, un test
+(`tests/test_exportar_dashboard.py`) verifica que los números coinciden con el embudo y el ranking de la etapa 6, el
+simulador reproduce la regla de `src/regla.py` y da los mismos conteos que la sensibilidad del notebook 07, y GitHub
+Pages lo publica gratis con un link público desde el mismo repo, así que versionar el dashboard es versionar el
+trabajo. Se evaluó **Power BI**: pide una licencia y Windows para el escritorio, el archivo `.pbix` queda fuera del
+repo y no se regenera desde el pipeline, y publicarlo con link público requiere "publicar en la web" o licencias Pro
+para cada lector. Se evaluó **Databricks**: un workspace y un clúster son una infraestructura que hay que mantener y
+pagar para 27.578 filas que entran en 26 MB, y el tablero no es público sin acceso al workspace. Ninguna de las dos
+mejoraba la experiencia del analista para este volumen y las dos rompían la reproducibilidad del repo.
 
 ## 10. Cambios a partir de la devolución de la PreEntrega 2
 
@@ -402,7 +430,8 @@ unidades. El impuesto a las ganancias se deja en 0 en el escenario base porque d
 (supuesto declarado; el simulador muestra 15% y 35%). La liquidez entra como información (tasa de salida del portal
 por cantidad de ambientes), no como filtro. El costo de tenencia (expensas, impuestos y meses hasta la venta) no está
 en la regla y es un límite declarado.
-[DASHBOARD: el simulador permite cambiar escenario, refacción, Ganancias, umbral y valor de salida.]
+El simulador del dashboard (pestaña Tendencias) permite cambiar escenario de costos, negociación, refacción,
+Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conteos.
 
 ## 12. Limitaciones
 
