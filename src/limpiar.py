@@ -41,20 +41,33 @@ def incoherencia_piso(df, pisos_edificio_desde=3):
     return (pisos >= pisos_edificio_desde) & (piso > pisos)
 
 
-def limpiar(df_crudo, p):
+def coincide_barrio_oficial(df, accesibilidad):
+    """Por fila de `df`: el barrio de búsqueda coincide con el polígono oficial (accesibilidad.tsv, por link).
+    Sin coordenadas o sin accesibilidad: False."""
+    if accesibilidad is None:
+        return pd.Series(False, index=df.index)
+    coincide = df[["link"]].merge(accesibilidad[["link", "barrio_coincide"]], on="link", how="left")["barrio_coincide"]
+    return coincide.fillna(0).astype(bool).set_axis(df.index)
+
+
+def limpiar(df_crudo, p, accesibilidad=None):
     """Del dataset enriquecido al limpio. `p`: sección `limpieza` de la configuración.
 
+    `accesibilidad`: salida de src/fuentes_externas.py (por link), para resolver
+    los duplicados por ID con el polígono oficial del barrio. Si es None, entre
+    duplicados se conserva la primera aparición.
     Devuelve (df_limpio, registro, conteos).
     """
     df = df_crudo.copy()
     conteos = {}
 
-    # Identificador y duplicados por ID (se conserva la primera aparición)
+    # Identificador y duplicados por ID: se conserva la fila cuyo barrio de búsqueda coincide con el
+    # polígono oficial; sin coordenadas o sin coincidencia, la primera aparición
     df["id_aviso"] = limpieza.extraer_id_aviso(df["link"])
-    duplicados_id = df[df["id_aviso"].duplicated(keep="first")].copy()
-    duplicados_id["motivo"] = "duplicado_mismo_id"
-    df = df.drop_duplicates("id_aviso", keep="first").copy()
+    df, duplicados_id = limpieza.deduplicar_por_id(df, coincide_barrio_oficial(df, accesibilidad))
     conteos["duplicados_id"] = len(duplicados_id)
+    conteos["duplicados_id_resueltos_por_poligono"] = int(
+        (duplicados_id["motivo"] == "duplicado_mismo_id_barrio_no_oficial").sum())
 
     # Precio corregido ("BAJÓ DE PRECIO" concatenado)
     precios = limpieza.corregir_precio(df)
@@ -130,7 +143,11 @@ def main(argv=None) -> int:
 
     print("=== ETAPA 5: LIMPIEZA ===")
     df_crudo = pd.read_csv(entrada, sep="\t", low_memory=False)
-    df_limpio, registro, conteos = limpiar(df_crudo, cfg["limpieza"])
+    ruta_acc = resolver(rutas["accesibilidad"])
+    accesibilidad = pd.read_csv(ruta_acc, sep="\t", usecols=["link", "barrio_coincide"]) if ruta_acc.exists() else None
+    if accesibilidad is None:
+        print(f"  [!] Sin {ruta_acc.name} (src/fuentes_externas.py): los duplicados por ID se resuelven por orden de aparición.")
+    df_limpio, registro, conteos = limpiar(df_crudo, cfg["limpieza"], accesibilidad)
     df_limpio.to_csv(asegurar_directorio(rutas["limpio"]), sep="\t", index=False)
     registro.to_csv(asegurar_directorio(rutas["registro_limpieza"]), index=False)
     print(f"  {len(df_crudo):,} avisos -> {len(df_limpio):,} ({len(registro)} eliminados, ver registro)")
@@ -140,6 +157,7 @@ def main(argv=None) -> int:
     qc.metrica("filas_salida", len(df_limpio))
     qc.metrica("columnas_salida", df_limpio.shape[1])
     qc.metrica("duplicados_id_eliminados", conteos["duplicados_id"])
+    qc.metrica("duplicados_id_resueltos_por_poligono", conteos["duplicados_id_resueltos_por_poligono"])
     qc.desglose("excluidos_por_motivo", conteos["excluidos"])
     qc.metrica("bajo_de_precio", conteos["bajo_de_precio"])
     qc.metrica("expensas_de_relleno", conteos["expensas_relleno"])

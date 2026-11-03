@@ -31,6 +31,41 @@ def extraer_id_aviso(link):
     return link.str.extract(r"(MLA-?\d+)")[0].str.replace("-", "", regex=False)
 
 
+def deduplicar_por_id(df, coincide_barrio_oficial=None):
+    """Una fila por `id_aviso`. Devuelve (df sin duplicados, filas eliminadas con su motivo).
+
+    Un mismo aviso puede aparecer en las búsquedas de dos barrios vecinos. Si se
+    pasa `coincide_barrio_oficial` (Serie booleana alineada con `df`: el barrio
+    de búsqueda de esa fila coincide con el polígono oficial de BA Data), entre
+    las filas de un mismo ID se conserva la primera que coincide; si ninguna
+    coincide o no hay coordenadas, la primera aparición (devolución de la
+    PreEntrega 2: resolver el barrio con la geocodificación oficial). Las
+    filas eliminadas porque la conservada era la del barrio oficial llevan el
+    motivo "duplicado_mismo_id_barrio_no_oficial"; el resto,
+    "duplicado_mismo_id".
+
+    La fila conservada queda en la posición de la primera aparición del ID: el
+    orden de las filas no cambia respecto de conservar siempre la primera. Es
+    importante porque las vueltas de la validación cruzada se asignan a partir
+    del orden de aparición de las unidades (ver docs/pipeline.md).
+    """
+    orden = pd.Series(np.arange(len(df)), index=df.index)
+    if coincide_barrio_oficial is None:
+        coincide = pd.Series(False, index=df.index)
+    else:
+        coincide = coincide_barrio_oficial.reindex(df.index).fillna(False).astype(bool)
+    prioridad = pd.DataFrame({"id": df["id_aviso"], "no_coincide": (~coincide).astype(int), "orden": orden})
+    conservadas = prioridad.sort_values(["id", "no_coincide", "orden"], kind="stable").drop_duplicates("id").index
+    conservada_por_id = df.loc[conservadas, "id_aviso"]
+    conservada_coincide = coincide.loc[conservadas].set_axis(conservada_por_id.values)
+    eliminadas = df.drop(index=conservadas).copy()
+    por_poligono = conservada_coincide.reindex(eliminadas["id_aviso"].values).values & ~coincide.loc[eliminadas.index].values
+    eliminadas["motivo"] = np.where(por_poligono, "duplicado_mismo_id_barrio_no_oficial", "duplicado_mismo_id")
+    primera_aparicion = prioridad.groupby("id")["orden"].transform("min")
+    conservadas = sorted(conservadas, key=primera_aparicion.get)
+    return df.loc[conservadas].copy(), eliminadas
+
+
 def marcar_posible_duplicado(df, columnas=("precio_usd", "m2_final", "dir_limpia", "ambientes")):
     """True si otro aviso (con otro ID) tiene el mismo precio, superficie,
     dirección y ambientes. Puede ser el mismo depto publicado por dos

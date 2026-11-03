@@ -552,6 +552,19 @@ confirma el smoke test offline.
   estable: la verificación offline se corrió con `1.6.1` sobre Python 3.9 y con
   `1.7.2` sobre Python 3.10, y las dos reprodujeron las mismas 198 sub-zonas. De todos modos, el dataset final
   versionado congela las sub-zonas de la corrida original.
+- **La asignación de las vueltas de validación cruzada depende del orden de las filas.**
+  `modelo.grupo_de_unidad` numera las unidades (dirección y m²) por orden de aparición
+  en el dataset limpio y `modelo.folds_agrupados` permuta esos números con una semilla
+  fija. Con las mismas filas en otro orden, las unidades reciben otros números y otras
+  vueltas: el 02/11/2026, mover 17 filas de lugar (una versión preliminar de la regla
+  de duplicados por ID) reasignó la vuelta de 9.941 avisos, movió el error del modelo
+  de 12,5% a 12,6%, la lista oficial de 1.362 a 1.331 unidades y dejó a Villa Santa
+  Rita como barrio inestable. Por eso la regla definitiva conserva la fila elegida en
+  la posición de la primera aparición del ID. Mientras no cambie el orden, los
+  resultados son reproducibles; cualquier cambio de orden mueve los números en el
+  margen. **Mejora pendiente para la entrega final:** asignar las vueltas a partir de
+  la clave de la unidad (por ejemplo, un hash de la dirección y los m²), para que no
+  dependan del orden de las filas.
 - **El gradient boosting puede variar entre plataformas.** Con los mismos datos, la
   misma semilla y el mismo resultado del modelo lineal, la etapa 6 corrida en el
   entorno de claude.ai (Linux, Python 3.11) y en la Mac de referencia (Python 3.9.6,

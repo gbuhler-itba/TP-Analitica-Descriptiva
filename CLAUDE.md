@@ -160,8 +160,8 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
 - **geo_dudoso** (punto a más de 1 km del barrio buscado, 249 avisos), opción "B": se tratan como sin
   coordenadas (comparados contra su barrio) y se excluyen de los análisis espaciales. Las sub-zonas se recalculan
   sin ellos.
-- **Sub-zonas inestables** (ARI < 0,7): ese barrio se compara entero. Hoy no se activa en ninguno: con los
-  geo_dudoso había 5 inestables, sin ellos 0 (Coghlan justo, 0,72). Sensibilidad: sacando la sub-zona a los 5
+- **Sub-zonas inestables** (ARI < 0,7): ese barrio se compara entero. Desde la regla de duplicados (02/11) se activa
+  en **Villa Santa Rita** (97 avisos, 3 sub-zonas, ARI 0,68); antes no se activaba en ninguno (Coghlan justo, 0,72). Sensibilidad: sacando la sub-zona a los 5
   barrios con ARI < 0,8, el error pasa de 12,69% a 12,68%. Gonzalo pidió presentarlo igual aunque no cambie nada.
 - **Modelo oficial: PENDIENTE de Gonzalo** (parámetro `analisis.modelo_oficial` en `config/config.yaml`, hoy
   `lineal_ampliado`). Lo decide después de completar las interpretaciones del 04. El otro modelo se usa para la
@@ -172,32 +172,32 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
 ## 6. Resultados actuales (para no recalcular de memoria; verificá contra los datos si los usás)
 
 - Error mediano fuera de muestra: mediana de la zona 17,5%; lineal 12,7%; lineal ampliado 12,5%; Ridge 12,5%;
-  gradient boosting 11,2%. Marcados: lineal ampliado 1.800, GBM 1.456. Jaccard entre ambos 0,52; consenso
-  1.112. Números de la Mac de referencia: el GBM varía entre plataformas (en claude.ai daba 1.442 y 1.109; ver
+  gradient boosting 11,3%. Marcados: lineal ampliado 1.819, GBM 1.447. Jaccard entre ambos 0,52; consenso
+  1.124 (números del 02/11, después de la regla de duplicados; antes: 1.800, 1.456 y 1.112). Números de la Mac de referencia: el GBM varía entre plataformas (en claude.ai daba 1.442 y 1.109; ver
   `docs/pipeline.md`, sección 10). La lista oficial no depende del GBM.
 - SHAP del GBM (04, sección 9; 2.144 avisos marcados por alguno de los dos modelos): la ubicación es el 47% de la
   importancia, amenities y cochera 18%, antigüedad 14%, tamaño 12%. Orden estable entre vueltas (Spearman ≥ 0,98).
   Es aproximado: frente a un fondo de 200 y 1.000 evaluaciones, el top 3 coincide en el 82% de los avisos.
   El TreeExplainer de shap da valores errados con la categórica nativa de barrio: por eso, permutación.
 - Intervalo 80%: ancho mediano aproximado ±30%.
-- Primas por estado (bootstrap por unidad): "a refaccionar" −16%, "a reciclar" −18% (con la regex vieja daba −8%:
+- Primas por estado (bootstrap por unidad): "a refaccionar" −16,1%, "a reciclar" −17,7% (con la regex vieja daba −8%:
   la regex vieja agarraba "refaccionado").
-- **Embudo oficial** (`embudo_ranking.csv`): 27.578 avisos / 25.168 unidades analizados → 1.800 / 1.695 marcados
-  (brecha < −25%) → 1.546 / 1.459 también bajo el umbral de su barrio → **1.443 avisos / 1.362 unidades sin
-  señales de error de carga = lista oficial (señales a investigar)** → **885 avisos / 839 unidades candidatos
+- **Embudo oficial** (`embudo_ranking.csv`): 27.578 avisos / 25.169 unidades analizados → 1.819 / 1.714 marcados
+  (brecha < −25%) → 1.556 / 1.470 también bajo el umbral de su barrio → **1.455 avisos / 1.375 unidades sin
+  señales de error de carga = lista oficial (señales a investigar)** → **884 avisos / 840 unidades candidatos
   después de costos** (brecha neta ≥ +10% y sin riesgo legal de descarte).
 - **Regla de decisión** (notebook 07, `src/regla.py`, aprobada el 02/11): se compra al publicado, se vende a precio
   de cierre (−4,79%), con costos de entrada (Sellos con umbral), refacción según `estado_titulo` (sin la prima de
   estado al refaccionar: "a reciclar" −19,8%, "a refaccionar" −16,6%) y costos de salida (bloque `costos_salida` de
   `costos.yaml`, supuestos con fuente; Ganancias 0 en la base, 15% y 35% en sensibilidad). Brecha neta mediana de
-  las señales 12,6%; refacción integral −37% (casi nunca cierra). Sensibilidad (unidades candidatas): costos
-  pesimistas 523, refacción alta 365, umbral +20% 366, Ganancias 35% 545, **límite inferior del 80% como salida:
-  84**. Límite declarado: costo de tenencia (expensas y tiempo de venta) no incluido.
+  las señales 12,3%; refacción integral −36% (casi nunca cierra). Sensibilidad (unidades candidatas): costos
+  pesimistas 519, refacción alta 359, umbral +20% 358, Ganancias 35% 547, **límite inferior del 80% como salida:
+  83**. Límite declarado: costo de tenencia (expensas y tiempo de venta) no incluido.
 - **H3** (notebook 05): Wald de transporte p = 6e-5 y de entorno p = 2e-7 (agrupado por sub-zona), pero con Holm
-  solo área verde (+1,5% por ha) y permisos de obra (+4,5% cada 10). El −24% del premetro es la zona: sin los avisos
+  solo área verde (+1,5% por ha) y permisos de obra (+4,4% cada 10). El −24% del premetro es la zona: sin los avisos
   a menos de 500 m de un barrio popular pasa a −4% (IC incluye el 0, 9 avisos). "Sur y oeste" = comunas 4, 8, 9 y
-  10 (elección del grupo). La ubicación baja el error fuera de muestra 0,21 pp.
-- **H2** (notebook 05): la sub-zona baja el error mediano 0,59 pp (17,70% a 17,10%); con Holm mejoran 6 de 41
+  10 (elección del grupo). La ubicación baja el error fuera de muestra 0,19 pp.
+- **H2** (notebook 05): la sub-zona baja el error mediano 0,60 pp (17,71% a 17,12%); con Holm mejoran 4 de 41
   barrios y ninguno empeora.
 - **Segundo relevamiento (27 y 28/10/2026):** 27.516 avisos. Republicaciones detectadas por dirección + m² +
   ambientes (~24%). Se excluyen los barrios truncados por el tope de 2.016 resultados en el primer relevamiento
@@ -206,7 +206,7 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
   **+9,4 pp** (IC 6,5 a 12,3), logit OR 1,48 (notebook 05). Gradiente (principal, aprobado: brecha en log con dos
   pendientes): cada 10 pp más por debajo del esperado, +2,2 pp de salida (IC 1,6 a 2,8); con una sola pendiente,
   +2,1. Placebo (brecha > +33%): −8,4 pp. En el tercil de barrios medios el IC incluye el 0. H1a (colas) no se
-  sostiene: la cola de abajo es más liviana que la de arriba (6,5% contra 7,7%). Ojo: controlar por el precio
+  sostiene: la cola de abajo es más liviana que la de arriba (6,6% contra 7,7%). Ojo: controlar por el precio
   publicado es un mal control (borra el efecto porque la brecha está hecha de ese precio); el comparable correcto
   es el valor esperado. Esto le da a H1 y a P4 una evidencia que en la PE2 no tenían. Salir del portal no es lo
   mismo que venderse: puede ser venta, retiro o republicación no detectada.
@@ -269,6 +269,15 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
 
 - Sacar o agregar una sola fila cambia la asignación de las vueltas (factorización de grupos): si cambia el
   dataset limpio, los números de los notebooks 03 y 04 cambian y hay que actualizarlos en el texto.
+- **La asignación de vueltas depende del orden de las filas**, no solo de la cantidad: `grupo_de_unidad` numera
+  las unidades por orden de aparición y `folds_agrupados` permuta esos números. Cualquier cambio de orden en el
+  dataset limpio (el 02/11, mover 17 filas por la regla de duplicados reasignó la vuelta de 9.941 avisos) mueve
+  los números en el margen y puede cambiar qué barrios quedan inestables. Por eso `deduplicar_por_id` conserva la
+  fila en la posición de la primera aparición. **Mejora para la entrega final (no implementada):** asignar las
+  vueltas a partir de la clave de la unidad (por ejemplo, un hash de la dirección y los m²), para que no dependan
+  del orden.
+- Después de la etapa 5 hay que regenerar `seguimiento_avisos.csv` (`python3 src/seguimiento.py`): la etapa 6 y
+  los notebooks 05 y 06 verifican que esté alineado con el dataset limpio.
 - La estabilidad de sub-zonas cerca del umbral 0,7 depende de la semilla: presentarla como señal, no como
   clasificación exacta.
 - La clave de republicación castea `ambientes` a float (antes no matcheaba nada por int contra str).
