@@ -1,6 +1,6 @@
 # Pipeline de datos: instalación, ejecución y verificación
 
-Documentación técnica de la cadena que construye el dataset, desde el scraping hasta `propiedades_enriquecidas.tsv`. Hasta la PreEntrega 1 estaba en el README; se movió acá para que el README se concentre en el análisis. La limpieza y el análisis (notebooks 01 a 03) se describen en el README.
+Documentación técnica de la cadena completa: del scraping al dataset enriquecido (etapas 1 a 4), la limpieza (etapa 5) y el análisis que produce la lista oficial de avisos a investigar (etapa 6), más los scripts auxiliares de la PreEntrega 3 (fuentes externas, permisos de obra, segundo relevamiento y capa de datos del dashboard). Hasta la PreEntrega 1 estaba en el README; se movió acá para que el README se concentre en el análisis. Qué explica cada notebook está en el README, sección 9.
 
 ---
 
@@ -14,7 +14,20 @@ data/interim/mercadolibre_CABA_completo.tsv            etapa 2: consolidación
 data/interim/propiedades_geocodificadas.tsv            etapa 3: geocodificación
           ↓
 data/processed/propiedades_enriquecidas.tsv            etapa 4: enriquecimiento
+          ↓                        ← data/processed/accesibilidad.tsv (src/fuentes_externas.py)
+data/processed/propiedades_limpias.tsv                 etapa 5: limpieza
+          ↓                        ← accesibilidad.tsv, permisos_obra.tsv (src/permisos_obra.py),
+          ↓                          seguimiento_avisos.csv (src/seguimiento.py), config/costos.yaml
+data/processed/precio_esperado.tsv                     etapa 6: análisis (precio esperado, brecha,
+data/processed/avisos_a_investigar.csv                 marcas, regla de decisión, ranking, embudo)
+          ↓
+docs/dashboard/data/*.json                             src/exportar_dashboard.py
 ```
+
+Las etapas 1 a 4 construyen el dataset y son las de la PreEntrega 1. Las etapas 5 y 6 se sumaron en las
+PreEntregas 2 y 3: reproducen en `src/` la lógica que los notebooks explican, para que la lista oficial salga de
+un script y no de una celda. Los scripts auxiliares de la derecha no forman parte del runner (leen snapshots
+versionados y sus salidas también vienen versionadas); se corren a mano cuando cambia una fuente o un dataset.
 
 ### Tabla de etapas
 
@@ -28,7 +41,20 @@ en la [sección 8](#8-corrida-documentada-de-punta-a-punta).
 | **3. Geocodificación** | Consolidado, **27.922** × 86 | Limpieza de la dirección (corte en la primera coma, "Av." a "Avenida", descarte del texto tras un punto, normalización de la abreviatura "Al") y consulta al normalizador de USIG con 3 reintentos. Agrega `dir_limpia`, `lat`, `lon`, `geo_status` | Entran **27.922**, salen **27.922**. Direcciones geocodificables **26.338** (94,3%), no geocodificables **1.584**. Tasa de éxito **82,06%**: `OK` 22.912, `SIN_RESULTADO` 3.406, `NO_GEOCODIFICABLE` 1.584, `SIN_COORDENADAS` 20. Coordenadas presentes **22.912**. Duplicados residuales **0**. Nulos clave sin cambios (`m2` 26) | `data/interim/propiedades_geocodificadas.tsv` (27.922 × 90) |
 | **4. Enriquecimiento** | Geocodificado, **27.922** × 90, de las cuales **22.912** con coordenadas | GeoJSON de estaciones de subte de BA Data (cacheado en `data/external/`). Haversine a la estación más cercana y al polo de centralidad más cercano (Obelisco, Puerto Madero, Catalinas). KMeans por barrio sobre lat/lon, k = min(5, n/30), `random_state=42`, `n_init=10` | Entran **27.922**, salen **27.922**. Con `dist_transporte_m` **22.912**, con `dist_centralidad_m` **22.912**. Media a transporte **925 m**, media a centralidad **5.696 m**. Sub-zonas creadas **198**. Duplicados residuales **0**. Nulos clave sin cambios (`m2` 26) | `data/processed/propiedades_enriquecidas.tsv` (27.922 × 93) |
 
-**Duplicados.** La deduplicación de las etapas 1 y 2 es por `link`, y los links traen parámetros de seguimiento que cambian en cada búsqueda. Por eso detecta 0 duplicados, aunque 68 avisos aparecen dos veces con distinto link (27 de ellos, listados en dos barrios; el resto, dos veces en la misma búsqueda). Se resuelven en el notebook 01, deduplicando por el ID del aviso.
+**Duplicados.** La deduplicación de las etapas 1 y 2 es por `link`, y los links traen parámetros de seguimiento que cambian en cada búsqueda. Por eso detecta 0 duplicados, aunque 68 avisos aparecen dos veces con distinto link (27 de ellos, listados en dos barrios; el resto, dos veces en la misma búsqueda). Se resuelven en la etapa 5, deduplicando por el ID del aviso: entre dos filas del mismo ID queda la que coincide con el polígono oficial del barrio (17 casos) y, si ninguna coincide o no hay coordenadas, la primera.
+
+### Etapas 5 y 6 y scripts auxiliares (PreEntregas 2 y 3)
+
+Los números son los de la regeneración del 02/11/2026 en la Mac de referencia (commit 963d072).
+
+| # | Qué entra | Qué transformación se aplica | Qué control se ejecuta | Qué archivo sale |
+|---|---|---|---|---|
+| **5. Limpieza** (`src/limpiar.py`, `src/limpieza.py`) | Enriquecido, **27.922** × 93, más `accesibilidad.tsv` para resolver duplicados | La lógica del notebook 01: ID del aviso y deduplicación con el polígono oficial, precio corregido ("BAJÓ DE PRECIO"), superficie de trabajo, antigüedad, expensas (menores a ARS 1.000 a vacío), baños en 0 a vacío, pisos cargados como número de unidad, exclusión de lo que no es un departamento usado en venta, y marcas (posible duplicado, alquiler, casa, barrio popular, atípicos con IQR del precio por m² en su zona como marca informativa, incoherencias) | Entran **27.922**, salen **27.578** (344 eliminados: 68 duplicados por ID, 237 en pozo, 28 con superficie inválida, 5 en pesos, 4 bajo el precio mínimo, 1 precio imposible, 1 que no es venta). Duplicados residuales por `id_aviso` **0**. El notebook 01 verifica al final que su resultado coincide con el de la etapa | `data/processed/propiedades_limpias.tsv` (27.578 × 115), `registro_limpieza.csv` |
+| **6. Análisis** (`src/analisis.py`, con `modelo.py`, `validacion.py`, `regla.py`) | Limpio, **27.578** × 115, más `accesibilidad.tsv`, `permisos_obra.tsv`, `seguimiento_avisos.csv` y `config/costos.yaml` | Avisos con geocodificación dudosa tratados como sin coordenadas; sub-zonas estables (ARI con bootstrap); precio esperado fuera de muestra con el modelo oficial (`analisis.modelo_oficial`, lineal ampliado) en 5 vueltas agrupadas por unidad y sin fuga; intervalo del 80% por aviso (conformal por barrio); brecha, marca de la ciudad, marca por barrio y marca de consenso con el gradient boosting; señales de error de carga; regla R1; regla de decisión con costos (brecha neta, nivel de refacción, riesgo legal, liquidez por ambientes); ranking por unidad y embudo; explicación por aviso | **27.578** avisos / **25.169** unidades analizados, **1.819** / **1.714** marcados, **1.556** / **1.470** bajo el umbral de su barrio, **1.455** / **1.375** cumplen la regla (lista oficial), **884** / **840** candidatos después de costos. Error mediano fuera de muestra 12,5%; cobertura del intervalo 79,5%. QC en `outputs/logs/qc_06_analisis.json` | `precio_esperado.tsv` (27.578 × 77), `unidades_marcadas.csv` (1.714), `avisos_a_investigar.csv` (1.375), `embudo_ranking.csv`, `explicacion_avisos.tsv` (1.819) |
+| `src/fuentes_externas.py` | Enriquecido más los snapshots de BA Data en `data/external/` (tren, Metrobus, premetro, espacios verdes, barrios, barrios populares) | Distancias a puntos con haversine, a polígonos en UTM 21S; barrio oficial del punto y si coincide con el buscado; distancia al barrio buscado y `geo_dudoso` (más de 1 km) | 27.922 filas; 22.912 con coordenadas; `barrio_coincide` 18.687 sí / 4.225 no; `geo_dudoso` 249; en barrio popular 96. Controles por fuente en `docs/entregas_grupo/control_fuentes.md` | `data/processed/accesibilidad.tsv` (27.922 × 14) |
+| `src/permisos_obra.py` | Enriquecido más `data/external/obras-registradas.csv` | Permisos de obra nueva a menos de 500 m en los 3 años previos al scraping, una vez por obra (deduplicado por parcela y por punto) | 27.922 filas; mediana 9 obras; `tests/test_permisos_obra.py` reproduce el archivo versionado desde el snapshot | `data/processed/permisos_obra.tsv` (27.922 × 2) |
+| `src/seguimiento.py` | Cuotas del segundo relevamiento (`data/raw/relevamiento_2/`, 27 y 28/10/2026) y el dataset limpio | Une las cuotas, deduplica por ID y cruza cada aviso del primer relevamiento: sigue, republicado (misma dirección, m² y ambientes con otro ID) o salió; marca los barrios truncados por el tope de paginación | 27.516 avisos en el segundo relevamiento; una fila por aviso del primero (27.578). Se corre **después** de la etapa 5 y **antes** de la 6, que lo usa para la liquidez por ambientes y corta si las filas no coinciden | `data/processed/relevamiento_2.tsv`, `seguimiento_avisos.csv` |
+| `src/exportar_dashboard.py` | Salidas de la etapa 6, `accesibilidad.tsv`, estaciones y `config/costos.yaml` | Una fila por unidad de la lista oficial con lo que muestra la ficha y lo que necesita el simulador; embudo, indicadores, resumen por barrio, sensibilidad de la regla y parámetros de costos por escenario; capas de estaciones | `tests/test_exportar_dashboard.py` compara los JSON con el embudo y el ranking | `docs/dashboard/data/avisos.json`, `resumen.json`, `estaciones.json` |
 
 El detalle de los desafíos técnicos (bloqueo por CloudFront, IP de datacenter vs.
 residencial, contenido corrupto por compresión Brotli, distinción entre
@@ -50,11 +76,19 @@ reproducible por un tercero.
 | `data/interim/propiedades_geocodificadas.tsv` | Sí | 20,9 MB | Etapa 3, unas 2 h contra USIG |
 | `data/processed/propiedades_enriquecidas.tsv` | Sí | 21,5 MB | Etapa 4, menos de 1 min más la descarga del GeoJSON |
 | `data/external/estaciones-de-subte.geojson` | Sí | 16 KB | Snapshot congelado, ver abajo. Con `--forzar-descarga` se rebaja fresco |
+| `data/external/*.geojson` (tren, Metrobus, premetro, espacios verdes, barrios, barrios populares) y `obras-registradas.csv` | Sí | 40 MB | Snapshots de BA Data del 27 y 28/10/2026, con SHA-256 en `docs/entregas_grupo/fuentes_externas.md`. No se rebajan: `src/fuentes_externas.py` y `src/permisos_obra.py` los leen sin red |
+| `data/processed/accesibilidad.tsv`, `permisos_obra.tsv` | Sí | 19 MB | `python3 src/fuentes_externas.py` y `python3 src/permisos_obra.py`, un par de minutos cada uno, sin red |
+| `data/processed/propiedades_limpias.tsv`, `registro_limpieza.csv` | Sí | 26 MB | Etapa 5, segundos |
+| `data/raw/relevamiento_2/*.tsv` | Sí | 20 MB | Segundo scraping (27 y 28/10/2026). No se repite: es una foto de esa fecha. `cuota2.tsv` es el parcial de una corrida que se cortó (se usa solo Villa Crespo; el resto está en `cuota_custom.tsv`): se renombró el 03/11/2026 porque `.gitignore` excluye `*_parcial.tsv` y sin él `relevamiento_2.tsv` no se reproducía |
+| `data/processed/relevamiento_2.tsv`, `seguimiento_avisos.csv` | Sí | 25 MB | `python3 src/seguimiento.py`, segundos, después de la etapa 5 |
+| `data/processed/precio_esperado.tsv`, `unidades_marcadas.csv`, `avisos_a_investigar.csv`, `embudo_ranking.csv`, `explicacion_avisos.tsv` | Sí | 20 MB | Etapa 6, unos 2 min. **Generados en la Mac de referencia** (sección 10: el gradient boosting puede variar entre plataformas) |
+| `data/interim/shap_gbm.tsv` | Sí | 1,2 MB | Notebook 04, sección 9: se recalcula solo si no coincide con las predicciones (varios minutos) |
+| `docs/dashboard/data/*.json` | Sí | 2,2 MB | `python3 src/exportar_dashboard.py`, segundos, después de la etapa 6 |
 | `outputs/logs/pipeline.log`, `outputs/logs/qc_*.json` | No | — | Los escribe cada corrida |
 | `docs/corrida-documentada/*` | Sí | 13 KB | No se regenera: es una instantánea curada |
 | `*_parcial.tsv` | No | — | Los escribe y borra el propio pipeline |
 
-Total versionado: unos 81 MB.
+Total versionado: unos 225 MB (19 MB son las cuotas crudas del primer relevamiento).
 
 ### Por qué el GeoJSON de subte se versiona
 
@@ -142,14 +176,18 @@ directorio de trabajo.
 ### Runner único
 
 ```bash
-python3 run_pipeline.py                      # etapas 2, 3 y 4 (default)
-python3 run_pipeline.py --desde-etapa 3      # etapas 3 y 4
-python3 run_pipeline.py --hasta-etapa 2      # solo la etapa 2
-python3 run_pipeline.py --incluir-scraping   # etapas 1, 2, 3 y 4
+python3 run_pipeline.py                      # etapas 2 a 6 (default)
+python3 run_pipeline.py --desde-etapa 5      # limpieza y análisis, unos 3 minutos
+python3 run_pipeline.py --desde-etapa 6      # solo el análisis
+python3 run_pipeline.py --hasta-etapa 4      # etapas 2, 3 y 4, hasta el dataset enriquecido
+python3 run_pipeline.py --incluir-scraping   # etapas 1 a 6
 ```
 
 Por defecto **el pipeline arranca en la etapa 2**, asumiendo que las cuotas ya
-están descargadas en `data/raw/cuotas/` (vienen versionadas).
+están descargadas en `data/raw/cuotas/` (vienen versionadas), **y llega hasta la 6**.
+Las etapas 5 y 6 leen además `accesibilidad.tsv`, `permisos_obra.tsv` y
+`seguimiento_avisos.csv`, que vienen versionados; si falta alguno, la etapa 5 avisa
+y resuelve los duplicados por orden de aparición, y la etapa 6 corta.
 
 > ⚠️ **El scraping completo son entre 8 y 15 horas.** La etapa 1 solo corre con
 > `--incluir-scraping` explícito, nunca por accidente. Además debe ejecutarse desde
@@ -165,7 +203,7 @@ horas. Para validar la cadena no hace falta repetirla: el TSV geocodificado
 viene versionado y se puede verificar en segundos.
 
 ```bash
-python3 run_pipeline.py --verificar-geocoding          # etapas 2, 3 (verificación) y 4
+python3 run_pipeline.py --verificar-geocoding          # etapas 2, 3 (verificación), 4, 5 y 6
 python3 src/geocoding_propiedades.py --verificar       # solo la etapa 3
 ```
 
@@ -193,9 +231,33 @@ python3 src/scrapper_mercadolibre.py --cuota cuota3
 python3 src/unir_cuotas.py
 python3 src/geocoding_propiedades.py
 python3 src/enriquecimiento.py
+python3 src/limpiar.py
+python3 src/analisis.py
 ```
 
 Cada script tiene su propio `--help` con todos los parámetros disponibles.
+
+### Scripts auxiliares de la PreEntrega 3
+
+No están en el runner: leen snapshots versionados, sus salidas también vienen
+versionadas y solo hay que volver a correrlos si cambia una fuente, el dataset
+enriquecido o el limpio. El orden importa, porque cada uno alimenta al siguiente:
+
+```bash
+python3 src/fuentes_externas.py      # accesibilidad.tsv: antes de la etapa 5 (resuelve duplicados por ID)
+python3 src/permisos_obra.py         # permisos_obra.tsv: antes de la etapa 6
+python3 run_pipeline.py --desde-etapa 5 --hasta-etapa 5
+python3 src/seguimiento.py           # seguimiento_avisos.csv: después de la etapa 5 y antes de la 6
+python3 run_pipeline.py --desde-etapa 6
+python3 src/exportar_dashboard.py    # docs/dashboard/data/*.json: después de la etapa 6
+```
+
+Si cambia el dataset limpio (una fila más o menos, u otro orden), hay que regenerar
+el seguimiento antes de la etapa 6: la etapa 6 verifica que `seguimiento_avisos.csv`
+tenga los mismos avisos en el mismo orden y corta si no. Los notebooks 03 a 07 leen
+estas salidas, así que después de regenerarlas conviene volver a ejecutarlos
+(`jupyter nbconvert --to notebook --execute --inplace notebooks/NN_*.ipynb`; el 04
+tarda unos 4 minutos y el 06 unos 10).
 
 ### Ejemplos de parametrización
 
@@ -244,7 +306,24 @@ Todo lo parametrizable vive en [`config/config.yaml`](../config/config.yaml):
 - **`enriquecimiento`**: URL del GeoJSON, coordenadas de los polos de centralidad,
   tope de sub-zonas por barrio, mínimo de propiedades por sub-zona y los parámetros
   de KMeans.
+- **`limpieza`**: los umbrales de la etapa 5 (precio mínimo, rango de superficie, antigüedad
+  máxima, expensas máximas y mínimas, k del IQR, tipo de cambio, desde cuántos pisos se mide
+  la incoherencia de piso). El notebook 01 lee los mismos valores.
+- **`analisis`**: la etapa 6: vueltas de la validación cruzada, semilla, mínimo por zona,
+  umbral de la brecha (−25%), mínimo de avisos por barrio para el umbral por barrio, modelo
+  oficial (`lineal_ampliado` o `gbm`; el otro se usa para la marca de consenso), nivel del
+  intervalo de predicción (0,80), ARI mínimo para usar las sub-zonas de un barrio (0,7) y el
+  umbral de la brecha neta de la regla de decisión (+10%).
+- **`fuentes_externas`** y **`permisos_obra`**: rutas de los snapshots, proyección métrica,
+  qué clases de espacio verde cuentan, equivalencias de barrio (Barrio Norte), umbral de
+  `geo_dudoso` (1 km), tipos de trámite, ventana de 3 años y radio de 500 m.
 - **`qc`**: qué columnas se consideran clave para el conteo de nulos.
+
+Los **costos de la regla de decisión** viven en [`config/costos.yaml`](../config/costos.yaml):
+costos de entrada (escribano, Sellos con su umbral, comisión, otros), refacción por nivel, brecha
+publicado-cierre, costos de salida (comisión del vendedor, mitad de Sellos, certificados, Ganancias
+con alícuota 0 como supuesto declarado), liquidez, las expresiones regulares del estado del
+inmueble y las señales de riesgo legal, cada valor con su fuente y un rango optimista y pesimista.
 
 Cualquier valor del YAML puede pisarse por línea de comandos sin tocar el archivo.
 
@@ -287,7 +366,7 @@ Hay dos cosas distintas y conviene no confundirlas.
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
 ```bash
-pytest            # toda la suite, ~15 segundos, sin red
+pytest            # toda la suite, 161 tests, unos 2 minutos, sin red
 pytest -v         # con el nombre de cada test
 pytest tests/test_limpieza.py   # un solo archivo
 ```
@@ -298,15 +377,25 @@ push y pull request, con Python 3.9.
 | Archivo | Qué cubre |
 |---|---|
 | `tests/test_pipeline.py` | Los controles de `verificar_offline.py`, uno por test: parseo del scraper contra HTML guardado (etapa 1), SHA256 del consolidado (etapa 2), del geocodificado con USIG replayeado (etapa 3) y del enriquecido con el GeoJSON de subte versionado (etapa 4), encadenado de rutas y ausencia de rutas absolutas |
-| `tests/test_limpieza.py` | `corregir_precio`, `parsear_superficie`, `parsear_antiguedad`, `parsear_expensas`, `marcas_del_titulo` y `outliers_iqr_por_grupo`, con casos armados a mano (incluidos los errores de carga que cada función corrige) |
+| `tests/test_limpieza.py` | `corregir_precio`, `parsear_superficie`, `parsear_antiguedad`, `parsear_expensas`, `marcas_del_titulo`, `estado_y_riesgo_del_titulo`, `piso_desde_numero_de_unidad` y `outliers_iqr_por_grupo`, con casos armados a mano (incluidos los errores de carga que cada función corrige) |
+| `tests/test_deduplicar.py` | Duplicados por ID: se conserva la fila que coincide con el polígono oficial, si no la primera, y la fila conservada queda en la posición de la primera aparición (el orden de las filas define las vueltas) |
+| `tests/test_fuentes_externas.py` | Distancias a puntos y polígonos, área verde en el radio, barrio oficial y coincidencia, barrios populares, `geo_dudoso`, con geometrías chicas armadas a mano y una corrida sobre el snapshot |
+| `tests/test_analisis.py` | La etapa 6 sobre un dataset sintético: vueltas agrupadas por unidad sin fuga, marcas, ranking por unidad y embudo coherente |
+| `tests/test_explicacion.py` | La explicación por aviso: las contribuciones del lineal suman exactamente la predicción, el SHAP por permutación suma la del gradient boosting, y la tabla de factores de la etapa 6 |
+| `tests/test_regla.py` | La regla de decisión con los costos reales de `config/costos.yaml`: Sellos con umbral, refacción por estado, brecha neta, riesgo legal y niveles de decisión |
+| `tests/test_inferencia.py` | Bootstrap por unidad, fila de un test, corrección de Holm y tabla de coeficientes |
+| `tests/test_segmentos.py` | MCA e índice de equipamiento, K-means, nombres de segmentos y estabilidad, sobre datos sintéticos |
+| `tests/test_no_modifica_entradas.py` | Regresión: las funciones que reciben `y` no modifican lo que reciben |
+| `tests/test_exportar_dashboard.py` | Los JSON del dashboard coinciden con el embudo y el ranking versionados |
 | `tests/test_geocoding.py` | `limpiar_direccion`: abreviaturas de avenida, "Al", texto después de un punto, esquinas y direcciones no geocodificables |
 | `tests/test_enriquecimiento.py` | `haversine_np` (Obelisco a Plaza de Mayo, ~1 km; un grado de latitud, 111,2 km) y `parsear_estaciones` |
 | `tests/test_eda.py` | `precio_relativo` y `error_vara_fuera_de_muestra` |
 | `tests/test_permisos_obra.py` | Filtro de tipos, ventana y parcelas, conteo en el radio de 500 m, y una corrida completa de `src/permisos_obra.py` sobre el snapshot que tiene que reproducir `data/processed/permisos_obra.tsv` |
 
-`src/modelo.py` todavía no tiene tests porque está en revisión para la PreEntrega 3.
 `tests/verificar_offline.py` se conserva como script de consola con salida legible;
-verifica lo mismo que `test_pipeline.py`.
+verifica lo mismo que `test_pipeline.py`. Los tests de las etapas 5 y 6 usan datos
+sintéticos (`tests/conftest.py`) y los archivos versionados chicos, así que la suite
+sigue sin necesitar red.
 
 ### 7.2. Smoke test reproducible, sin red
 
@@ -366,6 +455,11 @@ versionados como evidencia en
 ```bash
 python3 run_pipeline.py --incluir-scraping
 ```
+
+Esta sección cubre las etapas 1 a 4. Las etapas 5 y 6 y los scripts auxiliares se
+regeneraron por última vez el 02/11/2026 en la Mac de referencia (Python 3.9.6, commit
+963d072), con los controles en `outputs/logs/qc_05_limpieza.json` y `qc_06_analisis.json`;
+sus números están en la tabla de la sección 1.
 
 ### 8.1. Etapa 1, scraping
 

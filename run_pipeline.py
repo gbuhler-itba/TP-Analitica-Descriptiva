@@ -15,6 +15,15 @@ La etapa 1 (scraping) solo corre con --incluir-scraping explícito: son
 entre 8 y 15 horas y requiere IP residencial. La etapa 3 (geocodificación)
 son unas 2 horas contra un servicio público gratuito.
 
+Las etapas 5 y 6 leen además tres archivos que no genera este runner, porque
+salen de snapshots versionados y solo cambian si cambia una fuente o el
+dataset (ver docs/pipeline.md, sección 4):
+    src/fuentes_externas.py   -> data/processed/accesibilidad.tsv   (antes de la etapa 5)
+    src/permisos_obra.py      -> data/processed/permisos_obra.tsv   (antes de la etapa 6)
+    src/seguimiento.py        -> data/processed/seguimiento_avisos.csv (entre la 5 y la 6)
+Y después de la etapa 6, src/exportar_dashboard.py escribe la capa de datos
+del dashboard (docs/dashboard/data/).
+
 Cada etapa cierra con su bloque de control de calidad, que se imprime y se
 escribe en outputs/logs/.
 """
