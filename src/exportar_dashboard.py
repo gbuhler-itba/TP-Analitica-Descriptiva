@@ -12,6 +12,13 @@ SALIDAS (docs/dashboard/data/):
   resumen.json     embudo, indicadores, resumen por barrio, sensibilidad de la regla, parámetros de
                    costos y metadatos
   estaciones.json  subte, tren, Metrobus y premetro (capas del mapa)
+  fondo.json       todos los avisos con coordenadas (lat, lon, barrio): el fondo gris del mapa
+
+Niveles de decisión: a los dos de la etapa 6 ("señal a investigar", "candidato
+después de costos") el dashboard suma "candidato firme": candidato que sigue
+dejando el margen mínimo aun vendiendo al límite inferior del rango del 80% (el
+escenario conservador del notebook 07). Se calcula acá, por unidad, con la misma
+regla.
 
 Uso:  python3 src/exportar_dashboard.py
 """
@@ -30,7 +37,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
-from src import regla, validacion  # noqa: E402
+from src import inferencia, regla, validacion  # noqa: E402
 from src.configuracion import agregar_argumento_config, cargar_config  # noqa: E402
 from src.eda import nombre_barrio  # noqa: E402
 from src.rutas import asegurar_directorio, resolver  # noqa: E402
@@ -60,8 +67,18 @@ def commit_actual():
         return "desconocido"
 
 
-def tabla_avisos(ranking, precio, limpio, explicacion, costos):
-    """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador."""
+def unidades_firmes(precio, costos, umbral):
+    """Unidades candidatas aun vendiendo al límite inferior del rango del 80% (candidato firme)."""
+    senales = precio[precio["cumple_regla"]]
+    primas = senales.groupby("estado_titulo")["prima_estado"].first().to_dict()
+    calculo = regla.calcular(senales, primas, costos, valor_salida="limite_inferior")
+    candidato, _, _ = regla.decidir(senales["cumple_regla"], calculo["brecha_neta"], senales["riesgo_descartar"], umbral)
+    return set(senales.loc[candidato, "unidad"])
+
+
+def tabla_avisos(ranking, precio, limpio, explicacion, costos, firmes=frozenset()):
+    """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador.
+    `firmes`: unidades que son candidato firme."""
     # De la lista: la posición y lo que solo está ahí; el resto, sin redondear, de precio_esperado.tsv
     propias = ["id_aviso", "posicion", "ambientes", "antiguedad", "avisos_de_la_unidad", "avisos_discordantes",
                "brecha_otro_modelo_%", "link"]
@@ -80,7 +97,8 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos):
             "id": f["id_aviso"], "posicion": int(f["posicion"]), "barrio": f["barrio"],
             "barrio_nombre": nombre_barrio(f["barrio"]), "zona": f["zona"], "titulo": f["titulo"],
             "link": str(f["link"]).split("#")[0].split("?")[0],   # sin los parámetros de tracking
-            "lat": _limpio(f["lat"]), "lon": _limpio(f["lon"]),
+            "lat": None if pd.isna(f["lat"]) else round(float(f["lat"]), 5),   # 2 decimales serían una grilla de 1 km
+            "lon": None if pd.isna(f["lon"]) else round(float(f["lon"]), 5),
             "precio_usd": _limpio(f["precio_usd"]), "m2": _limpio(f["m2_final"]),
             "ambientes": _limpio(f["ambientes"]), "antiguedad": _limpio(f["antiguedad"]),
             "precio_m2": _limpio(f["precio_m2_usd"]), "precio_m2_esperado": _limpio(f["precio_m2_esperado"]),
@@ -98,6 +116,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos):
             "titulo_casa": bool(f["titulo_casa"]), "titulo_barrio_popular": bool(f["titulo_barrio_popular"]),
             "geo_dudoso": bool(f["geo_dudoso"]) if pd.notna(f["geo_dudoso"]) else False,
             "brecha_neta_pct": _limpio(f["brecha_neta_%"]), "nivel": f["nivel_decision"],
+            "firme": bool(f["unidad"] in firmes),
             "motivo": f["motivo_decision"] if isinstance(f["motivo_decision"], str) else "",
             "costos": {k: _limpio(f[c]) for k, c in [
                 ("entrada", "costo_entrada_usd"), ("refaccion", "refaccion_usd"), ("total", "costo_total_usd"),
@@ -109,8 +128,10 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos):
     return filas
 
 
-def resumen_por_barrio(precio, ranking):
-    """Por barrio: avisos y unidades analizados, señales y candidatos (unidades), precio por m² y error del modelo."""
+def resumen_por_barrio(precio, ranking, firmes=frozenset()):
+    """Por barrio: avisos y unidades analizados, señales, candidatos y firmes (unidades), precio por m² y error."""
+    ranking = ranking.merge(precio[["id_aviso", "unidad"]], on="id_aviso", how="left")
+    ranking["firme"] = ranking["unidad"].isin(firmes)
     por_barrio = precio.groupby("barrio").agg(
         avisos=("id_aviso", "size"), unidades=("unidad", "nunique"),
         precio_m2_mediano=("precio_m2_usd", "median"),
@@ -119,11 +140,13 @@ def resumen_por_barrio(precio, ranking):
     lista = ranking.groupby("barrio").agg(
         senales=("id_aviso", "size"),
         candidatos=("nivel_decision", lambda n: int((n == regla.CANDIDATO).sum())),
+        firmes=("firme", "sum"),
         brecha_mediana_pct=("brecha_%", "median"), brecha_neta_mediana_pct=("brecha_neta_%", "median"))
-    tabla = por_barrio.join(lista, how="left").fillna({"senales": 0, "candidatos": 0})
+    tabla = por_barrio.join(lista, how="left").fillna({"senales": 0, "candidatos": 0, "firmes": 0})
     return [{"barrio": b, "nombre": nombre_barrio(b), "avisos": int(f["avisos"]), "unidades": int(f["unidades"]),
              "con_coordenadas": int(f["con_coordenadas"]), "senales": int(f["senales"]),
-             "candidatos": int(f["candidatos"]), "precio_m2_mediano": round(float(f["precio_m2_mediano"])),
+             "candidatos": int(f["candidatos"]), "firmes": int(f["firmes"]),
+             "precio_m2_mediano": round(float(f["precio_m2_mediano"])),
              "error_mediano_pct": round(float(f["error_mediano_pct"]), 1),
              "brecha_mediana_pct": _limpio(f["brecha_mediana_pct"]),
              "brecha_neta_mediana_pct": _limpio(f["brecha_neta_mediana_pct"])}
@@ -155,6 +178,35 @@ def sensibilidad(precio, costos, umbral):
         "umbral_20": unidades(umbral=0.20),
         "conservador": unidades(valor_salida="limite_inferior"),
     }
+
+
+def salida_por_brecha(precio, seg, umbral, semilla=42):
+    """Tasa de salida del portal por decil de brecha, con IC 95% por bootstrap de unidades (notebook 05, H1b).
+    Sin barrios truncados."""
+    ok = ~seg["barrio_truncado"].astype(bool).values
+    df = pd.DataFrame({"brecha": precio["brecha"].values, "unidad": precio["unidad"].values,
+                       "salio": seg["salio"].astype(float).values})[ok]
+    df["decil"] = pd.qcut(df["brecha"], 10, labels=False)
+    filas = []
+    for d, g in df.groupby("decil"):
+        tasa, inf, sup = inferencia.bootstrap_estadistico(g["salio"], g["unidad"], b=300, semilla=semilla)
+        mediana = float(g["brecha"].median())
+        filas.append({"decil": int(d) + 1, "brecha_mediana_pct": round(100 * mediana, 1),
+                      "brecha_min_pct": round(100 * float(g["brecha"].min()), 1),
+                      "brecha_max_pct": round(100 * float(g["brecha"].max()), 1),
+                      "tasa_pct": round(100 * tasa, 1), "ic_inf_pct": round(100 * inf, 1),
+                      "ic_sup_pct": round(100 * sup, 1), "avisos": int(len(g)), "marcado": bool(mediana < umbral)})
+    return filas
+
+
+def fondo(precio):
+    """Todos los avisos con coordenadas (sin los geo_dudoso), para el fondo gris del mapa: [lat, lon, barrio]."""
+    con = precio[precio["lat"].notna()]
+    barrios = sorted(con["barrio"].unique())
+    indice = {b: i for i, b in enumerate(barrios)}
+    return {"barrios": barrios, "nombres": [nombre_barrio(b) for b in barrios],
+            "puntos": [[round(float(f["lat"]), 4), round(float(f["lon"]), 4), indice[f["barrio"]]]
+                       for _, f in con[["lat", "lon", "barrio"]].iterrows()]}
 
 
 def estaciones(cfg_fe, cfg_enr):
@@ -192,7 +244,8 @@ def exportar(cfg, salida=SALIDA):
     explicacion = pd.read_csv(resolver(rutas["explicacion"]), sep="\t")
     embudo = pd.read_csv(resolver(rutas["embudo"]))
 
-    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos)
+    firmes = unidades_firmes(precio, costos, cfg_an["umbral_brecha_neta"])
+    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, firmes)
     error = precio["brecha"].abs().median()
     resumen = {
         "metadatos": {
@@ -206,6 +259,7 @@ def exportar(cfg, salida=SALIDA):
         "indicadores": {
             "avisos_analizados": int(len(precio)), "unidades_analizadas": int(precio["unidad"].nunique()),
             "senales_unidades": int(len(ranking)), "candidatos_unidades": int((ranking["nivel_decision"] == regla.CANDIDATO).sum()),
+            "candidatos_firmes_unidades": int(len(firmes)),
             "error_mediano_pct": round(100 * error, 1),
             "cobertura_intervalo_pct": round(100 * float((precio["precio_m2_usd"].between(
                 precio["precio_m2_esperado_inf"], precio["precio_m2_esperado_sup"])).mean()), 1),
@@ -216,7 +270,8 @@ def exportar(cfg, salida=SALIDA):
         "parametros_costos": {e: regla.parametros(costos, e) for e in ESCENARIOS},
         "primas_estado": precio.groupby("estado_titulo")["prima_estado"].first().round(4).to_dict(),
         "tasa_salida_ambientes_pct": None,
-        "barrios": resumen_por_barrio(precio, ranking),
+        "salida_por_brecha": None,
+        "barrios": resumen_por_barrio(precio, ranking, firmes),
     }
     ruta_seg = resolver(rutas["seguimiento"])
     if ruta_seg.exists():
@@ -231,9 +286,10 @@ def exportar(cfg, salida=SALIDA):
         grupo = ambientes["ambientes"].fillna(ambientes["dormitorios"] + 1).clip(1, 5).astype(int)
         tasas = seg.loc[ok, "salio"].astype(float).groupby(grupo[ok.values].values).mean()
         resumen["tasa_salida_ambientes_pct"] = {int(k): round(100 * v, 1) for k, v in tasas.items()}
+        resumen["salida_por_brecha"] = salida_por_brecha(precio, seg, cfg_an["umbral"], cfg_an["semilla"])
 
     salida = asegurar_directorio(Path(salida) / "avisos.json").parent
-    for nombre, contenido in [("avisos.json", avisos), ("resumen.json", resumen),
+    for nombre, contenido in [("avisos.json", avisos), ("resumen.json", resumen), ("fondo.json", fondo(precio)),
                               ("estaciones.json", estaciones(cfg["fuentes_externas"], cfg["enriquecimiento"]))]:
         with open(salida / nombre, "w", encoding="utf-8") as fh:
             json.dump(contenido, fh, ensure_ascii=False, separators=(",", ":"))
@@ -247,7 +303,7 @@ def main(argv=None) -> int:
     avisos, resumen = exportar(cargar_config(args.config))
     tam = {f.name: f"{f.stat().st_size / 1024:.0f} KB" for f in SALIDA.glob("*.json")}
     print(f"Unidades exportadas: {len(avisos):,} | candidatos: {resumen['indicadores']['candidatos_unidades']:,} | "
-          f"conservador: {resumen['sensibilidad']['conservador']:,} | archivos: {tam}")
+          f"firmes: {resumen['indicadores']['candidatos_firmes_unidades']:,} | archivos: {tam}")
     return 0
 
 

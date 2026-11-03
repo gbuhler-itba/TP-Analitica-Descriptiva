@@ -167,7 +167,9 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
   Gonzalo en las conclusiones del 04 (sección 8): 1,2 puntos menos preciso que el GBM, pero cada prima se explica y
   la explicación por aviso es exacta. El GBM se usa para la marca de consenso.
 
-**Dashboard:** HTML estático en GitHub Pages.
+**Dashboard:** HTML estático en GitHub Pages (`docs/dashboard/`). Paleta Okabe-Ito más formas (señal círculo azul,
+candidato cuadrado naranja, firme triángulo bermellón); mapa con tiles de OpenStreetMap (CARTO pide clave); el
+simulador reproduce en JS la regla de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`.
 
 ## 6. Resultados actuales (para no recalcular de memoria; verificá contra los datos si los usás)
 
@@ -253,10 +255,11 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
    negociación y refacción según `estado_titulo`; liquidez con la tasa de salida del seguimiento por zona;
    riesgo legal como descarte o revisión. Análisis de sensibilidad. Mantener dos niveles: "señal a investigar"
    y "candidato después de costos", nunca "oportunidad confirmada".
-5. **Dashboard HTML** (GitHub Pages): mapa con capas, embudo, ficha del aviso con precio esperado y rango 80%
-   (y SHAP si se hace), simulador de la regla de decisión, pestaña de limitaciones. Primero una capa de datos
-   chica (JSON/CSV exportado por un script en `src/`), después el HTML. Que no sea una copia de los notebooks:
-   pensado para el analista del fondo.
+5. ~~Dashboard HTML~~ (primera versión navegable el 03/11, diseño de Gonzalo: `docs/dashboard/`, HTML + CSS +
+   JS plano + Leaflet, sin build; páginas Resumen, Mapa, Buscador, Tendencias con simulador y Cómo leer, más la
+   ficha). Tercer nivel "candidato firme" (83) calculado en `src/exportar_dashboard.py`. En local:
+   `cd docs/dashboard && python3 -m http.server 8765`. Queda: que Gonzalo lo revise, active GitHub Pages y
+   reemplace las marcas `[DASHBOARD]` del README con el link.
 6. ~~Documentación~~ (hecho el 03/11: `docs/pipeline.md` con etapas 5 y 6 y scripts auxiliares, diccionario con
    todas las columnas de la PE3, README reescrito como borrador de la PE3 y `run_pipeline.py`). Queda: reemplazar
    las marcas `[DASHBOARD]` del README cuando Gonzalo termine el dashboard, y las interpretaciones del 07

@@ -29,6 +29,12 @@ def test_conteos_coinciden_con_el_embudo(exportado):
     assert resumen["indicadores"]["candidatos_unidades"] == embudo["candidato"]
     assert resumen["sensibilidad"]["base"] == embudo["candidato"]
     assert resumen["sensibilidad"]["conservador"] <= resumen["sensibilidad"]["base"]
+    # Candidato firme: el escenario conservador, por unidad, marcado en cada aviso y en cada barrio
+    firmes = sum(a["firme"] for a in avisos)
+    assert firmes == resumen["indicadores"]["candidatos_firmes_unidades"] == resumen["sensibilidad"]["conservador"]
+    assert all(a["nivel"] == regla.CANDIDATO for a in avisos if a["firme"])
+    assert sum(b["firmes"] for b in resumen["barrios"]) == firmes
+    assert all(b["firmes"] <= b["candidatos"] for b in resumen["barrios"])
     # El resumen por barrio suma lo mismo que el total
     barrios = resumen["barrios"]
     assert sum(b["senales"] for b in barrios) == embudo["cumple_regla"]
@@ -39,12 +45,17 @@ def test_conteos_coinciden_con_el_embudo(exportado):
 
 def test_los_json_son_validos_y_sin_nan(exportado):
     cfg, avisos, resumen, salida = exportado
-    for nombre in ["avisos.json", "resumen.json", "estaciones.json"]:
+    for nombre in ["avisos.json", "resumen.json", "estaciones.json", "fondo.json"]:
         texto = (salida / nombre).read_text(encoding="utf-8")
         assert "NaN" not in texto
         json.loads(texto)
     assert all(a["lat"] is None or -35 < a["lat"] < -34 for a in avisos)
     assert all(isinstance(a["factores"], list) for a in avisos)
+    fondo = json.loads((salida / "fondo.json").read_text(encoding="utf-8"))
+    assert len(fondo["puntos"]) == sum(b["con_coordenadas"] for b in resumen["barrios"])
+    assert len(fondo["barrios"]) == len(fondo["nombres"])
+    deciles = resumen["salida_por_brecha"]
+    assert len(deciles) == 10 and all(d["ic_inf_pct"] <= d["tasa_pct"] <= d["ic_sup_pct"] for d in deciles)
 
 
 def test_el_simulador_puede_reproducir_la_brecha_neta_base(exportado):
