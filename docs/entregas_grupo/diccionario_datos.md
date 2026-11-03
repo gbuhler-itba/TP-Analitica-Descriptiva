@@ -1,15 +1,17 @@
 # Diccionario de datos
 
-*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 2*
+*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 2, actualizado en la PreEntrega 3*
 
-Describe el dataset de trabajo, `data/processed/propiedades_limpias.tsv` (27.579 filas × 112 columnas), que sale del
-notebook 01. Tiene dos partes:
+Describe el dataset de trabajo, `data/processed/propiedades_limpias.tsv` (27.578 filas × 115 columnas), que sale de la
+etapa 5 del pipeline (`src/limpiar.py`, la misma lógica que explica el notebook 01), y los archivos que se derivan de él.
+Tiene dos partes:
 
 - **Las 93 columnas originales** del pipeline (`propiedades_enriquecidas.tsv`), una fila por columna, con significado,
   tipo, unidad, fuente y transformaciones, como pide el enunciado. Las cifras de **Con dato** y **Observaciones** se
   calcularon sobre las 27.922 filas antes de la limpieza, para mostrar los problemas que tuvo que resolver.
-- **Las 19 columnas que crea la limpieza** (notebook 01) y las que crea el modelo de precio esperado (notebook 03), con
-  su fórmula final.
+- **Las 22 columnas que crea la limpieza** (etapa 5, notebook 01), las de las fuentes externas por aviso de la PreEntrega 3
+  (`accesibilidad.tsv`, `permisos_obra.tsv`), las de la etapa 6 (precio esperado, intervalo, marcas, regla de decisión y
+  ranking) y las del seguimiento con el segundo relevamiento, con su fórmula final.
 
 Al final, un resumen de anomalías con lo que se hizo con cada una.
 
@@ -18,14 +20,17 @@ Al final, un resumen de anomalías con lo que se hizo con cada una.
 | Campo | Detalle |
 |---|---|
 | Archivo de entrada | `data/processed/propiedades_enriquecidas.tsv`: 27.922 filas × 93 columnas |
-| Archivo de trabajo | `data/processed/propiedades_limpias.tsv`: 27.579 filas × 112 columnas (93 originales + 19 nuevas). Los 343 avisos excluidos y su motivo están en `data/processed/registro_limpieza.csv` |
-| Salidas del modelo | `data/processed/precio_esperado.tsv` (una fila por aviso) y `data/processed/avisos_a_investigar.csv` (ranking), del notebook 03 |
+| Archivo de trabajo | `data/processed/propiedades_limpias.tsv`: 27.578 filas × 115 columnas (93 originales + 22 nuevas). Los 344 avisos excluidos y su motivo están en `data/processed/registro_limpieza.csv` |
+| Fuentes externas por aviso (PE3) | `data/processed/accesibilidad.tsv` (tren, Metrobus, premetro, espacios verdes, barrio oficial, barrios populares, `geo_dudoso`) y `data/processed/permisos_obra.tsv`, con `link` como clave |
+| Salidas de la etapa 6 | `data/processed/precio_esperado.tsv` (una fila por aviso: precio esperado, intervalo, brecha, marcas, estado, riesgo legal y regla de decisión), `unidades_marcadas.csv`, `avisos_a_investigar.csv` (la lista oficial, una fila por unidad), `embudo_ranking.csv` y `explicacion_avisos.tsv` |
+| Segundo relevamiento (PE3) | `data/processed/relevamiento_2.tsv` (27.516 avisos del 27 y 28/10/2026) y `seguimiento_avisos.csv` (estado de cada aviso del primero en el segundo) |
 | Formato | Texto separado por tabulaciones, UTF-8. El enriquecido tiene BOM (se lee con `utf-8-sig`); el limpio, no |
 | Unidad de observación | Un aviso de departamento usado en venta, publicado en MercadoLibre Inmuebles, en CABA |
-| Fecha de extracción | 14/08/2026, declarada por el grupo. El dataset no tiene una columna de fecha |
+| Fecha de extracción | 14/08/2026, declarada por el grupo. El dataset no tiene una columna de fecha. El segundo relevamiento es del 27 y 28/10/2026 (74 días después) y sí la tiene (`fecha_relevamiento`) |
 | Filtros de la búsqueda | Departamentos, venta, propiedades individuales, usados; 47 barrios en 5 cuotas (`config.yaml`) |
 | Geocodificación | Normalizador de USIG, consultado en septiembre de 2026 |
 | Estaciones de subte | Snapshot de BA Data del 14/09/2026 (90 estaciones) |
+| Otras fuentes de BA Data (PE3) | Tren, Metrobus, premetro, espacios verdes, barrios, barrios populares y obras registradas: snapshots del 27 y 28/10/2026 en `data/external/`, con SHA-256 en `fuentes_externas.md` |
 | Origen de las cifras | Las 93 columnas originales: perfil calculado sobre `propiedades_enriquecidas.tsv`, sin modificarlo. Las columnas nuevas: sobre `propiedades_limpias.tsv` |
 
 ## De dónde sale cada columna
@@ -252,106 +257,237 @@ Las agrega la etapa 4 solo para los avisos con `geo_status` = OK. Los demás que
 |---|---|---|---|---|---|---|---|
 | `dist_transporte_m` | Distancia a la estación de subte más cercana | Numérica continua (`float64`) | metros | BA Data ("Subte: estaciones", snapshot del 14/09/2026, 90 estaciones) + cálculo propio | Haversine (radio 6.371 km) desde `lat`/`lon` a cada estación; queda la mínima, redondeada a metro entero | 22.912 (82,1%) | Mediana 508 m, media 925 m, máximo 5.805 m. Distancia en línea recta, no a pie. Solo subte: deja afuera tren y Metrobus, que son el transporte pesado del sur y el oeste. El snapshot es un mes posterior al scraping |
 | `dist_centralidad_m` | Distancia al polo de centralidad más cercano: Obelisco, Puerto Madero o Catalinas | Numérica continua (`float64`) | metros | Cálculo propio; coordenadas fijadas por el grupo en `config.yaml` | Haversine a los tres polos; queda la mínima, redondeada a metro entero | 22.912 (82,1%) | Mediana 5.265 m, máximo 14.384 m. Los polos son una elección del grupo, no un dato externo. Hallazgo del TP1: casi no se relaciona con el precio por m², porque el valor se concentra en el corredor norte |
-| `subzona` | Sub-zona geográfica dentro del barrio: la unidad de comparación del análisis | Categórica nominal (198 categorías) | No aplica (etiqueta `barrio_k`) | Cálculo propio (KMeans, scikit-learn) | Por barrio, con los avisos geocodificados: si son menos de 30, una sola sub-zona `barrio_0`; si no, KMeans sobre `lat`/`lon` con k = min(5, máx(1, n // 30)), `random_state=42`, `n_init=10` | 22.912 (82,1%) | **No hay un mínimo de 30 avisos por sub-zona**, aunque el README de la PreEntrega 1 lo dijera: k limita la cantidad de clusters, pero KMeans no garantiza su tamaño. 42 de 198 tienen menos de 30 avisos y varias tienen 1 (mediana 68, máximo 532). 6 barrios tienen una sola sub-zona. El número k es arbitrario: `palermo_0` y `belgrano_0` no se corresponden. KMeans corre sobre grados sin proyectar (a esta latitud, 1° de longitud mide 0,82 de 1° de latitud), con una leve distorsión. **En el modelo:** la sub-zona se usa solo en los 28 barrios donde mejora la referencia, y las zonas con menos de 10 avisos vuelven al barrio (`zona`, notebook 03) |
+| `subzona` | Sub-zona geográfica dentro del barrio: la unidad de comparación del análisis | Categórica nominal (198 categorías) | No aplica (etiqueta `barrio_k`) | Cálculo propio (KMeans, scikit-learn) | Por barrio, con los avisos geocodificados: si son menos de 30, una sola sub-zona `barrio_0`; si no, KMeans sobre `lat`/`lon` con k = min(5, máx(1, n // 30)), `random_state=42`, `n_init=10` | 22.912 (82,1%) | **No hay un mínimo de 30 avisos por sub-zona**, aunque el README de la PreEntrega 1 lo dijera: k limita la cantidad de clusters, pero KMeans no garantiza su tamaño. 42 de 198 tienen menos de 30 avisos y varias tienen 1 (mediana 68, máximo 532). 6 barrios tienen una sola sub-zona. El número k es arbitrario: `palermo_0` y `belgrano_0` no se corresponden. KMeans corre sobre grados sin proyectar (a esta latitud, 1° de longitud mide 0,82 de 1° de latitud), con una leve distorsión. **En el modelo:** la sub-zona se usa solo en los barrios donde mejora la referencia y es estable, decidido dentro de cada vuelta; las zonas con menos de 10 avisos, los avisos con `geo_dudoso` y los barrios inestables vuelven al barrio (`zona`, etapa 6; ver "Variables nuevas") |
 
 ## Variables nuevas
 
-### Creadas en la limpieza (notebook 01)
+### Creadas en la limpieza (etapa 5, notebook 01)
 
-Están en `propiedades_limpias.tsv`. Las marcadas con ★ son las principales para el análisis. Cifras sobre las 27.579
-filas del dataset limpio.
+Están en `propiedades_limpias.tsv`. Las marcadas con ★ son las principales para el análisis. Cifras sobre las 27.578
+filas del dataset limpio. La etapa 5 (`src/limpiar.py`) reproduce la lógica del notebook 01, que verifica al final que
+los dos resultados coinciden.
 
 | Variable | Significado | Tipo y unidad | Fórmula final | Con dato |
 |---|---|---|---|---|
-| `id_aviso` | ID estable del aviso | Texto (identificador) | `extraer_id_aviso(link)`: "MLA" más el número del link, sin guion. Se usa para deduplicar: de cada ID queda la primera fila (68 filas eliminadas) | 27.579 (100%), todos distintos |
-| `precio_usd` ★ | Precio vigente del aviso | Numérica continua; USD | Último monto de `precio_texto` (`corregir_precio()`). Solo avisos en USD: los publicados en pesos se excluyen | 27.579 (100%). Mediana USD 130.000 |
+| `id_aviso` | ID estable del aviso | Texto (identificador) | `extraer_id_aviso(link)`: "MLA" más el número del link, sin guion. Se usa para deduplicar: de cada ID queda la fila cuyo barrio de búsqueda coincide con el polígono oficial (`barrio_coincide` de `accesibilidad.tsv`, 17 casos) y, si ninguna coincide o no hay coordenadas, la primera (51 casos). La fila conservada queda en la posición de la primera aparición, porque el orden de las filas define las vueltas de la validación | 27.578 (100%), todos distintos |
+| `precio_usd` ★ | Precio vigente del aviso | Numérica continua; USD | Último monto de `precio_texto` (`corregir_precio()`). Solo avisos en USD: los publicados en pesos se excluyen | 27.578 (100%). Mediana USD 130.000 |
 | `precio_anterior_usd` | Precio previo a la baja | Numérica continua; USD | Primer monto de `precio_texto` si el aviso tiene "BAJÓ DE PRECIO"; vacío si no. **Usa el precio: no entra al modelo** | 626 (2,3%) |
 | `bajo_de_precio` ★ | El aviso muestra la etiqueta "BAJÓ DE PRECIO" | Booleana | True si el texto tiene la etiqueta y al menos dos montos. **Usa el precio: no entra al modelo**, se analiza aparte | True en 626 (2,3%) |
 | `baja_pct` | Caída del precio respecto del anterior | Numérica continua; % | 100 × (1 − `precio_usd` / `precio_anterior_usd`). **Usa el precio: no entra al modelo** | 626 (2,3%). Mediana 6,8%, mínimo 5,0% |
-| `m2_final` ★ | Superficie de trabajo | Numérica continua; m² | `superficie_final()`: `m2` si está entre 15 y 1.000; si no, `superficie_total` parseada si cae en ese rango; si no, el aviso se excluye (`superficie_invalida`) | 27.579 (100%). Mediana 57 m² |
-| `m2_origen` | De dónde salió `m2_final` | Categórica nominal: `listado`, `recuperada_de_total` | Segundo valor de `superficie_final()` | `listado` 27.547, `recuperada_de_total` 32 |
-| `precio_m2_usd` ★ | Precio por m²: la variable objetivo | Numérica continua; USD/m² | `precio_usd` / `m2_final` | 27.579 (100%). Mediana USD 2.393 |
-| `antiguedad` ★ | Antigüedad del edificio | Numérica discreta; años | `parsear_antiguedad(antig_edad)`: valores de 1800 o más se toman como año de construcción (2026 menos el año); mayores a 150 pasan a vacío. Los 1.479 "1 años" se conservan como 1 | 26.808 (97,2%). Mediana 40 años |
+| `m2_final` ★ | Superficie de trabajo | Numérica continua; m² | `superficie_final()`: `m2` si está entre 15 y 1.000; si no, `superficie_total` parseada si cae en ese rango; si no, el aviso se excluye (`superficie_invalida`) | 27.578 (100%). Mediana 57 m² |
+| `m2_origen` | De dónde salió `m2_final` | Categórica nominal: `listado`, `recuperada_de_total` | Segundo valor de `superficie_final()` | `listado` 27.546, `recuperada_de_total` 32 |
+| `precio_m2_usd` ★ | Precio por m²: la variable objetivo | Numérica continua; USD/m² | `precio_usd` / `m2_final` | 27.578 (100%). Mediana USD 2.393 |
+| `antiguedad` ★ | Antigüedad del edificio | Numérica discreta; años | `parsear_antiguedad(antig_edad)`: valores de 1800 o más se toman como año de construcción (2026 menos el año); mayores a 150 pasan a vacío. Los 1.479 "1 años" se conservan como 1 | 26.809 (97,2%). Mediana 40 años |
 | `en_construccion` | Unidad en pozo o en construcción | Booleana | Antigüedad declarada negativa. Esos avisos se excluyen (`en_pozo`, 237), así que en el dataset limpio vale False en todas las filas | False en 100% |
-| `expensas_monto` | Monto de las expensas | Numérica continua; ARS o USD por mes, según `expensas_moneda` | `parsear_expensas(expensas)`: 0 pasa a vacío; ARS mayores a 10 millones pasan a vacío; en USD, 10.000 o más se reinterpreta como pesos y menos de 10 pasa a vacío | 23.132 (83,9%) |
-| `expensas_moneda` | Moneda de las expensas | Categórica nominal: ARS, USD | Segundo valor de `parsear_expensas()` | ARS 26.731, USD 27 |
-| `expensas_ars` | Expensas en pesos | Numérica continua; ARS por mes | `expensas_en_ars()`: las de USD × 1.518,05 (dólar MEP, 14/08/2026); las de ARS sin cambio | 23.132 (83,9%). Mediana ARS 200.000 |
-| `expensas_usd` ★ | Expensas en dólares | Numérica continua; USD por mes | `expensas_ars` / 1.518,05 | 23.132 (83,9%). Mediana USD 131,7 |
+| `expensas_monto` | Monto de las expensas | Numérica continua; ARS o USD por mes, según `expensas_moneda` | `parsear_expensas(expensas)`: 0 pasa a vacío; ARS mayores a 10 millones pasan a vacío; en USD, 10.000 o más se reinterpreta como pesos y menos de 10 pasa a vacío. **Nuevo en la PE3:** las menores a ARS 1.000 (`expensas_minimo_ars`) pasan a vacío, son valores de relleno (267) | 22.884 (83,0%) |
+| `expensas_moneda` | Moneda de las expensas | Categórica nominal: ARS, USD | Segundo valor de `parsear_expensas()` | ARS 26.732, USD 27 |
+| `expensas_ars` | Expensas en pesos | Numérica continua; ARS por mes | `expensas_en_ars()`: las de USD × 1.518,05 (dólar MEP, 14/08/2026); las de ARS sin cambio | 22.884 (83,0%). Mediana ARS 200.000 |
+| `expensas_usd` ★ | Expensas en dólares | Numérica continua; USD por mes | `expensas_ars` / 1.518,05 | 22.884 (83,0%). Mediana USD 131,7 |
 | `posible_duplicado` | Otro aviso, con otro ID, tiene el mismo precio, superficie, dirección y ambientes | Booleana | `marcar_posible_duplicado()`, solo entre avisos con dirección. Se marca, no se borra: puede ser el mismo departamento publicado por dos inmobiliarias o unidades gemelas de un edificio | True en 3.059 (11,1%) |
 | `menciona_alquiler` | El título menciona alquiler | Booleana | `menciona_alquiler(titulo)`. Se marca, no se excluye: los precios de esos avisos son de venta | True en 162 (0,6%) |
-| `outlier_precio_m2` | Precio por m² atípico para su zona | Booleana | `outliers_iqr_por_grupo()` sobre `precio_m2_usd`, por sub-zona y por barrio para los avisos sin sub-zona: fuera de [Q1 − 1,5·IQR; Q3 + 1,5·IQR], solo en grupos con 10 datos o más. El modelo se ajusta sin estos avisos | True en 928 (3,4%), 96% por encima de su zona |
+| `titulo_casa` | El título dice que es una casa publicada como departamento | Booleana | `marcas_casa(titulo)`: "casa" en el título, sin contar "casa de" ni "tipo casa". Se marca, no se excluye: el anunciante la publicó como departamento. Entra como señal en el ranking (**nueva en la PE3**) | True en 25 (0,1%) |
+| `titulo_tipo_casa` | El título dice "tipo casa" (un departamento con características de casa, no una casa) | Booleana | Ídem, con la expresión "tipo casa" (**nueva en la PE3**) | True en 51 (0,2%) |
+| `titulo_barrio_popular` | El título nombra un barrio popular (Rodrigo Bueno, barrio Mugica, villa 31) | Booleana | `menciona_barrio_popular(titulo)` (**nueva en la PE3**). Complementa a `en_barrio_popular` de `accesibilidad.tsv`, que usa el polígono | True en 2 |
+| `outlier_precio_m2` | Precio por m² atípico para su zona | Booleana | `outliers_iqr_por_grupo()` sobre `precio_m2_usd`, por sub-zona y por barrio para los avisos sin sub-zona: fuera de [Q1 − 1,5·IQR; Q3 + 1,5·IQR], solo en grupos con 10 datos o más. **Marca informativa:** desde la PE3 el modelo recalcula los atípicos dentro de cada vuelta, sobre el logaritmo del precio por m² y en la zona de referencia | True en 931 (3,4%), 96% por encima de su zona |
 | `incoherencia_dormitorios` | Dormitorios mayor o igual que ambientes, sin contar el monoambiente | Booleana | `dormitorios >= ambientes`, salvo 1 ambiente con 1 dormitorio, que es la convención de la plataforma para un monoambiente | True en 376 (1,4%) |
-| `incoherencia_piso` | El piso de la unidad supera la cantidad de pisos | Booleana | `numero_de_piso_de_la_unidad > cantidad_de_pisos` | True en 2.299 (8,3%) |
+| `incoherencia_piso` | El piso de la unidad supera la cantidad de pisos | Booleana | `numero_de_piso_de_la_unidad > cantidad_de_pisos`, **solo cuando el edificio declara 3 pisos o más** (`pisos_edificio_desde`): con 1 o 2, `cantidad_de_pisos` suele ser las plantas del departamento, no los pisos del edificio (en la PE2 se comparaba siempre y marcaba 2.299) | True en 80 (0,3%) |
 
-Además, en las columnas originales: `ambientes` en 0 o negativo pasa a vacío, `departamentos_por_piso` = 99 pasa a
-vacío, y se unifican "24 hs" con "24 horas" (`tipo_de_seguridad`) y "Penthhouse" con "Penthouse" (`tipo_de_departamento`). Las 343 filas excluidas (68 duplicados por ID, 237 en pozo, 28 con superficie inválida, 5 en pesos, 4 con
-precio menor a USD 20.000 y 1 con precio imposible) están en `registro_limpieza.csv` con su motivo.
+Además, en las columnas originales: `ambientes` en 0 o negativo pasa a vacío; **`banos` en 0 pasa a vacío** (303; en el
+modelo se completan con 1 más la marca `banos_sin_dato`); **`numero_de_piso_de_la_unidad` de 100 o más se queda con las
+centenas** (`piso_desde_numero_de_unidad()`: el anunciante cargó el número de unidad, por ejemplo 1203 es el piso 12;
+19 casos); `departamentos_por_piso` = 99 pasa a vacío; y se unifican "24 hs" con "24 horas" (`tipo_de_seguridad`) y
+"Penthhouse" con "Penthouse" (`tipo_de_departamento`). Las 344 filas excluidas (68 duplicados por ID, 237 en pozo, 28
+con superficie inválida, 5 en pesos, 4 con precio menor a USD 20.000, 1 con precio imposible y 1 que no es una venta,
+"compro") están en `registro_limpieza.csv` con su motivo.
 
-### Creadas por el modelo de precio esperado (notebook 03)
+### Fuentes externas por aviso (PreEntrega 3)
 
-Están en `precio_esperado.tsv` (una fila por aviso, unible por `id_aviso`) y en `avisos_a_investigar.csv` (una fila por
-unidad marcada).
+Archivos aparte, con `link` como clave, que no modifican el dataset enriquecido. Se unen al dataset de trabajo en la
+etapa 6. Las fichas de cada fuente, con link, fecha y SHA-256 del snapshot, están en
+[`fuentes_externas.md`](fuentes_externas.md); los controles, en [`control_fuentes.md`](control_fuentes.md).
+
+**`accesibilidad.tsv`** (`src/fuentes_externas.py`): 27.922 filas × 14 columnas; las distancias tienen dato en los
+22.912 avisos con coordenadas.
 
 | Variable | Significado | Tipo y unidad | Fórmula final |
 |---|---|---|---|
-| `zona` | Zona de referencia del aviso | Categórica nominal (166 zonas) | `subzona` en los 28 barrios donde la sub-zona tiene menor error de referencia fuera de muestra que el barrio; `barrio` en el resto, para los avisos sin coordenadas y para las zonas con menos de 10 avisos |
-| `precio_m2_esperado` ★ | Precio por m² esperado para las características y la zona del aviso | Numérica continua; USD/m² | exp de la predicción de una regresión lineal de log(`precio_m2_usd`) sobre características y zona, estimada **fuera de muestra** (5 partes agrupadas por dirección y superficie, ajustada sin los `outlier_precio_m2`). Características en `src/modelo.py`, `matriz_caracteristicas()` |
-| `brecha` ★ | Brecha de precio | Numérica continua; proporción (−0,25 = 25% por debajo) | `precio_m2_usd` / `precio_m2_esperado` − 1 |
-| `marcado` ★ | Precio atípicamente bajo para investigar | Booleana | `brecha` < −0,25 (dos veces el error mediano del modelo, 12,7%) |
-| `senal_error_carga` | El aviso tiene alguna señal de que el dato puede estar mal | Booleana | Alguna de: m² por ambiente fuera del 1% a 99%, superficie recuperada de la total, `incoherencia_dormitorios`, `incoherencia_piso`, `menciona_alquiler` |
-| `marcado_barrio` | Marcado con un umbral ajustado al error de su barrio | Booleana (solo en el ranking) | `brecha` < −2 × error mediano del modelo en su barrio (barrios con menos de 50 avisos: el de la ciudad) |
-| `avisos_de_la_unidad` | Cuántos avisos marcados repiten la misma unidad | Numérica discreta (solo en el ranking) | Conteo por dirección y superficie entre los marcados |
-| `cumple_regla` | La unidad pasa la regla R1: marcada con el umbral de la ciudad y el de su barrio, y sin señales de error de carga | Booleana (solo en el ranking) | `marcado_barrio` y no `senal_error_carga` (1.150 de 1.590 unidades) |
-| `titulo_a_refaccionar` | El título dice "refaccionar", "a reciclar" o "para reciclar" | Booleana | `marcas_del_titulo()`: expresión regular sobre `titulo` en minúsculas. True en 381 (1,4%) |
-| `titulo_reciclado` | El título dice "reciclado/a" y no es "a refaccionar" | Booleana | Ídem. True en 531 (1,9%) |
-| `titulo_a_estrenar` | El título dice "a estrenar" | Booleana | Ídem. True en 875 (3,2%) |
-| `titulo_con_renta` | El título dice "renta" o "inquilino" (se vende alquilado) | Booleana | Ídem. True en 283 (1,0%) |
-| `tasa_completitud` | KPI: proporción de campos con dato, entre los 26 donde el vacío es falta de dato | Numérica continua; proporción | Promedio de `notna()` sobre las 16 dicotómicas Sí/No y 10 atributos principales (antigüedad, cocheras, bauleras, piso, cantidad de pisos, disposición, orientación, tipo de departamento, expensas y superficie cubierta). Mediana 0,88 |
-| `expensas_usd_m2` | Expensas por m² | Numérica continua; USD por m² por mes | `expensas_usd / m2_final`. 23.132 con dato; mediana USD 2,42 |
-| `expensas_rel_zona` | KPI eficiencia de expensas: expensas por m² relativas a su zona | Numérica continua; log (0 = típica de la zona) | log(`expensas_usd_m2`) menos la mediana del log en su `zona` |
+| `dist_tren_m` | Estación de ferrocarril más cercana, incluidas las del conurbano | Numérica continua; m | Haversine a la estación más cercana del snapshot de BA Data, sin las "Ex-estación". Mediana 985 m |
+| `dist_metrobus_m` | Parada de Metrobus más cercana | Numérica continua; m | Ídem. Mediana 962 m |
+| `dist_premetro_m` | Estación de premetro más cercana | Numérica continua; m | Ídem. Mediana 7,2 km: solo importa en el sur |
+| `dist_riel_m` | Transporte sobre rieles más cercano | Numérica continua; m | Mínimo entre subte (`dist_transporte_m`), tren y premetro. Mediana 423 m |
+| `dist_transporte_pesado_m` ★ | Transporte pesado más cercano | Numérica continua; m | Mínimo entre riel y Metrobus. Mediana 337 m |
+| `dist_espacio_verde_m` | Plaza, parque o jardín más cercano | Numérica continua; m | Distancia al borde del polígono (UTM 21S), 0 si el aviso cae adentro. Solo clases PLAZA, PARQUE, PARQUE SEMIPÚBLICO, JARDÍN y JARDÍN BOTÁNICO. Mediana 284 m |
+| `area_verde_500m_ha` ★ | Superficie de espacio verde alrededor del aviso | Numérica continua; ha | Área de los espacios verdes (sin canteros centrales ni la franja de la General Paz) dentro del círculo de 500 m. Mediana 0,9 ha |
+| `barrio_oficial` | Barrio oficial donde cae el punto | Categórica nominal (48 barrios) | Polígonos de barrios de BA Data. Solo como control de calidad: el análisis usa el barrio de búsqueda |
+| `barrio_coincide` | El barrio de búsqueda coincide con el oficial | Booleana (1/0) | Nombres normalizados; Barrio Norte cuenta como coincidente en Recoleta, Retiro o Palermo. Sí en 18.687, no en 4.225 (18,4% de los geocodificados). Se usa para resolver los duplicados por ID |
+| `dist_barrio_busqueda_m` | Distancia del punto al polígono del barrio buscado | Numérica continua; m | 0 si cae adentro. Mediana 0 |
+| `geo_dudoso` ★ | Geocodificación dudosa | Booleana (1/0) | Punto a más de 1 km del barrio buscado (`umbral_geo_dudoso_m`): el normalizador encontró una calle homónima en otro barrio o la dirección está mal cargada. 249 avisos. En la etapa 6 se tratan como sin coordenadas y quedan fuera de los análisis espaciales |
+| `en_barrio_popular` | El punto cae en un barrio popular | Booleana (1/0) | Polígonos de barrios populares de BA Data. 96 avisos |
+| `tipo_barrio_popular` | Tipo del barrio popular | Categórica nominal | Villa (11), Barrio municipal (76), Barrio urbanizado (9); con polígonos superpuestos, el tipo más informal |
 
-Las marcas del título y los dos KPIs están en `precio_esperado.tsv`; el ranking suma `titulo_a_refaccionar`,
-`titulo_con_renta` y `tasa_completitud`. Ninguna entra al modelo de precio esperado en esta entrega (notebook 03,
-sección 11).
+**`permisos_obra.tsv`** (`src/permisos_obra.py`): 27.922 filas × 2 columnas.
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `permisos_obra_500m` ★ | Obras nuevas cerca del aviso: señal de dinamismo de la zona | Numérica discreta; obras | Parcelas con permiso de obra nueva o ampliación mayor a menos de 500 m, entre el 14/08/2023 y el 13/08/2026, contadas una vez por obra (deduplicadas por parcela y por punto). Mediana 9 obras en CABA. En el modelo entra como `permisos_obra_10` (cada 10 obras) |
+
+### Creadas por la etapa 6 (precio esperado, brecha, regla y ranking; notebooks 03, 04 y 07)
+
+**`precio_esperado.tsv`**: una fila por aviso del dataset limpio (27.578 × 77), unible por `id_aviso`. Lo escribe
+`src/analisis.py`; los notebooks lo leen y lo explican. Los números son los de la regeneración del 02/11/2026 en la Mac
+de referencia.
+
+*Modelo, intervalo y marcas*
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `unidad` | Identificador de la unidad (dirección limpia y superficie) | Numérica discreta (25.169 unidades) | `modelo.grupo_de_unidad`: numera las unidades por orden de aparición. Avisos con la misma dirección y m² pero pisos distintos son unidades separadas. Define las vueltas de la validación (todos los avisos de una unidad caen en la misma vuelta) |
+| `vuelta` | Vuelta de la validación cruzada que predijo el aviso | Numérica discreta (0 a 4) | `modelo.folds_agrupados`, 5 vueltas agrupadas por unidad con semilla 42 |
+| `modelo_oficial` | Modelo que produjo el precio esperado | Texto | `analisis.modelo_oficial` de `config.yaml`: `lineal_ampliado` (la decisión está en el notebook 04, sección 8). El otro modelo, el gradient boosting, da la segunda opinión |
+| `zona` | Zona de referencia del aviso | Categórica nominal (214 zonas) | `subzona` en los barrios donde la sub-zona reduce el error de referencia fuera de muestra **y** es estable (ARI con bootstrap ≥ 0,7; hoy Villa Santa Rita no lo es y se compara entero); `barrio` en el resto, para los avisos sin coordenadas o con `geo_dudoso` y para las zonas con menos de 10 avisos. Se decide dentro de cada vuelta, sin fuga. En 12.607 avisos la zona es el barrio |
+| `precio_m2_mediana_zona` | La referencia simple | Numérica continua; USD/m² | Mediana del precio por m² de la zona, calculada en las otras vueltas |
+| `precio_m2_esperado` ★ | Precio por m² esperado para las características y la zona del aviso | Numérica continua; USD/m² | exp de la predicción del modelo oficial: regresión lineal de log(`precio_m2_usd`) sobre características, estado según el título y zona, ajustada **fuera de muestra** en las otras 4 vueltas, sin los atípicos (IQR sobre el log, en la zona, calculados con las vueltas de entrenamiento). Características en `src/modelo.py` (`matriz_caracteristicas()`) y `src/validacion.py` (`caracteristicas_ampliadas()`). Error mediano fuera de muestra 12,5% |
+| `precio_m2_esperado_inf`, `precio_m2_esperado_sup` ★ | Rango del 80% del precio esperado | Numérica continua; USD/m² | Intervalo de predicción conformal cruzado, por barrio (barrios con menos de 50 avisos en las otras vueltas usan el de la ciudad). Cobertura fuera de muestra 79,5%; semiancho mediano ±28%. **La ficha muestra el rango, no un único número** |
+| `brecha` ★ | Brecha de precio | Numérica continua; proporción (−0,25 = 25% por debajo) | `precio_m2_usd` / `precio_m2_esperado` − 1 |
+| `brecha_otro_modelo` | Brecha con la segunda opinión (gradient boosting) | Numérica continua; proporción | Ídem con el modelo no oficial. Puede variar un poco entre plataformas (`docs/pipeline.md`, sección 10) |
+| `debajo_del_intervalo` | El precio publicado está por debajo del rango del 80% | Booleana | `precio_m2_usd` < `precio_m2_esperado_inf`. True en 2.821 |
+| `marcado` ★ | Precio atípicamente bajo para investigar | Booleana | `brecha` < −0,25 (`analisis.umbral`: dos veces el error mediano del modelo). True en 1.819 (6,6%) |
+| `marcado_otro_modelo` | Marcado por la segunda opinión | Booleana | `brecha_otro_modelo` < −0,25. True en 1.447 |
+| `marcado_consenso` | Marcado por los dos modelos | Booleana | `marcado` y `marcado_otro_modelo`. True en 1.124. Prioriza dentro de la lista; no cambia quién entra |
+| `marcado_barrio` | Marcado con un umbral ajustado al error de su barrio | Booleana | `brecha` < −2 × error mediano del modelo en su barrio (barrios con menos de 50 avisos: el de la ciudad). True en 1.556 |
+| `senal_m2_por_ambiente`, `senal_superficie_recuperada`, `senal_dormitorios`, `senal_piso`, `senal_alquiler` | Señales de que el dato puede estar mal | Booleanas | m² por ambiente fuera del 1% a 99% (533); `m2_origen` recuperada de la total (32); `incoherencia_dormitorios` (376); `incoherencia_piso` (80); `menciona_alquiler` (162) |
+| `senal_error_carga` | Alguna señal de error de carga | Booleana | Alguna de las cinco anteriores. True en 1.161 |
+| `cumple_regla` ★ | Pasa la regla R1: marcado con el umbral de la ciudad y el de su barrio, y sin señales de error de carga | Booleana | `marcado_barrio` y no `senal_error_carga`. True en 1.455 avisos (1.375 unidades): **la lista oficial de señales a investigar** |
+
+*Estado y riesgo legal según el título* (`estado_y_riesgo_del_titulo()` con las expresiones regulares de
+`config/costos.yaml`; reemplazan a las `marcas_del_titulo` de la PE2, que el notebook 03 conserva)
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `estado_titulo` ★ | Estado del inmueble declarado en el título | Categórica nominal: `sin_marca` (25.787), `a_estrenar` (868), `ya_reformado` (671), `a_reciclar` (141), `a_refaccionar` (111) | Primera expresión regular que coincide, en el orden de `estado_refaccion` de `costos.yaml`. **Entra al modelo oficial** (lineal ampliado) como característica y a la regla de decisión como nivel de refacción. Primas fuera de muestra: a reciclar −18%, a refaccionar −16% |
+| `riesgo_<señal>` | Una columna por señal de riesgo legal en el título | Booleanas (11) | `riesgo_legal` de `costos.yaml`: con inquilino (201), con financiación (197), en pozo (169; "en pozo" en el título de un aviso que no declara antigüedad negativa), no apto crédito (6), nuda propiedad (4), sucesión (1), sin escritura (1), parte indivisa (1), ocupado, subasta y crédito pendiente (0) |
+| `titulo_casa`, `titulo_tipo_casa`, `titulo_barrio_popular`, `bajo_de_precio` | Copiadas del dataset limpio | Booleanas | Ver arriba |
+
+*KPIs y variables de ubicación* (copiadas de `accesibilidad.tsv` y `permisos_obra.tsv` para que el notebook 05 y el
+dashboard no tengan que unir archivos)
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `tasa_completitud` | KPI: proporción de campos con dato, entre los 26 donde el vacío es falta de dato | Numérica continua; proporción | Promedio de `notna()` sobre las 16 dicotómicas Sí/No y 10 atributos principales. Mediana 0,88 |
+| `expensas_usd_m2` | Expensas por m² | Numérica continua; USD por m² por mes | `expensas_usd / m2_final`. 22.884 con dato |
+| `expensas_rel_zona` | KPI eficiencia de expensas: expensas por m² relativas a su zona | Numérica continua; log (0 = típica de la zona) | log(`expensas_usd_m2`) menos la mediana del log en su `zona` |
+| `geo_dudoso`, `barrio_oficial`, `en_barrio_popular`, `tipo_barrio_popular`, `dist_tren_m`, `dist_metrobus_m`, `dist_riel_m`, `dist_transporte_pesado_m`, `dist_espacio_verde_m`, `area_verde_500m_ha`, `permisos_obra_500m` | Fuentes externas por aviso | Ver la sección anterior | Unidas por `link`. En los 244 avisos con `geo_dudoso` dentro del dataset limpio, `lat`, `lon` y las distancias quedan vacías: se tratan como sin coordenadas |
+| `dist_transporte_m`, `lat`, `lon` | Copiadas del dataset enriquecido | Ver el diccionario | Con dato en 22.389 avisos (sin los `geo_dudoso`) |
+
+*Regla de decisión* (`src/regla.py` con `config/costos.yaml`, escenario base; notebook 07). Todas con dato en los
+27.578 avisos, aunque solo tienen sentido para los que cumplen la regla.
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `prima_estado` | Prima (log) del estado del título en el modelo oficial | Numérica continua; log | Promedio del coeficiente de `estado_titulo` en las 5 vueltas; 0 para `sin_marca`. Negativa en "a reciclar" y "a refaccionar": se descuenta al vender refaccionado |
+| `nivel_refaccion` | Nivel de refacción que se asume por el estado | Categórica nominal: `ninguna` (1.539), `liviana` (25.787), `media` (111), `integral` (141) | `estado_refaccion` de `costos.yaml`: a estrenar y ya reformado, ninguna; sin marca, liviana (pintura y detalles); a refaccionar, media (baño y cocina); a reciclar, integral (USD/m² con IVA) |
+| `costo_entrada_usd` | Costos de compra | Numérica continua; USD | Precio publicado × (escribano + Sellos según el umbral de USD 148.941, mitad del comprador + comisión + otros). Se compra al precio publicado: supuesto conservador |
+| `refaccion_usd` | Costo de la refacción | Numérica continua; USD | Según `nivel_refaccion` y `m2_final`, valor central de `costos.yaml` |
+| `costo_total_usd` | Lo que cuesta tener la unidad lista para vender | Numérica continua; USD | `precio_usd` + `costo_entrada_usd` + `refaccion_usd` |
+| `valor_salida_usd` | Valor al que se espera vender | Numérica continua; USD | `precio_m2_esperado` × `m2_final`; si se refacciona (nivel medio o integral), sin la prima negativa del estado (se compra en mal estado y se vende refaccionado) |
+| `venta_cierre_usd` | Venta a precio de cierre | Numérica continua; USD | `valor_salida_usd` × (1 − 4,79%): brecha publicado-cierre |
+| `costo_salida_usd` | Costos de venta | Numérica continua; USD | Comisión del vendedor, mitad de Sellos y certificados, sobre la venta de cierre |
+| `impuesto_usd` | Impuesto a las ganancias sobre el resultado | Numérica continua; USD | Alícuota 0 en el escenario base (**supuesto declarado:** depende de la forma jurídica del fondo). El notebook 07 y el simulador del dashboard muestran 15% y 35% |
+| `resultado_usd` | Resultado neto de la operación | Numérica continua; USD | `venta_cierre_usd` − `costo_salida_usd` − `impuesto_usd` − `costo_total_usd` |
+| `brecha_neta` ★ | Margen neto sobre lo invertido | Numérica continua; proporción | `resultado_usd` / `costo_total_usd`. Mediana entre las señales: 12,3% |
+| `riesgo_descartar` | Señales de riesgo legal que descartan el aviso | Texto (vacío si no hay) | Señales con acción `descartar` en `costos.yaml`: en pozo (169), nuda propiedad (4), parte indivisa (1), sin escritura (1) |
+| `riesgo_revisar` | Señales que piden revisar antes de avanzar | Texto (vacío si no hay) | Señales con acción `revisar`: con inquilino (200), con financiación (196), no apto crédito (6), sucesión (1) |
+| `candidato` ★ | Candidato después de costos | Booleana | `cumple_regla` y `brecha_neta` ≥ 10% (`umbral_brecha_neta`) y sin `riesgo_descartar`. True en 884 avisos (840 unidades). **Nunca "oportunidad confirmada"**: depende del precio esperado, que tiene error, y de supuestos de costos |
+| `nivel_decision` | Nivel del aviso en la regla | Categórica ordinal: vacío (26.123), `señal a investigar` (571), `candidato después de costos` (884) | Vacío si no cumple la regla R1 |
+| `motivo_decision` | Por qué una señal no llega a candidato | Texto | "brecha neta X% < 10%" o "riesgo legal: <señal>"; vacío en el resto |
+| `tasa_salida_ambientes` | Liquidez informativa: tasa de salida del portal entre relevamientos de los avisos con la misma cantidad de ambientes | Numérica continua; proporción | `seguimiento_avisos.csv`, sin barrios truncados, por ambientes (1 a 5+): 41% para 1, 43% para 2, 40% para 3, 38% para 4, 31% para 5 o más. Salir del portal no prueba una venta |
+
+**`unidades_marcadas.csv`** (1.714 filas × 39) y **`avisos_a_investigar.csv`** (1.375 filas × 35): una fila por
+unidad, representada por el aviso que llega más lejos en el embudo y, a igualdad, el más barato. La primera tiene
+todas las unidades con algún aviso marcado y las columnas `marcado`, `marcado_barrio`, `cumple_regla` y `candidato`
+del paso al que llega; la segunda es **la lista oficial** (unidades que cumplen la regla R1), ordenada por `posicion`
+(primero los candidatos, después por brecha). Además de las columnas de arriba (`brecha_%`, `brecha_otro_modelo_%`,
+`brecha_neta_%` y `tasa_salida_ambientes_%` van en porcentaje):
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `posicion` | Orden en la lista oficial | Numérica discreta | Candidatos primero; dentro de cada nivel, brecha más negativa primero |
+| `avisos_de_la_unidad` | Cuántos avisos marcados repiten la misma unidad | Numérica discreta | Conteo por `unidad` entre los marcados. Más de 1 en 178 unidades |
+| `brecha_min_%`, `brecha_max_%` | Rango de brechas de los avisos de la unidad | Numérica continua; % | Mínimo y máximo de `brecha` entre los avisos de la unidad |
+| `avisos_discordantes` | Los avisos de la unidad no coinciden en si están marcados | Booleana | Algún aviso de la unidad marcado y otro no. True en 114 |
+
+**`embudo_ranking.csv`**: 5 filas, una por paso (`analizados`, `marcado`, `marcado_barrio`, `cumple_regla`,
+`candidato`), con el filtro en palabras, `avisos`, `unidades` y el porcentaje respecto del paso anterior. Es la
+reconciliación de universos que pidió la devolución de la PE2: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 →
+1.455 / 1.375 → 884 / 840.
+
+**`explicacion_avisos.tsv`** (1.819 filas × 16, una por aviso marcado): la ficha del dashboard. `precio_m2_referencia_zona`
+es el precio por m² de un aviso típico de la zona según el modelo oficial, `precio_m2_esperado` el del aviso, y `sube_1`
+a `sube_3` y `baja_1` a `baja_3` (con su `_%`) las tres características que más suben y más bajan su precio esperado
+respecto de esa referencia, con `resto_%` para las demás. Son contribuciones exactas del modelo lineal (suman la
+diferencia entre referencia y esperado); explican al modelo, no causas.
+
+### Segundo relevamiento (`src/seguimiento.py`, pregunta P4, notebook 05)
+
+**`relevamiento_2.tsv`**: 27.516 avisos del scraping del 27 y 28/10/2026 (`fecha_relevamiento`, `archivo`), con las
+86 columnas del scraper más `id_aviso`, `precio_usd`, `bajo_de_precio`, `m2_final`, `m2_origen`, `dir_limpia` y
+`clave_unidad` (dirección limpia, m² y ambientes), calculadas con las mismas funciones de la limpieza.
+
+**`seguimiento_avisos.csv`**: una fila por aviso del dataset limpio (27.578 × 9), en el mismo orden.
+
+| Variable | Significado | Tipo y unidad | Fórmula final |
+|---|---|---|---|
+| `clave_unidad` | Clave de republicación | Texto | `dir_limpia` + m² + ambientes (ambientes como número decimal: con enteros contra texto no coincidía nada) |
+| `estado` ★ | Qué pasó con el aviso 74 días después | Categórica nominal: `sigue` (9.352), `republicado` (6.463), `salio` (11.763) | Sigue: el mismo ID está en el segundo relevamiento. Republicado: el ID no está, pero hay un aviso nuevo con la misma `clave_unidad`. Salió: ninguna de las dos |
+| `precio_r2` | Precio en el segundo relevamiento | Numérica continua; USD | Del aviso con el mismo ID o del republicado. 15.815 con dato |
+| `cambio_precio` | Variación del precio entre relevamientos | Numérica continua; proporción | `precio_r2` / `precio_usd` − 1 |
+| `bajo_en_r2`, `subio_en_r2` | Bajó o subió más de 0,5% | Booleanas | `cambio_precio` < −0,005 (4.998); > 0,005 (595) |
+| `barrio_truncado` | El barrio llegó al tope de paginación en alguno de los dos relevamientos | Booleana | Palermo, Belgrano, Caballito y Recoleta (7.999 avisos): ahí no aparecer no significa haber salido. Se excluyen del análisis de salida |
+| `salio` ★ | Salió del portal | Booleana | `estado` = `salio`. Entre los no truncados: 46,7% de los marcados contra 39,7% del resto. **Salir no es venderse**: puede ser venta, retiro o una republicación no detectada |
 
 ## Resumen de anomalías y qué se hizo con cada una
 
-Problemas detectados en las 93 columnas originales y su resolución en el notebook 01 (limpieza) o en el notebook 03
-(modelo). "Se acepta" quiere decir que se deja como está y se declara como limitación.
+Problemas detectados en las 93 columnas originales y su resolución en la limpieza (etapa 5, notebook 01) o en el
+modelo (etapa 6, notebooks 03 y 04). "Se acepta" quiere decir que se deja como está y se declara como limitación. Las
+filas marcadas con **PE3** cambiaron respecto de la PreEntrega 2.
 
 | Problema | Columna | Filas | Resolución |
 |---|---|---|---|
 | Precio anterior y vigente concatenados por "BAJÓ DE PRECIO" | `precio` | 627 | Corregido: `precio_usd` toma el monto vigente |
-| Precios en USD mayores a 10 millones que no son de la baja | `precio` | 4 | 1 se excluye como `precio_imposible`. Los otros 3 son edificios enteros en Belgrano (USD 12 millones, 367 m²): quedan como `outlier_precio_m2` y no se usan para ajustar el modelo |
+| Precios en USD mayores a 10 millones que no son de la baja | `precio` | 4 | 1 se excluye como `precio_imposible`. Los otros 3 son edificios enteros en Belgrano (USD 12 millones, 367 m²): quedan como atípicos y no se usan para ajustar el modelo |
 | Precios menores a USD 20.000 | `precio` | 4 | Excluidos (`precio_menor_a_minimo`) |
 | Precios en ARS que no cierran como pesos | `precio`, `moneda` | 5 | Excluidos (`precio_en_pesos`) |
+| **PE3** Avisos que no son una venta ("compro", "compramos") | `titulo` | 1 | Excluido (`no_es_venta`) |
 | Superficie menor a 15 m² en el listado | `m2` | 36 | Se recupera de `superficie_total` si está en rango (32 en el dataset limpio); si no, se excluye (`superficie_invalida`) |
 | `m2` mezcla superficie cubierta y total | `m2`, `superficie_total` | 527 avisos con total en la tarjeta, más los recuperados | Se acepta: `m2_final` es la cubierta en el 98% de los avisos y `m2_origen` guarda los recuperados |
 | Superficie en hectáreas ("0 ha", "0,01 ha", "42 ha") | `superficie_total` | 73 | Pasa a vacío; se usa `m2` |
 | Coma decimal en superficies de la ficha | superficies de la ficha | 1.589 / 1.494 / 2.401 | `parsear_superficie()` |
 | Punto de miles ambiguo | superficies de la ficha | 9 / 9 / 1 | Pasa a vacío |
 | Ceros y negativo que son faltantes | `ambientes` | 312 + 1 | Pasan a vacío. En el modelo se completan con dormitorios + 1 |
-| Ceros que son faltantes | `banos` | 313 (303 en el dataset limpio) | **No se corrigieron.** Se verificó que corregirlos no cambia el modelo (1.702 marcados en lugar de 1.704). A corregir en la próxima versión de la limpieza |
+| **PE3** Ceros que son faltantes | `banos` | 313 (303 en el dataset limpio) | Pasan a vacío. En el modelo se completan con 1 más la marca `banos_sin_dato` (en la PE2 no se corregían) |
 | Dormitorios mayor o igual que ambientes | `dormitorios`, `ambientes` | 1.717; 376 en el dataset limpio sin contar el monoambiente 1/1 | Marcados (`incoherencia_dormitorios`); el tamaño se mide con la superficie |
 | 99 como valor de relleno | `departamentos_por_piso` | 6.970 | Pasa a vacío |
 | Años y valores imposibles | `cantidad_de_pisos` | 12 mayores a 60 | Se acepta: la variable no entra al modelo |
-| Números de unidad cargados como piso | `numero_de_piso_de_la_unidad` | 21 mayores a 60 | Marcados cuando superan `cantidad_de_pisos` (`incoherencia_piso`); el modelo recorta el piso en 20. Se verificó que pasarlos a vacío no cambia el modelo |
+| **PE3** Números de unidad cargados como piso | `numero_de_piso_de_la_unidad` | 19 de 100 o más | Se quedan con las centenas (1203 es el piso 12). La incoherencia de piso solo se mide cuando el edificio declara 3 pisos o más (80 marcados; en la PE2, 2.299) |
 | Antigüedad negativa (unidades en pozo) | `antig_edad` | 235, más 2 "40.000 años" que el parser deja negativos | Excluidos (`en_pozo`, 237) |
 | Año de construcción en lugar de antigüedad | `antig_edad` | 66 | Convertido a edad |
 | Antigüedad entre 151 y 1.799 o no numérica | `antig_edad` | 6 + 1 | Pasa a vacío |
 | Antigüedad "1 años" (posible carga por defecto de "a estrenar") | `antig_edad` | 1.479 | Se acepta: queda en el tramo de 0 a 5 años, que es donde caería un "a estrenar" |
 | Expensas en cero | `expensas` | 3.805 | Pasan a vacío |
-| Expensas en ARS entre 1 y 1.000 | `expensas` | 273 (254 en el dataset limpio) | Se aceptan. No afectan el modelo, que no usa las expensas. A revisar si se usa el KPI de eficiencia de expensas |
+| **PE3** Expensas en ARS entre 1 y 1.000 | `expensas` | 267 | Pasan a vacío: son valores de relleno (en la PE2 se aceptaban). Importa para el KPI de eficiencia de expensas |
 | Expensas en ARS mayores a 10 millones | `expensas` | 13 | Pasan a vacío |
 | Expensas que no se pueden convertir a número | `expensas` | 40 | Pasan a vacío |
 | Expensas en USD no confiables | `expensas` | 41 | Las de 10.000 o más se leen como pesos; las menores a 10, vacío. Quedan 27 en USD, convertidas con el dólar MEP |
-| Mismo aviso en dos filas | `link` | 136 filas (68 sobrantes) | Deduplicado por `id_aviso`: queda la primera fila de cada ID |
-| Misma unidad publicada con otro ID | varias | 3.059 | Marcados (`posible_duplicado`), no se borran. En el modelo, las partes de la validación se arman por unidad para que no estén de los dos lados |
+| **PE3** Mismo aviso en dos filas | `link` | 136 filas (68 sobrantes) | Deduplicado por `id_aviso`: queda la fila cuyo barrio coincide con el polígono oficial (17, de las cuales 12 cambian de barrio respecto de la PE2) y, si no, la primera, siempre en la posición de la primera aparición |
+| Misma unidad publicada con otro ID | varias | 3.059 | Marcados (`posible_duplicado`), no se borran. En el modelo, las vueltas de la validación se arman por unidad para que no estén de los dos lados |
+| **PE3** Casas publicadas como departamento | `titulo` | 25 ("casa") y 51 ("tipo casa") | Marcadas (`titulo_casa`, `titulo_tipo_casa`), no se excluyen; `titulo_casa` se muestra en el ranking |
 | Avisos clasificados como PH | `tipo_de_departamento` | 60 | Se conservan: el anunciante los publicó como departamento |
 | Dos etiquetas para la misma categoría | `tipo_de_seguridad`, `tipo_de_departamento` | 26 ("24 hs") y 31 ("Penthhouse") | Unificadas en la limpieza ("24 horas", "Penthouse") |
 | "No" que no significa ausencia | `cocina`, `living`, `comedor` | 5.907 / 14.638 / 11.143 | No se usan en el modelo |
-| Barrio no oficial y barrios oficiales ausentes | `barrio` | 801 en "barrio-norte"; San Cristóbal y Parque Chas sin avisos | Se acepta y se declara en el README. El cruce con polígonos oficiales queda como fuente prevista |
-| Barrios truncados por el tope de paginación | `barrio` | 4 barrios con 2.016 avisos | Se acepta y se declara como limitación |
-| Sub-zonas con menos de 30 avisos | `subzona` | 42 de 198 | El modelo usa la sub-zona solo donde mejora la referencia y vuelve al barrio en zonas con menos de 10 avisos |
-| Avisos sin coordenadas | `lat`, `lon`, `subzona` | 5.010 (17,9%) | Se comparan contra su barrio en el modelo |
+| **PE3** Barrio no oficial y barrios oficiales ausentes | `barrio` | 801 en "barrio-norte"; San Cristóbal y Parque Chas sin avisos | Se acepta: el barrio de búsqueda es la categoría donde el comprador encuentra el aviso. El cruce con los polígonos oficiales (`barrio_oficial`, `barrio_coincide`) se usa como control: 4.225 de los 22.912 avisos geocodificados (18,4%) caen en otro polígono, casi todos de borde (a menos de 1 km) |
+| **PE3** Geocodificación dudosa | `lat`, `lon` | 249 (244 en el dataset limpio) | Punto a más de 1 km del barrio buscado (`geo_dudoso`): se tratan como sin coordenadas en la etapa 6 y las sub-zonas se recalculan sin ellos |
+| **PE3** Avisos en barrios populares | `lat`, `lon`, `titulo` | 96 por polígono, 2 por el título | Marcados (`en_barrio_popular`, `tipo_barrio_popular`, `titulo_barrio_popular`); el modelo los compara con el resto del barrio y la marca se muestra como alerta |
+| Barrios truncados por el tope de paginación | `barrio` | 4 barrios con 2.016 avisos | Se acepta y se declara como limitación; se excluyen del análisis de salida del segundo relevamiento |
+| **PE3** Sub-zonas con menos de 30 avisos o inestables | `subzona` | 42 de 198 con menos de 30 avisos; 1 barrio inestable (Villa Santa Rita, ARI 0,68) | El modelo elige barrio por barrio, dentro de cada vuelta, si la sub-zona mejora la referencia; vuelve al barrio en zonas con menos de 10 avisos y en los barrios con sub-zonas inestables (ARI < 0,7) |
+| Avisos sin coordenadas | `lat`, `lon`, `subzona` | 5.010 (17,9%), más los 244 dudosos | Se comparan contra su barrio en el modelo |
 | Columnas constantes | `tipo`, `es_emprendimiento` | Todas | Se conservan en el archivo, pero no se usan |

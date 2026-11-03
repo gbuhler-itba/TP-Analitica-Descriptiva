@@ -94,7 +94,7 @@ src/
 notebooks/
   01_calidad_y_limpieza      # actualizado en PE3 (lee PARAMS de config, verifica igualdad con la etapa 5)
   02_eda, 03_precio_esperado # de la PE2, con banner; números actualizados a la limpieza nueva
-  04_validacion_modelos      # PE3, nuevo (sección 9: SHAP): faltan las interpretaciones de Gonzalo
+  04_validacion_modelos      # PE3: completo, con interpretaciones y conclusiones de Gonzalo (sección 9: SHAP)
   05_hipotesis               # PE3: H1, H2 y H3 con tests formales, magnitud, IC y robustez
   06_segmentos_exploratorio  # PE3, exploratorio: índice de equipamiento (MCA) y segmentos (K-means)
   07_regla_de_decision       # PE3: regla de decisión con costos, sensibilidad y alertas legales
@@ -102,7 +102,7 @@ docs/pipeline.md             # instalación, ejecución, tests, corrida document
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 154 tests pasando
+tests/                       # pytest, 161 tests pasando (unos 70 s)
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -163,9 +163,9 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_validacion_mode
 - **Sub-zonas inestables** (ARI < 0,7): ese barrio se compara entero. Desde la regla de duplicados (02/11) se activa
   en **Villa Santa Rita** (97 avisos, 3 sub-zonas, ARI 0,68); antes no se activaba en ninguno (Coghlan justo, 0,72). Sensibilidad: sacando la sub-zona a los 5
   barrios con ARI < 0,8, el error pasa de 12,69% a 12,68%. Gonzalo pidió presentarlo igual aunque no cambie nada.
-- **Modelo oficial: PENDIENTE de Gonzalo** (parámetro `analisis.modelo_oficial` en `config/config.yaml`, hoy
-  `lineal_ampliado`). Lo decide después de completar las interpretaciones del 04. El otro modelo se usa para la
-  marca de consenso.
+- **Modelo oficial: lineal ampliado** (parámetro `analisis.modelo_oficial` en `config/config.yaml`), decidido por
+  Gonzalo en las conclusiones del 04 (sección 8): 1,2 puntos menos preciso que el GBM, pero cada prima se explica y
+  la explicación por aviso es exacta. El GBM se usa para la marca de consenso.
 
 **Dashboard:** HTML estático en GitHub Pages.
 
@@ -257,10 +257,10 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
    (y SHAP si se hace), simulador de la regla de decisión, pestaña de limitaciones. Primero una capa de datos
    chica (JSON/CSV exportado por un script en `src/`), después el HTML. Que no sea una copia de los notebooks:
    pensado para el analista del fondo.
-6. **Documentación:** diccionario de datos (`docs/entregas_grupo/diccionario_datos.md`) con las columnas nuevas;
-   README con sección PE3 (cambios por la devolución, cómo correr, hallazgos: H1 más fuerte, estado del
-   inmueble pesa más de lo que parecía); mencionar `permisos_obra` y `fuentes_externas` en `run_pipeline.py`
-   y `docs/pipeline.md`.
+6. ~~Documentación~~ (hecho el 03/11: `docs/pipeline.md` con etapas 5 y 6 y scripts auxiliares, diccionario con
+   todas las columnas de la PE3, README reescrito como borrador de la PE3 y `run_pipeline.py`). Queda: reemplazar
+   las marcas `[DASHBOARD]` del README cuando Gonzalo termine el dashboard, y las interpretaciones del 07
+   (secciones 3 y 4, todavía "a completar").
 7. **Revisión final:** correr todo de cero (etapas 5 y 6, notebooks, tests), revisar que los números coincidan
    en README, notebooks y dashboard, buscar rayas (`grep -rn "—"`), y una revisión independiente (un subagente
    que no haya hecho el trabajo).
