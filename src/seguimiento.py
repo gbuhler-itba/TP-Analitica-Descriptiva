@@ -39,11 +39,12 @@ from src.geocoding_propiedades import limpiar_direccion  # noqa: E402
 from src.rutas import resolver  # noqa: E402
 
 # Archivos del segundo relevamiento: (archivo, barrios a tomar o None, fecha)
-# La cuota 2 se cortó a la mitad de Barrio Norte: del parcial se toma solo
-# Villa Crespo (completo) y el resto de la cuota se volvió a correr entero.
+# La cuota 2 se cortó a la mitad de Barrio Norte (cuota2.tsv es ese parcial,
+# renombrado para versionarlo): de ahí se toma solo Villa Crespo (completo) y el
+# resto de la cuota se volvió a correr entero (cuota_custom.tsv).
 ARCHIVOS_R2 = [
     ("cuota1.tsv", None, "2026-10-27"),
-    ("cuota2_parcial.tsv", ["villa-crespo"], "2026-10-27"),
+    ("cuota2.tsv", ["villa-crespo"], "2026-10-27"),
     ("cuota_custom.tsv", None, "2026-10-28"),
     ("cuota3.tsv", None, "2026-10-27"),
     ("cuota4.tsv", None, "2026-10-27"),
