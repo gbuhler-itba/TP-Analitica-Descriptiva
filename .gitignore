@@ -67,3 +67,6 @@ env/
 # borradores de entregas anteriores). Ya está integrado al repo donde corresponde.
 _material_grupo/
 .pytest_cache/
+
+# Configuración local de Claude Code (launch.json para servir el dashboard en local)
+.claude/
