@@ -10,7 +10,7 @@ esas señales, los **candidatos después de costos**. En ningún nivel se afirma
 
 | Para ver | Dónde |
 |---|---|
-| **Dashboard para el analista del fondo** | [DASHBOARD: link a GitHub Pages y a `docs/dashboard/`] |
+| **Dashboard para el analista del fondo** | [Radar de avisos · CABA en GitHub Pages](https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/) (código y datos en [`docs/dashboard/`](docs/dashboard/)) |
 | Limpieza y calidad del dato | [`notebooks/01_calidad_y_limpieza.ipynb`](notebooks/01_calidad_y_limpieza.ipynb) |
 | Análisis exploratorio (PE2) | [`notebooks/02_eda.ipynb`](notebooks/02_eda.ipynb) |
 | Precio esperado, brecha y ranking (PE2, números actualizados) | [`notebooks/03_precio_esperado.ipynb`](notebooks/03_precio_esperado.ipynb) |
@@ -351,7 +351,7 @@ que el resultado no dependa de una celda). Orden de lectura sugerido para correg
 
 ### El dashboard: "Radar de avisos · CABA"
 
-[DASHBOARD: link a GitHub Pages]. Código y datos en [`docs/dashboard/`](docs/dashboard/). Está pensado para el analista
+Publicado en [https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/](https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/). Código y datos en [`docs/dashboard/`](docs/dashboard/). Está pensado para el analista
 del fondo, no para quien corrige: no repite los notebooks, los resume en una decisión. Tiene cinco pestañas y una ficha:
 
 | Pestaña | Qué muestra |
