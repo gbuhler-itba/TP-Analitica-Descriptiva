@@ -91,6 +91,7 @@ src/
   inferencia.py              # bootstrap por unidad, tabla de tests formales, Holm, coeficientes con IC (05)
   segmentos.py               # exploratorio (06): MCA, K-means, estabilidad; la etapa 6 no lo importa
   regla.py                   # regla de decisión: brecha neta de costos y "candidato después de costos" (etapa 6)
+  chequeo_comparables.py     # chequeo del esperado de los destacados contra comparables simples (README, sección 10)
 notebooks/
   01_calidad_y_limpieza      # actualizado en PE3 (lee PARAMS de config, verifica igualdad con la etapa 5)
   02_eda, 03_precio_esperado # de la PE2, con banner; números actualizados a la limpieza nueva
@@ -102,7 +103,7 @@ docs/pipeline.md             # instalación, ejecución, tests, corrida document
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 187 tests pasando (unos 70 s)
+tests/                       # pytest, 190 tests pasando (unos 70 s)
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -182,7 +183,9 @@ uso no residencial. Campo `exclusiones` de `avisos.json`, calculado en el export
 (38 firmes). Esos
 avisos siguen en el mapa y el buscador con la alerta. No existe una marca de "brecha extrema" en el pipeline. El
 embudo está solo en Resumen; en Tendencias va el error del modelo por barrio. El simulador reproduce en JS la regla
-de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`.
+de `src/regla.py` y da exactamente los mismos conteos que `sensibilidad`. Desde el 05/11 el exportador reproduce la
+segmentación del 06 (`segmento_por_aviso`, misma semilla) y cada aviso lleva su `segmento`; en "Familiares amplios
+y antiguos" la tabla y la ficha muestran una alerta de revisión (chip `chip-revisar`), descriptiva: no excluye.
 
 ## 6. Resultados actuales (para no recalcular de memoria; verificá contra los datos si los usás)
 
@@ -272,14 +275,19 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
    JS plano + Leaflet, sin build; páginas Resumen, Mapa, Buscador, Tendencias con simulador y Cómo leer, más la
    ficha). Tercer nivel "candidato firme" (83) calculado en `src/exportar_dashboard.py`. En local:
    `cd docs/dashboard && python3 -m http.server 8765`. Revisado por Gonzalo el 03/11 (estética de informe, lista
-   destacada con exclusiones, README con la justificación de la herramienta). Queda: que active GitHub Pages y
-   reemplace las dos marcas `[DASHBOARD: link ...]` del README con el link.
+   destacada con exclusiones, README con la justificación de la herramienta). Pages activo y linkeado desde el
+   README el 04/11 (`docs/index.html` redirige la raíz al dashboard).
 6. ~~Documentación~~ (hecho el 03/11: `docs/pipeline.md` con etapas 5 y 6 y scripts auxiliares, diccionario con
    todas las columnas de la PE3, README reescrito como borrador de la PE3 con la sección del dashboard y
-   `run_pipeline.py`; interpretaciones del 07 completas). Queda: el link de GitHub Pages en el README.
+   `run_pipeline.py`; interpretaciones del 07 completas; link de GitHub Pages en el README el 04/11).
 7. **Revisión final:** correr todo de cero (etapas 5 y 6, notebooks, tests), revisar que los números coincidan
    en README, notebooks y dashboard, buscar rayas (`grep -rn "—"`), y una revisión independiente (un subagente
    que no haya hecho el trabajo).
+8. **Para la entrega final (18/11):** revisar el sesgo del precio esperado en departamentos grandes y antiguos
+   (segmento "Familiares amplios y antiguos" del 06: marca el 11,1% contra 5,2% a 6,5% en el resto, brecha mediana
+   −3,1%; son 397 de las 1.375 señales, 170 de los 486 destacados y 19 de los 38 firmes); probar una interacción
+   tamaño × antigüedad en el lineal ampliado. Desde el 05/11 el dashboard muestra una alerta de revisión en ese
+   segmento (descriptiva, no excluye).
 
 ## 9. Errores conocidos y cuidados
 

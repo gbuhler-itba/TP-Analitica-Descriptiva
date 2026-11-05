@@ -100,6 +100,7 @@ main { flex: 1; display: flex; flex-direction: column; }
 .chip-consenso::before, .chip-alerta::before, .chip-revisar::before, .chip-exclusion::before, .chip-neutro::before { display: none; }
 .chip-alerta { background: #f1dcd6; border-color: var(--negativo); color: var(--negativo); }
 .chip-revisar { background: var(--alerta-fondo); border-color: #d9b98a; }
+.chip-largo { white-space: normal; }
 .chip-exclusion { background: var(--alerta-fondo); border-color: var(--firme); color: #7a4412; }
 
 /* Tablas de avisos: densas, números a la derecha */

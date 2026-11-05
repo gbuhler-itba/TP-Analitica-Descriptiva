@@ -31,6 +31,12 @@
   const nivelDe = (a) => a.firme ? "firme" : esCandidato(a) ? "candidato" : "senal";
   const chipNivel = (a) => { const n = nivelDe(a); return `<span class="chip chip-${n}">${NOMBRE_NIVEL[n]}</span>`; };
   // Motivos por los que un aviso no entra a la lista destacada (vienen del exportador): se muestran siempre
+  // Alerta descriptiva del notebook 06: el tipo de departamento con más error del modelo. No excluye de nada.
+  const textoSegmentoAlerta = () => `Tipo de departamento con más error del modelo (${pct(D.resumen.indicadores.error_mediano_segmento_alerta_pct, 1)} contra ${pct(D.resumen.indicadores.error_mediano_pct, 1)} de la ciudad): el precio esperado tiende a quedar alto. Revisar con más cuidado.`;
+  const chipSegmento = (a, corto) => a.segmento && a.segmento === D.resumen.indicadores.segmento_alerta
+    ? (corto ? `<span class="chip chip-revisar" title="${esc(textoSegmentoAlerta())}">Revisar: tipo con más error del modelo</span>`
+             : `<span class="chip chip-revisar chip-largo">Revisar: ${esc(textoSegmentoAlerta())}</span>`)
+    : "";
   const chipsExclusion = (a) => a.exclusiones.map(e => `<span class="chip chip-exclusion" title="No entra a la lista destacada del resumen">${esc(e[0].toUpperCase() + e.slice(1))}</span>`).join("");
   const destacable = (a) => esCandidato(a) && a.consenso && a.exclusiones.length === 0;
   const prioridad = (a) => (a.firme ? 2 : esCandidato(a) ? 1 : 0) * 10 + (a.consenso ? 1 : 0);
@@ -71,7 +77,7 @@
     if (!lista.length) { contenedor.innerHTML = '<p class="vacio">Ningún aviso cumple con esos filtros.</p>'; return; }
     const filas = lista.slice(0, maximo || lista.length).map(a => html`
       <tr class="fila" data-id="${a.id}">
-        <td><div class="chips-fila">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso" title="Lo marcan los dos modelos">2 modelos</span>' : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal</span>` : ""}</div></td>
+        <td><div class="chips-fila">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso" title="Lo marcan los dos modelos">2 modelos</span>' : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal</span>` : ""}${chipSegmento(a, true)}</div></td>
         <td>${esc(a.barrio_nombre)}<span class="titulo-aviso" title="${esc(a.titulo)}">${esc(a.titulo)}</span></td>
         <td class="num">${usd(a.precio_usd)}</td>
         <td class="num">${num(a.m2)} m² · ${num(a.ambientes)} amb.</td>
@@ -356,7 +362,7 @@
       <div class="ficha-cabecera">
         <div><h2 id="ficha-titulo">${esc(a.titulo)}</h2>
           <div class="sub">${esc(a.barrio_nombre)} · ${usd(a.precio_usd)} · ${num(a.m2)} m² · ${num(a.ambientes)} ambientes · ${a.antiguedad === null ? "antigüedad s/d" : num(a.antiguedad) + " años"} · posición ${a.posicion} de ${num(D.avisos.length)}</div>
-          <div class="chips">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso">2 modelos</span>' : ""}${a.motivo ? `<span class="chip">${esc(a.motivo)}</span>` : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal (descarta): ${esc(a.riesgo_descartar)}</span>` : ""}${a.riesgo_revisar ? `<span class="chip chip-revisar">Revisar: ${esc(a.riesgo_revisar)}</span>` : ""}</div>
+          <div class="chips">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso">2 modelos</span>' : ""}${a.motivo ? `<span class="chip">${esc(a.motivo)}</span>` : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal (descarta): ${esc(a.riesgo_descartar)}</span>` : ""}${a.riesgo_revisar ? `<span class="chip chip-revisar">Revisar: ${esc(a.riesgo_revisar)}</span>` : ""}${chipSegmento(a, false)}</div>
           ${a.exclusiones.length ? `<p class="nota">No entra a la lista destacada del resumen: ${esc(a.exclusiones.join(", "))}. El modelo lo compara con departamentos comunes de su zona y ese comparable puede no aplicar.</p>` : ""}</div>
         <div class="ficha-acciones">
           <a class="boton secundario" href="${esc(a.link)}" target="_blank" rel="noopener">Ver en MercadoLibre</a>
