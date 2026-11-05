@@ -31,6 +31,12 @@ ficha. Las exclusiones no tocan la lista oficial ni los candidatos de la etapa 6
 No existe una marca de "brecha extrema" en el pipeline: los casos extremos se
 filtran antes como errores de carga (`senal_error_carga`).
 
+Segmento de departamento: cada aviso lleva su segmento del notebook 06 (MCA
+más K-means, misma semilla; `segmento_por_aviso`). En "Familiares amplios y
+antiguos" el modelo tiene más error y el precio esperado tiende a quedar alto:
+el dashboard muestra una alerta de revisión en la tabla y en la ficha. Es
+descriptiva: no excluye de la lista destacada ni cambia ningún conteo.
+
 Uso:  python3 src/exportar_dashboard.py
 """
 
@@ -50,7 +56,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
-from src import inferencia, regla, validacion  # noqa: E402
+from src import inferencia, regla, segmentos, validacion  # noqa: E402
 from src.configuracion import agregar_argumento_config, cargar_config  # noqa: E402
 from src.eda import nombre_barrio  # noqa: E402
 from src.rutas import asegurar_directorio, resolver  # noqa: E402
@@ -71,6 +77,8 @@ REGEX_FINANCIACION = r"financ|anticipo|cuotas"
 EXCLUSION_FINANCIACION = "precio posiblemente con financiación"
 # En pozo: ya es de descarte en la regla de decisión (nunca es candidato); acá queda la alerta para la lista.
 EXCLUSION_EN_POZO = "en pozo: precio no comparable con usados"
+# Notebook 06: el tipo de departamento donde el modelo tiene más error y el precio esperado queda alto
+SEGMENTO_ALERTA = "Familiares amplios y antiguos"
 # Posible venta de varias unidades: "en block", "unidades", "departamentos" o "deptos" en plural. "Dos
 # departamentos unidos" es una sola unidad física: "unidos" y "unificados" anulan la marca.
 REGEX_VARIAS_UNIDADES = r"\ben\s+block\b|\bunidades\b|\bdepartamentos\b|\bd(?:e)?ptos\.?\b"
@@ -188,9 +196,22 @@ def exclusiones_del_destacado(lista, oficiales):
     return [[nombre for nombre, marca in motivos if bool(marca.iloc[i])] for i in range(len(lista))]
 
 
-def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset()):
+def segmento_por_aviso(limpio, semilla):
+    """Segmento de departamento de cada aviso, como en el notebook 06 (sección 3): índice de equipamiento
+    con MCA (el vacío como "No") y K-means con K = 4 sobre ambientes, m² por ambiente, antigüedad,
+    expensas por m² e índice, con la misma semilla. Es descriptivo: no entra a la lista ni a la regla."""
+    X = segmentos.tabla_mca(limpio, "no")
+    mca = segmentos.ajustar_mca(X, semilla=semilla)
+    V, _ = segmentos.variables_kmeans(limpio, segmentos.indice_mca(mca, X))
+    Z, parametros = segmentos.escalar(V)
+    km = segmentos.ajustar_kmeans(Z, 4, semilla=semilla)
+    centroides = segmentos.a_escala_original(pd.DataFrame(km.cluster_centers_, columns=V.columns), parametros)
+    return pd.Series(km.labels_, index=limpio["id_aviso"].values).map(segmentos.nombrar_segmentos(centroides))
+
+
+def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset(), segmento=None):
     """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador.
-    `firmes`: unidades que son candidato firme."""
+    `firmes`: unidades que son candidato firme. `segmento`: segmento de departamento por id_aviso."""
     # De la lista: la posición y lo que solo está ahí; el resto, sin redondear, de precio_esperado.tsv
     propias = ["id_aviso", "posicion", "ambientes", "antiguedad", "avisos_de_la_unidad", "avisos_discordantes",
                "brecha_otro_modelo_%", "link"]
@@ -199,6 +220,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=fr
     lista["brecha_neta_%"] = 100 * lista["brecha_neta"]
     lista["tasa_salida_ambientes_%"] = 100 * lista["tasa_salida_ambientes"]
     lista = lista.merge(limpio[["id_aviso", "titulo", "dormitorios"]], on="id_aviso", how="left")
+    lista["segmento"] = lista["id_aviso"].map(segmento) if segmento is not None else ""
     lista = lista.merge(explicacion.drop(columns=["precio_m2_esperado"]), on="id_aviso", how="left")
     niveles = {v: regla.nivel_de_refaccion(lista["estado_titulo"], costos, v) for v in ["central", "baja", "alta"]}
     lista["dist_barrio_popular_m"] = distancia_a_barrio_popular(lista, cfg_fe)
@@ -231,6 +253,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=fr
             "geo_dudoso": bool(f["geo_dudoso"]) if pd.notna(f["geo_dudoso"]) else False,
             "dist_barrio_popular_m": None if pd.isna(f["dist_barrio_popular_m"]) else int(round(f["dist_barrio_popular_m"])),
             "exclusiones": exclusiones[i],
+            "segmento": f["segmento"] if isinstance(f["segmento"], str) else "",
             "brecha_neta_pct": _limpio(f["brecha_neta_%"]), "nivel": f["nivel_decision"],
             "firme": bool(f["unidad"] in firmes),
             "motivo": f["motivo_decision"] if isinstance(f["motivo_decision"], str) else "",
@@ -355,13 +378,14 @@ def exportar(cfg, salida=SALIDA):
     for col in ["riesgo_descartar", "riesgo_revisar", "motivo_decision", "nivel_decision"]:
         precio[col] = precio[col].fillna("")
     ranking = pd.read_csv(resolver(rutas["ranking"]))
-    limpio = pd.read_csv(resolver(rutas["limpio"]), sep="\t", low_memory=False,
-                         usecols=["id_aviso", "titulo", "dormitorios"])
+    limpio = pd.read_csv(resolver(rutas["limpio"]), sep="\t", low_memory=False)
     explicacion = pd.read_csv(resolver(rutas["explicacion"]), sep="\t")
     embudo = pd.read_csv(resolver(rutas["embudo"]))
 
     firmes = unidades_firmes(precio, costos, cfg_an["umbral_brecha_neta"])
-    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg["fuentes_externas"], firmes)
+    segmento = segmento_por_aviso(limpio, cfg_an["semilla"])
+    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg["fuentes_externas"], firmes, segmento)
+    en_segmento_alerta = precio["id_aviso"].map(segmento) == SEGMENTO_ALERTA
     destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
     error = precio["brecha"].abs().median()
     resumen = {
@@ -380,6 +404,9 @@ def exportar(cfg, salida=SALIDA):
             "destacados_unidades": len(destacados),
             "destacados_firmes_unidades": sum(a["firme"] for a in destacados),
             "error_mediano_pct": round(100 * error, 1),
+            "segmento_alerta": SEGMENTO_ALERTA,
+            "error_mediano_segmento_alerta_pct": round(100 * float(precio.loc[en_segmento_alerta, "brecha"].abs().median()), 1),
+            "avisos_segmento_alerta_pct": round(100 * float(en_segmento_alerta.mean()), 1),
             "cobertura_intervalo_pct": round(100 * float((precio["precio_m2_usd"].between(
                 precio["precio_m2_esperado_inf"], precio["precio_m2_esperado_sup"])).mean()), 1),
             "tasa_salida_marcados_pct": None, "tasa_salida_resto_pct": None,

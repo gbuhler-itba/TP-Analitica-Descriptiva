@@ -299,7 +299,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── eda.py                       Funciones del análisis exploratorio
 │   ├── indice_confort.py            Índice de la PreEntrega 1, usado en el diagnóstico de la devolución
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           187 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           190 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -320,7 +320,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 187 tests, unos 2 minutos, sin red
+python3 -m pytest -q                                   # 190 tests, unos 2 minutos, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
@@ -397,6 +397,14 @@ mejoraba la experiencia del analista para este volumen y las dos rompían la rep
 | Errores residuales de la limpieza (baños en 0, pisos como número de unidad, expensas de relleno, casas) | Corregidos o marcados en la etapa 5; duplicados por ID resueltos con el polígono oficial | Notebook 01, diccionario |
 | Modelos predictivos contra un baseline, fuera de muestra | Cinco modelos sobre las mismas vueltas; el lineal ampliado es el oficial por ser explicable aviso por aviso; el gradient boosting, segunda opinión | Notebook 04, sección 4 |
 | Técnicas de clase (PCA/MCA, K-means) | Índice de equipamiento con MCA y micro-mercados con K-means, con estabilidad y utilidad frente a la alternativa simple; conclusión: describen, no mejoran el modelo | Notebook 06 |
+
+**Chequeo con comparables** (`src/chequeo_comparables.py`): para cada destacado se buscaron en la base departamentos
+del mismo barrio con ±1 ambiente, ±30% de superficie y ±15 años de antigüedad, excluida la propia unidad y los
+atípicos. En los 425 destacados con al menos 5 comparables, el precio esperado queda en la mediana 1,9% por encima
+de la mediana de los comparables, y el 83% sigue estando 25% o más por debajo de ellos (los 33 firmes con
+comparables, todos). Por segmento, el esperado queda más alto en "Nuevos con amenities" (+11,8%, en parte porque los
+comparables no distinguen amenities y el modelo sí) y en "Familiares amplios y antiguos" (+5,4%), consistente con el
+mayor error del modelo en esos dos segmentos.
 
 **Encontrado además en esta entrega:** 17 duplicados por ID que la PE2 resolvía al azar (12 cambiaban de barrio),
 249 avisos geocodificados a más de 1 km de su barrio (una calle homónima en otro barrio), y que la asignación de las

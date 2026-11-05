@@ -137,6 +137,25 @@ def test_exclusiones_nuevas_en_los_casos_testigo(exportado):
     assert all(b["candidatos"] <= b["senales"] <= b["unidades"] for b in barrios)
 
 
+def test_la_alerta_de_segmento_no_cambia_la_lista_destacada(exportado):
+    """El segmento del notebook 06 es descriptivo: la alerta se muestra, no excluye ni descarta."""
+    cfg, avisos, resumen, salida = exportado
+    nombres = {"Chicos y recientes", "Compactos de edificio antiguo", "Nuevos con amenities",
+               "Familiares amplios y antiguos"}
+    assert all(a["segmento"] in nombres for a in avisos)
+    i = resumen["indicadores"]
+    assert i["segmento_alerta"] == exportar_dashboard.SEGMENTO_ALERTA in nombres
+    assert i["error_mediano_segmento_alerta_pct"] > i["error_mediano_pct"]
+    assert 0 < i["avisos_segmento_alerta_pct"] < 50
+    destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
+    # Conteos del 04/11 con todas las exclusiones: la alerta no saca a nadie de la lista destacada ni de los firmes
+    assert len(destacados) == 486
+    assert sum(a["firme"] for a in destacados) == 38
+    con_alerta = [a for a in destacados if a["segmento"] == i["segmento_alerta"]]
+    assert con_alerta and any(a["firme"] for a in con_alerta)
+    assert not any("segmento" in e or "tipo" in e for a in avisos for e in a["exclusiones"])
+
+
 def test_los_json_son_validos_y_sin_nan(exportado):
     cfg, avisos, resumen, salida = exportado
     for nombre in ["avisos.json", "resumen.json", "estaciones.json", "fondo.json"]:
