@@ -1,11 +1,12 @@
-# Corrida de cero del 05/11/2026 (commit 1813043), en un worktree limpio del repo, macOS, Python 3.9 (.venv)
+# Corrida de cero del 05/11/2026 (commit 756c139), en un worktree limpio del repo, macOS, Python 3.9 (.venv)
 # Secuencia de docs/pipeline.md, sección 4: fuentes externas, permisos de obra, etapa 5, seguimiento, etapa 6,
 # exportador del dashboard, notebooks 01 a 07 (Run All) y la suite de tests. Resultado: todos los archivos de
 # data/processed, data/interim y docs/dashboard/data quedaron byte a byte iguales a los versionados (solo cambia
-# el commit anotado en resumen.json), los notebooks 03 a 07 reproducen sus salidas y 190 tests pasan.
+# el commit anotado en resumen.json, que se versiona de esta corrida), los notebooks 02 a 07 reproducen sus salidas
+# y 193 tests pasan. Reemplaza la corrida de la madrugada sobre el commit 1813043 (mismo resultado, 190 tests).
 # Se quitaron las advertencias de urllib3 y pandas; las rutas absolutas se reemplazaron por <repo>.
 
-=== 02:15:17 fuentes_externas
+=== 20:34:56 fuentes_externas
 <repo>/.venv/lib/python3.9/site-packages/shapely/measurement.py:72: RuntimeWarning: invalid value encountered in distance
   return lib.distance(a, b, **kwargs)
 === FUENTES EXTERNAS: ACCESIBILIDAD, VERDE Y BARRIOS ===
@@ -14,7 +15,7 @@
 Accesibilidad: data/processed/accesibilidad.tsv
 
 ==============================================================
-CONTROL DE CALIDAD | etapa: 07_fuentes_externas | corrida: 2026-11-05 02:15:43
+CONTROL DE CALIDAD | etapa: 07_fuentes_externas | corrida: 2026-11-05 20:35:15
 ==============================================================
 filas_entrada: 27922
 filas_salida: 27922
@@ -67,13 +68,13 @@ archivo_salida: data/processed/accesibilidad.tsv
 [qc] Log:  <repo>/outputs/logs/pipeline.log
 [qc] JSON: <repo>/outputs/logs/qc_07_fuentes_externas.json
 --- exit 0 (fuentes_externas)
-=== 02:15:43 permisos_obra
+=== 20:35:15 permisos_obra
 Avisos: 27922 (22912 con coordenadas)
 Obras con permiso en la ventana (una por punto): 1795
 permisos_obra_500m: mediana 9, media 10.4, máximo 40, avisos con 0: 302
 Salida: data/processed/permisos_obra.tsv (27922 filas)
 --- exit 0 (permisos_obra)
-=== 02:15:47 etapa 5
+=== 20:35:17 etapa 5
 ======================================================================
 PIPELINE TP 1 - FONDO DE INVERSIÓN INMOBILIARIO (CABA)
 ======================================================================
@@ -81,7 +82,7 @@ Python:               3.9.6
 Raíz del repositorio: <repo>
 Configuración:        config/config.yaml
 Etapas a ejecutar:    5 (limpieza)
-Inicio:               2026-11-05 02:15:49
+Inicio:               2026-11-05 20:35:19
 
 ######################################################################
 # ETAPA 5/6 - LIMPIEZA
@@ -90,7 +91,7 @@ Inicio:               2026-11-05 02:15:49
   27,922 avisos -> 27,578 (344 eliminados, ver registro)
 
 ==============================================================
-CONTROL DE CALIDAD | etapa: 05_limpieza | corrida: 2026-11-05 02:15:51
+CONTROL DE CALIDAD | etapa: 05_limpieza | corrida: 2026-11-05 20:35:21
 ==============================================================
 filas_entrada: 27922
 filas_salida: 27578
@@ -126,7 +127,7 @@ PIPELINE COMPLETO
   total: 0.0 min
   logs:  <repo>/outputs/logs
 --- exit 0 (etapa 5)
-=== 02:15:52 seguimiento
+=== 20:35:21 seguimiento
 Segundo relevamiento: 27,516 avisos | seguimiento: 27,578 avisos del primero
 estado
 salio          11763
@@ -134,7 +135,7 @@ sigue           9352
 republicado     6463
 Barrios truncados: ['belgrano', 'caballito', 'palermo', 'recoleta']
 --- exit 0 (seguimiento)
-=== 02:15:55 etapa 6
+=== 20:35:23 etapa 6
 ======================================================================
 PIPELINE TP 1 - FONDO DE INVERSIÓN INMOBILIARIO (CABA)
 ======================================================================
@@ -142,7 +143,7 @@ Python:               3.9.6
 Raíz del repositorio: <repo>
 Configuración:        config/config.yaml
 Etapas a ejecutar:    6 (analisis)
-Inicio:               2026-11-05 02:15:57
+Inicio:               2026-11-05 20:35:24
 
 ######################################################################
 # ETAPA 6/6 - ANÁLISIS (PRECIO ESPERADO, BRECHA Y RANKING)
@@ -163,7 +164,7 @@ Embudo del ranking:
 Además, brecha neta de costos sobre el umbral y sin riesgo legal de descarte (candidato después de costos)     884       840
 
 ==============================================================
-CONTROL DE CALIDAD | etapa: 06_analisis | corrida: 2026-11-05 02:18:05
+CONTROL DE CALIDAD | etapa: 06_analisis | corrida: 2026-11-05 20:36:48
 ==============================================================
 filas_entrada: 27578
 filas_salida_precio_esperado: 27578
@@ -205,47 +206,46 @@ archivo_explicacion: data/processed/explicacion_avisos.tsv
 ======================================================================
 PIPELINE COMPLETO
 ======================================================================
-  etapa 6 (analisis): 2.1 min
-  total: 2.1 min
+  etapa 6 (analisis): 1.4 min
+  total: 1.4 min
   logs:  <repo>/outputs/logs
 --- exit 0 (etapa 6)
-=== 02:18:05 exportar_dashboard
-Unidades exportadas: 1,375 | candidatos: 840 | firmes: 83 | destacados en el resumen: 486 | archivos: {'estaciones.json': '41 KB', 'avisos.json': '2179 KB', 'resumen.json': '16 KB', 'fondo.json': '492 KB'}
+=== 20:36:48 exportar_dashboard
+Unidades exportadas: 1,375 | candidatos: 840 | firmes: 83 | destacados en el resumen: 486 | archivos: {'estaciones.json': '41 KB', 'avisos.json': '2207 KB', 'resumen.json': '16 KB', 'fondo.json': '492 KB'}
 --- exit 0 (exportar_dashboard)
-=== 02:18:17 notebook 01_calidad_y_limpieza
+=== 20:36:54 notebook 01_calidad_y_limpieza
 [NbConvertApp] Converting notebook 01_calidad_y_limpieza.ipynb to notebook
-[NbConvertApp] Writing 337168 bytes to 01_calidad_y_limpieza.ipynb
+[NbConvertApp] Writing 338240 bytes to 01_calidad_y_limpieza.ipynb
 --- exit 0 (notebook 01_calidad_y_limpieza)
-=== 02:18:29 notebook 02_eda
+=== 20:37:02 notebook 02_eda
 [NbConvertApp] Converting notebook 02_eda.ipynb to notebook
 [NbConvertApp] Writing 1089429 bytes to 02_eda.ipynb
 --- exit 0 (notebook 02_eda)
-=== 02:18:39 notebook 03_precio_esperado
+=== 20:37:08 notebook 03_precio_esperado
 [NbConvertApp] Converting notebook 03_precio_esperado.ipynb to notebook
-[NbConvertApp] Writing 540321 bytes to 03_precio_esperado.ipynb
+[NbConvertApp] Writing 540476 bytes to 03_precio_esperado.ipynb
 --- exit 0 (notebook 03_precio_esperado)
-=== 02:18:48 notebook 04_validacion_modelos
+=== 20:37:14 notebook 04_validacion_modelos
 [NbConvertApp] Converting notebook 04_validacion_modelos.ipynb to notebook
-[NbConvertApp] Writing 1071347 bytes to 04_validacion_modelos.ipynb
+[NbConvertApp] Writing 1071750 bytes to 04_validacion_modelos.ipynb
 --- exit 0 (notebook 04_validacion_modelos)
-=== 02:28:52 notebook 05_hipotesis
+=== 20:42:58 notebook 05_hipotesis
 [NbConvertApp] Converting notebook 05_hipotesis.ipynb to notebook
-[NbConvertApp] Writing 586052 bytes to 05_hipotesis.ipynb
+[NbConvertApp] Writing 586123 bytes to 05_hipotesis.ipynb
 --- exit 0 (notebook 05_hipotesis)
-=== 02:31:05 notebook 06_segmentos_exploratorio
+=== 20:44:17 notebook 06_segmentos_exploratorio
 [NbConvertApp] Converting notebook 06_segmentos_exploratorio.ipynb to notebook
-[NbConvertApp] Writing 426189 bytes to 06_segmentos_exploratorio.ipynb
+[NbConvertApp] Writing 426199 bytes to 06_segmentos_exploratorio.ipynb
 --- exit 0 (notebook 06_segmentos_exploratorio)
-=== 02:35:49 notebook 07_regla_de_decision
+=== 20:47:26 notebook 07_regla_de_decision
 [NbConvertApp] Converting notebook 07_regla_de_decision.ipynb to notebook
 [NbConvertApp] Writing 178072 bytes to 07_regla_de_decision.ipynb
 --- exit 0 (notebook 07_regla_de_decision)
-=== 02:35:58 pytest
+=== 20:47:30 pytest
 ........................................................................ [ 37%]
-........................................................................ [ 75%]
-..............................................                           [100%]
+........................................................................ [ 74%]
+.................................................                        [100%]
 =============================== warnings summary ===============================
-../../../../../../..<repo>/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35
 
 tests/test_explicacion.py::test_explicar_gbm_suma_la_prediccion_con_barrio_categorico[ciudad]
   <repo>/.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
@@ -294,6 +294,6 @@ tests/test_fuentes_externas.py::test_riel_y_transporte_pesado_son_los_minimos_co
     return self._inv_point(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-190 passed, 41 warnings in 66.29s (0:01:06)
+193 passed, 41 warnings in 34.63s
 --- exit 0 (pytest)
-=== 02:37:05 FIN
+=== 20:48:06 FIN

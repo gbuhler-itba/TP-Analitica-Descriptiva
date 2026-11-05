@@ -103,7 +103,7 @@ docs/pipeline.md             # instalación, ejecución, tests, corrida document
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 191 tests pasando (unos 70 s)
+tests/                       # pytest, 193 tests pasando (unos 40 s)
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
