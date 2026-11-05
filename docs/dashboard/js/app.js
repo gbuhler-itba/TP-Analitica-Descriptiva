@@ -41,7 +41,10 @@
   const chipsExclusion = (a) => a.exclusiones.map(e => `<span class="chip chip-exclusion" title="No entra a la lista destacada del resumen">${esc(e[0].toUpperCase() + e.slice(1))}</span>`).join("");
   const destacable = (a) => esCandidato(a) && a.consenso && a.exclusiones.length === 0;
   const prioridad = (a) => (a.firme ? 2 : esCandidato(a) ? 1 : 0) * 10 + (a.consenso ? 1 : 0);
-  const ordenar = (lista) => lista.slice().sort((x, y) => prioridad(y) - prioridad(x) || (y.brecha_neta_pct ?? -999) - (x.brecha_neta_pct ?? -999));
+  // Buscador: los avisos con alguna exclusión (casos especiales) van después de todos los demás; dentro de cada grupo,
+  // primero los firmes, después los candidatos, dentro de cada uno los de los dos modelos y, por último, la brecha neta
+  const ordenar = (lista) => lista.slice().sort((x, y) => (x.exclusiones.length > 0) - (y.exclusiones.length > 0)
+    || prioridad(y) - prioridad(x) || (y.brecha_neta_pct ?? -999) - (x.brecha_neta_pct ?? -999));
   // Lista destacada: primero los firmes, después por brecha neta
   const ordenarDestacados = (lista) => lista.slice().sort((x, y) => (y.firme - x.firme) || (y.brecha_neta_pct ?? -999) - (x.brecha_neta_pct ?? -999));
 
@@ -394,6 +397,7 @@
           <h3>Qué resta</h3><ul class="factores">${bajan.map(filaFactor).join("") || "<li>Nada relevante</li>"}</ul>
           <p class="nota">Respecto de un aviso típico de la zona, según el modelo oficial. Explica al modelo, no causas.</p></div>
         <div><h3>De la compra a la brecha neta (escenario base)</h3>
+          ${a.exclusiones.length ? `<p class="nota">Valor de salida poco confiable: el comparable del modelo no aplica a este aviso (ver alerta).</p>` : ""}
           <table class="cascada">
             <tr><td>Precio publicado (se compra sin negociar)</td><td class="num">${usd(a.precio_usd)}</td></tr>
             <tr><td>+ Costos de entrada (escribano, Sellos, comisión)</td><td class="num">${usd(c.entrada)}</td></tr>
