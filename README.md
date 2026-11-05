@@ -1,6 +1,6 @@
 # Fondo de inversión inmobiliario: avisos con precio atípicamente bajo en CABA
 
-**Analítica Descriptiva, ITBA, 2026 C2 · PreEntrega 3** (borrador)
+**Analítica Descriptiva, ITBA, 2026 C2 · PreEntrega 3**
 
 Herramienta para que el analista de un fondo de inversión inmobiliario encuentre, entre decenas de miles de
 avisos de departamentos usados en venta en CABA, los que se publican claramente por debajo del precio que el
@@ -50,39 +50,39 @@ Qué cambió en cada entrega:
 **Resultados de esta entrega** (números de `data/processed/`, regenerados el 02/11/2026 y reproducidos de cero, byte a byte, el
 05/11/2026: `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`)
 
-- **El embudo, con sus universos reconciliados:** 27.578 avisos (25.169 unidades) analizados → 1.819 avisos
+- **Recomendación · El embudo, con sus universos reconciliados:** 27.578 avisos (25.169 unidades) analizados → 1.819 avisos
   (1.714 unidades) piden más de 25% menos que su precio esperado → 1.556 (1.470) siguen marcados con el umbral de su
   barrio → **1.455 avisos, 1.375 unidades, sin señales de error de carga: la lista oficial** → 884 avisos (840
   unidades) son candidatos después de costos en el escenario base, y **83 si se vende al límite inferior del rango
   del 80%** (`embudo_ranking.csv`).
-- **El precio esperado es una referencia sólida, con incertidumbre grande en cada aviso.** El modelo oficial
+- **Predictivo · El precio esperado es una referencia sólida, con incertidumbre grande en cada aviso.** El modelo oficial
   (lineal ampliado con el estado del título) erra 12,5% en la mediana fuera de muestra, contra 17,5% de usar la
   mediana de la zona; el gradient boosting llega a 11,3% pero no se explica aviso por aviso, así que se usa como
   segunda opinión (1.124 avisos marcados por los dos). El rango del 80% del precio esperado de un aviso es de
   alrededor de ±32% y cubre el precio publicado el 79,5% de las veces: por eso la ficha muestra un rango, no un
   número.
-- **H1 tiene un resultado doble.** La cola de brechas negativas no es más pesada de lo que explica el error del modelo
+- **Relación estadística · H1 tiene un resultado doble.** La cola de brechas negativas no es más pesada de lo que explica el error del modelo
   (6,6% por debajo de −25% contra 7,7% por encima de +33%): la brecha no prueba precios atípicos. Pero **los avisos
   marcados salen más del portal** en los 74 días hasta el segundo relevamiento: 46,7% contra 39,7%, y dentro del
   barrio, a igual valor esperado, +9,4 puntos (IC 6,5 a 12,2), con un gradiente (cada 10 puntos más por debajo,
   +2,2 puntos de salida) y un placebo a favor (los avisos caros salen menos). Salir del portal no prueba una venta,
   pero muestra que la brecha ordena algo real.
-- **H2 (sub-zonas): apoyo parcial.** La sub-zona baja el error de la referencia 0,6 puntos en total (IC 0,4 a 0,85),
+- **Relación estadística · H2 (sub-zonas): apoyo parcial.** La sub-zona baja el error de la referencia 0,6 puntos en total (IC 0,4 a 0,85),
   con mejora significativa en 4 de 41 barrios y grande en uno (Villa Lugano). Por eso el modelo la usa barrio por
   barrio, donde mejora y es estable.
-- **H3 (ubicación): apoyo, menor del esperado.** Con tren, Metrobus, premetro, espacios verdes y permisos de obra,
+- **Relación estadística · H3 (ubicación): apoyo, menor del esperado.** Con tren, Metrobus, premetro, espacios verdes y permisos de obra,
   los bloques de transporte y entorno son significativos en conjunto, pero por variable quedan 2 de 16 con un efecto
   interpretable, y chico: +1,5% por hectárea de espacio verde a 500 m y +4,4% por cada 10 obras nuevas. El premetro
   (−24%) también sobrevive a la corrección de Holm, pero es la zona y no el premetro: sin los avisos a menos de 500 m
   de un barrio popular pasa a −4%, con un intervalo que incluye el 0. El subte a menos de 300 m da −4,8% pero no
   sobrevive a Holm (p ajustado 0,27); que la avenida pese más que la estación es una conjetura, no algo medido. En
   la PE2, con subte y centralidad, no se detectaba nada.
-- **El estado del inmueble pesa más de lo que parecía.** Un aviso "a reciclar" se publica 18% más barato que uno
+- **Relación estadística · El estado del inmueble pesa más de lo que parecía.** Un aviso "a reciclar" se publica 18% más barato que uno
   igual sin esa marca, y uno "a refaccionar" 16%. Entra al modelo y a la regla: una parte de la brecha es el estado,
   no una subvaluación.
-- **Lo que mira el gradient boosting** (SHAP): la ubicación explica el 47% de la importancia; amenities y cochera,
+- **Predictivo · Lo que mira el gradient boosting** (SHAP): la ubicación explica el 47% de la importancia; amenities y cochera,
   17%; antigüedad, 14%; tamaño, 12%. El orden es estable entre vueltas y coincide con las primas del lineal.
-- **Índice de equipamiento y micro-mercados (exploratorio):** sirven para describir la oferta y para marcar dónde el
+- **Descriptivo · Índice de equipamiento y micro-mercados (exploratorio):** sirven para describir la oferta y para marcar dónde el
   precio esperado es menos preciso; no mejoran el precio esperado ni la liquidez frente a las alternativas simples
   (amenities sueltas y cantidad de ambientes). No entran a la lista oficial.
 
@@ -139,7 +139,7 @@ cambia el orden de los avisos dentro de una zona.
 - **Geográfico:** 47 categorías de barrio de MercadoLibre. No coinciden con los 48 barrios oficiales: incluyen
   "Barrio Norte" y no incluyen San Cristóbal ni Parque Chas. Se usa el barrio de búsqueda y no el polígono oficial
   porque es la categoría donde el comprador encuentra el aviso y donde el mercado forma el precio; el polígono
-  oficial se usa como control (sección 12).
+  oficial se usa como control (sección 13).
 - **Tipología:** departamentos usados en venta. Quedan fuera casas, alquileres, avisos de compra y unidades en pozo
   (237 avisos con antigüedad negativa, se excluyen en la limpieza; otros 9 avisos de la lista de señales, 8 unidades, lo
   dicen solo en el título: la regla de decisión los descarta y el dashboard los marca). Una casa publicada como departamento sigue en el
@@ -434,7 +434,22 @@ vueltas de la validación depende del orden de las filas del dataset (`docs/pipe
 La respuesta a la devolución de la PreEntrega 1 (rutas, parametrización, pesos fijos, contexto, fuentes) sigue en
 [`estado_correcciones.md`](docs/correcciones_pe1/estado_correcciones.md).
 
-## 11. Regla de decisión: de señal a candidato
+## 11. Técnicas utilizadas
+
+Una fila por técnica, con lo que pide la consigna: qué resuelve, supuestos, validación, qué agrega frente a una
+alternativa más simple y su límite principal. Los números son los de los notebooks indicados.
+
+| Técnica | Qué problema resuelve | Supuestos o transformaciones | Cómo se valida | Qué aporta frente a la alternativa simple (y cuál es) | Limitación principal | Dónde |
+|---|---|---|---|---|---|---|
+| Modelo hedónico lineal ampliado (oficial) | El precio por m² esperado de cada aviso según sus características, su zona y el estado del título | Log del precio por m²; primas aditivas en log; atípicos marcados sobre el log dentro de la zona y solo con el entrenamiento | 5 vueltas agrupadas por unidad, sin fuga: error mediano fuera de muestra 12,5% | Contra la mediana de la zona (17,5%): 5 puntos menos de error, y cada prima se explica, con una explicación por aviso exacta | Erra más en "Familiares amplios y antiguos" (14,3%), donde el esperado tiende a quedar alto; por aviso, el rango es de alrededor de ±32% | Notebook 04 (secciones 4 y 6), `src/modelo.py` |
+| Gradient boosting con SHAP | Una segunda opinión no lineal sobre el precio esperado, y qué mira ese modelo | Sin forma funcional; barrio como categórica nativa; SHAP por permutación (el TreeExplainer da valores errados con esa categórica) | Mismas vueltas: 11,3%; el orden de los bloques de importancia es estable entre vueltas (Spearman mínimo 0,98) | 1,2 puntos menos de error que el lineal ampliado; el consenso de los dos modelos (1.124 avisos; Jaccard 0,52) es la marca de robustez del dashboard | No se explica aviso por aviso, por eso no es el oficial; SHAP explica al modelo, no causas | Notebook 04 (secciones 4 y 9), `src/validacion.py` |
+| Intervalo conformal del 80% | Cuánto puede equivocarse el precio esperado en un aviso concreto, en su barrio | Cuantiles de los residuos fuera de muestra de las otras vueltas, dentro del barrio (50 avisos o más; si no, toda la ciudad); no supone normalidad | Cobertura fuera de muestra 79,5% para un nivel nominal de 80%, en total y por barrio | Frente a un único número o a un ±25% fijo: un rango por aviso (ancho mediano de alrededor de ±32%) que define el candidato firme (83 unidades) | El rango es ancho: ordena avisos, no tasa uno | Notebook 04 (sección 5), `src/validacion.py`, columnas `precio_m2_esperado_inf` y `_sup` |
+| H1b: modelo lineal de probabilidad y logit con efectos fijos de barrio | Si los avisos marcados salen más del portal que sus comparables, a igual valor esperado | Controla el log del valor esperado, el log de m² y la baja de precio previa (no el precio publicado, que es un mal control); errores agrupados por unidad; sin los 4 barrios truncados | Robustez sin republicaciones, con la brecha del gradient boosting y por terciles de barrio; placebo con brecha mayor a +33%: −8,6 pp | Frente a la diferencia bruta (46,7% contra 39,7%): +9,4 pp dentro del barrio (IC 6,5 a 12,2; OR 1,48) y un gradiente de +2,2 pp por cada 10 pp más de brecha | Salir del portal no es venderse (venta, retiro o republicación no detectada); en el tercil de barrios medios el IC incluye el 0 | Notebook 05 (H1), `src/inferencia.py`, `src/seguimiento.py` |
+| H3: regresión con efectos fijos de barrio y errores agrupados, Wald y Holm | Cuánto de la diferencia de precio dentro de un barrio se explica por transporte, espacios verdes y obras | Log del precio por m²; distancias y entorno a 500 m; errores agrupados por sub-zona; avisos con geocodificación dudosa excluidos | Wald por bloque (transporte p = 3,7e-5, entorno p = 2,4e-7); Holm por variable; fuera de muestra, la ubicación baja el error 0,19 pp | Frente a la PE2 (subte y centralidad, sin detectar nada): 2 de 16 efectos interpretables, +1,5% por ha de espacio verde y +4,4% por cada 10 obras | Efectos chicos; el premetro (−24%) es un artefacto de zona (barrios populares), no una causa | Notebook 05 (H3), `src/fuentes_externas.py`, `src/inferencia.py` |
+| MCA (índice de equipamiento) | Resumir 17 características Sí/No en un índice de equipamiento | El vacío se lee como "No" (el MCA ingenuo medía la completitud del aviso: −0,94); se usa el primer eje | Correlación 0,99 con el índice calculado solo en avisos completos; 0,96 con el conteo de amenities | Frente a contar amenities: hace aparecer el segmento "Nuevos con amenities", que con el conteo se diluye, y en el modelo le gana al conteo por 0,15 pp | No mejora el precio esperado: sube el error 0,19 pp (IC 0,09 a 0,26) frente a las amenities sueltas, así que no entra al modelo | Notebook 06 (secciones 2 y 5), `src/segmentos.py` |
+| K-means (tipos de departamento) | Describir la oferta en tipos de departamento y ver dónde el precio esperado es menos preciso | K = 4 (sin codo claro; silhouette parecida entre 2 y 6) sobre tamaño, antigüedad, índice y precio esperado estandarizados | Estabilidad con bootstrap: ARI 0,99 en 100 remuestreos (umbral de clase 0,8), tamaños que se mueven menos de 0,5 pp; silhouette 0,22 | Frente a terciles de barrio y ambientes: una mirada que la ubicación no da (ARI 0,045 con los terciles); error del modelo 14,3% y 13,4% en dos tipos contra 11,9% en el resto, y la alerta de sesgo del dashboard | No son grupos separados (silhouette 0,22); para la liquidez no le ganan a las ambientes; no entran a la lista oficial | Notebook 06 (secciones 3 a 5), `src/segmentos.py`, alerta en la ficha del dashboard |
+
+## 12. Regla de decisión: de señal a candidato
 
 ### Cómo se arma la lista de señales
 
@@ -481,7 +496,7 @@ queda para la entrega final.
 El simulador del dashboard (pestaña Tendencias) permite cambiar escenario de costos, negociación, refacción,
 Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conteos.
 
-## 12. Limitaciones
+## 13. Limitaciones
 
 - **Precio publicado, no de cierre.** La brecha se mide contra precios publicados; la regla descuenta 4,79% al vender,
   pero compra al publicado (supuesto conservador).
