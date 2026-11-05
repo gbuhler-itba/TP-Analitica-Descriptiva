@@ -51,3 +51,17 @@ def test_el_chequeo_corre_y_devuelve_las_columnas_esperadas(datos):
                             "esperado_vs_comparables_por_segmento_pct"}
     assert resumen["con_comparables"] <= resumen["destacados"] == 40
     assert resumen["firmes_debajo_del_umbral"] <= resumen["firmes_con_comparables"]
+
+
+def test_guarda_la_tabla_y_el_resumen(datos, tmp_path):
+    base, destacados = datos
+    tabla = cc.chequear(base, destacados.head(12))
+    cc.guardar(tabla, cc.resumir(tabla), tmp_path)
+    leida = pd.read_csv(tmp_path / "chequeo_comparables.csv")
+    assert len(leida) == 12 and list(leida.columns) == list(tabla.columns)
+    import json
+    resumen = json.load(open(tmp_path / "chequeo_comparables.json", encoding="utf-8"))
+    assert resumen["destacados"] == 12 and resumen["criterio"]["minimo_comparables"] == cc.MINIMO
+    # El archivo versionado tiene que corresponder a la lista destacada actual
+    versionado = json.load(open(resolver("data/processed/chequeo_comparables.json"), encoding="utf-8"))
+    assert versionado["destacados"] == len(destacados)

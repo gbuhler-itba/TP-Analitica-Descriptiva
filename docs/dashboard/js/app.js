@@ -259,13 +259,21 @@
   }
 
   /* ---------- tendencias ---------- */
+  // El decil marcado es el más bajo de la brecha: la etiqueta dice su rango real, no el umbral de la regla
+  function tituloDeciles(deciles) {
+    const marcados = deciles.filter(d => d.marcado);
+    if (!marcados.length) return "Decil de brecha (mediana).";
+    const inf = Math.min(...marcados.map(d => d.brecha_min_pct)), sup = Math.max(...marcados.map(d => d.brecha_max_pct));
+    return `Decil de brecha (mediana). Verde oscuro: ${marcados.length === 1 ? "decil más bajo" : "deciles más bajos"}, brecha de ${pct(inf, 0)} a ${pct(sup, 0)}.`;
+  }
+
   function armarTendencias() {
     const deciles = D.resumen.salida_por_brecha || [];
     Graficos.barrasVerticales(document.getElementById("g-salida"), deciles.map(d => ({
       etiqueta: pct(d.brecha_mediana_pct, 0, true), valor: d.tasa_pct, inf: d.ic_inf_pct, sup: d.ic_sup_pct,
       color: d.marcado ? COLOR.senal : COLOR.gris,
       detalle: `Decil ${d.decil} (brecha de ${pct(d.brecha_min_pct, 0)} a ${pct(d.brecha_max_pct, 0)}): salieron ${pct(d.tasa_pct)} de ${num(d.avisos)} avisos (IC ${pct(d.ic_inf_pct)} a ${pct(d.ic_sup_pct)})` })),
-      { maximo: 60, tituloY: "Decil de brecha (mediana). Verde oscuro: más de 25% por debajo del esperado." });
+      { maximo: 60, tituloY: tituloDeciles(deciles) });
     const i = D.resumen.indicadores;
     document.getElementById("g-salida").insertAdjacentHTML("beforeend",
       `<p class="nota">En total salieron ${pct(i.tasa_salida_marcados_pct)} de los avisos marcados contra ${pct(i.tasa_salida_resto_pct)} del resto.</p>`);
@@ -332,7 +340,7 @@
     document.getElementById("enlaces-notebooks").innerHTML = nbs.map(([n, t]) => `<li><a href="${REPO}notebooks/${n}.ipynb" target="_blank" rel="noopener">${t}</a> (<code>${n}</code>)</li>`).join("") +
       `<li><a href="${REPO}README.md" target="_blank" rel="noopener">README del proyecto</a> y <a href="${REPO}docs/pipeline.md" target="_blank" rel="noopener">pipeline de datos</a></li>`;
     document.getElementById("pie-datos").textContent =
-      `Datos generados el ${fecha(m.generado)} (commit ${m.commit}) con el modelo ${m.modelo_oficial}. Relevamientos del ${fecha(m.relevamiento_1)} y del ${fecha(m.relevamiento_2)}.`;
+      `Datos generados el ${fecha(m.generado)} a partir del commit ${m.commit}, con el modelo ${m.modelo_oficial}. Relevamientos del ${fecha(m.relevamiento_1)} y del ${fecha(m.relevamiento_2)}.`;
   }
 
   /* ---------- ficha ---------- */

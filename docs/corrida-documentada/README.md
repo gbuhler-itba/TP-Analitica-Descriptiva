@@ -51,6 +51,15 @@ b001f82960c34cedd5489e149498e7a32d978ada1537df7eab69a5a6b935226f  data/external/
 BA Data y se pisa el snapshot; si el portal publicó cambios, `dist_transporte_m`
 y el hash del dataset final van a cambiar.
 
+## Corrida de cero de la PreEntrega 3 (05/11/2026)
+
+`corrida_de_cero_2026-11-05.log` es el registro de una corrida completa de las etapas 5 y 6, el exportador del
+dashboard, los notebooks 01 a 07 y la suite de tests, hecha en un worktree limpio del commit `1813043` (macOS,
+Python 3.9, `.venv`). Resultado: todos los archivos de `data/processed/`, `data/interim/` y `docs/dashboard/data/`
+quedaron byte a byte iguales a los versionados (solo cambia el commit anotado en `resumen.json`), los notebooks 03 a
+07 reproducen sus salidas y los 190 tests pasan. Es la evidencia de ejecución que respalda los números del README de
+la PreEntrega 3.
+
 ## Hashes de los datasets versionados
 
 ```

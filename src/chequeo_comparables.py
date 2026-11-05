@@ -10,6 +10,9 @@ precio esperado y el publicado contra la mediana del precio por m² de esos
 comparables. No cambia ninguna salida del pipeline: es un chequeo de
 plausibilidad del modelo con una referencia que no usa modelo.
 
+Guarda la tabla por destacado en data/processed/chequeo_comparables.csv y el
+resumen (los números del README) en data/processed/chequeo_comparables.json.
+
 Uso:  python3 src/chequeo_comparables.py
 """
 
@@ -91,10 +94,21 @@ def destacados_del_dashboard(base, ruta=RAIZ / "docs" / "dashboard" / "data" / "
     return avisos[["id", "firme", "segmento"]].rename(columns={"id": "id_aviso"}).merge(base, on="id_aviso")
 
 
-def main():
-    base = cargar_base(cargar_config())
+def guardar(tabla, resumen, carpeta):
+    """Tabla por destacado (CSV) y resumen (JSON), versionados como evidencia del párrafo del README."""
+    carpeta = Path(carpeta)
+    tabla.round(4).to_csv(carpeta / "chequeo_comparables.csv", index=False)
+    with open(carpeta / "chequeo_comparables.json", "w", encoding="utf-8") as f:
+        json.dump({**resumen, "criterio": {**TOLERANCIA, "minimo_comparables": MINIMO, "umbral_brecha": UMBRAL_BRECHA}},
+                  f, ensure_ascii=False, indent=1)
+
+
+def main(carpeta=None):
+    cfg = cargar_config()
+    base = cargar_base(cfg)
     tabla = chequear(base, destacados_del_dashboard(base))
     resumen = resumir(tabla)
+    guardar(tabla, resumen, carpeta or resolver(cfg["rutas"]["limpio"]).parent)
     sin = int((tabla["comparables"] < MINIMO).sum())
     print(f"Destacados: {resumen['destacados']} | con al menos {MINIMO} comparables: {resumen['con_comparables']} "
           f"(sin suficientes: {sin}, de los cuales sin ambientes o antigüedad: "
