@@ -73,7 +73,7 @@
       <h2>Buscador</h2>
       <p class="nota">Elegí las características y mirá las mejores opciones, con el mismo orden que el resumen:
         primero los candidatos firmes, después los candidatos, dentro de cada grupo los que marcan los dos modelos y,
-        por último, la brecha neta.</p>
+        por último, la brecha neta. Los avisos con alguna alerta (casos especiales) van siempre al final.</p>
       <form class="filtros" id="filtros" autocomplete="off">
         <label>Barrio <select id="f-barrio"><option value="">Todos</option></select></label>
         <label>Ambientes <select id="f-ambientes"><option value="">Todos</option><option value="1">1</option>
@@ -86,7 +86,7 @@
           <option value="candidato">Candidatos después de costos</option><option value="firme">Candidatos firmes</option></select></label>
         <label class="caja"><input type="checkbox" id="f-sinriesgo"> Sin señales de riesgo legal</label>
         <label class="caja"><input type="checkbox" id="f-consenso"> Lo marcan los dos modelos</label>
-        <label class="caja"><input type="checkbox" id="f-sinalertas"> Sin alertas (barrio popular, casa o PH, uso comercial, barrio dudoso, varias unidades, financiación, en pozo)</label>
+        <label class="caja"><input type="checkbox" id="f-sinalertas" checked> Sin alertas (barrio popular, casa o PH, uso comercial, barrio dudoso, varias unidades, financiación, en pozo)</label>
         <label class="caja"><input type="checkbox" id="f-publicados"> Solo los que seguían publicados al 28/10</label>
         <button type="reset" class="secundario">Limpiar</button>
       </form>
