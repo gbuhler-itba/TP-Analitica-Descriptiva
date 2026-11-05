@@ -37,6 +37,11 @@ antiguos" el modelo tiene más error y el precio esperado tiende a quedar alto:
 el dashboard muestra una alerta de revisión en la tabla y en la ficha. Es
 descriptiva: no excluye de la lista destacada ni cambia ningún conteo.
 
+Estado en el segundo relevamiento: cada aviso lleva `estado_r2` ("sigue",
+"republicado" o "salio", de `seguimiento_avisos.csv`), para avisar en la ficha y
+en las tablas que muchos ya no estaban publicados al 28/10. No cambia ningún
+conteo ni ninguna lista.
+
 Uso:  python3 src/exportar_dashboard.py
 """
 
@@ -209,9 +214,11 @@ def segmento_por_aviso(limpio, semilla):
     return pd.Series(km.labels_, index=limpio["id_aviso"].values).map(segmentos.nombrar_segmentos(centroides))
 
 
-def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset(), segmento=None):
+def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset(), segmento=None,
+                 estado_r2=None):
     """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador.
-    `firmes`: unidades que son candidato firme. `segmento`: segmento de departamento por id_aviso."""
+    `firmes`: unidades que son candidato firme. `segmento`: segmento de departamento por id_aviso.
+    `estado_r2`: estado en el segundo relevamiento por id_aviso (sigue, republicado, salio)."""
     # De la lista: la posición y lo que solo está ahí; el resto, sin redondear, de precio_esperado.tsv
     propias = ["id_aviso", "posicion", "ambientes", "antiguedad", "avisos_de_la_unidad", "avisos_discordantes",
                "brecha_otro_modelo_%", "link"]
@@ -221,6 +228,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=fr
     lista["tasa_salida_ambientes_%"] = 100 * lista["tasa_salida_ambientes"]
     lista = lista.merge(limpio[["id_aviso", "titulo", "dormitorios"]], on="id_aviso", how="left")
     lista["segmento"] = lista["id_aviso"].map(segmento) if segmento is not None else ""
+    lista["estado_r2"] = lista["id_aviso"].map(estado_r2) if estado_r2 is not None else ""
     lista = lista.merge(explicacion.drop(columns=["precio_m2_esperado"]), on="id_aviso", how="left")
     niveles = {v: regla.nivel_de_refaccion(lista["estado_titulo"], costos, v) for v in ["central", "baja", "alta"]}
     lista["dist_barrio_popular_m"] = distancia_a_barrio_popular(lista, cfg_fe)
@@ -254,6 +262,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=fr
             "dist_barrio_popular_m": None if pd.isna(f["dist_barrio_popular_m"]) else int(round(f["dist_barrio_popular_m"])),
             "exclusiones": exclusiones[i],
             "segmento": f["segmento"] if isinstance(f["segmento"], str) else "",
+            "estado_r2": f["estado_r2"] if isinstance(f["estado_r2"], str) else "",
             "brecha_neta_pct": _limpio(f["brecha_neta_%"]), "nivel": f["nivel_decision"],
             "firme": bool(f["unidad"] in firmes),
             "motivo": f["motivo_decision"] if isinstance(f["motivo_decision"], str) else "",
@@ -386,7 +395,11 @@ def exportar(cfg, salida=SALIDA):
 
     firmes = unidades_firmes(precio, costos, cfg_an["umbral_brecha_neta"])
     segmento = segmento_por_aviso(limpio, cfg_an["semilla"])
-    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg["fuentes_externas"], firmes, segmento)
+    ruta_seg = resolver(rutas["seguimiento"])
+    seg = pd.read_csv(ruta_seg) if ruta_seg.exists() else None
+    estado_r2 = seg.set_index("id_aviso")["estado"] if seg is not None else None
+    avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg["fuentes_externas"], firmes, segmento,
+                          estado_r2)
     en_segmento_alerta = precio["id_aviso"].map(segmento) == SEGMENTO_ALERTA
     destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
     error = precio["brecha"].abs().median()
@@ -421,9 +434,7 @@ def exportar(cfg, salida=SALIDA):
         "salida_por_brecha": None,
         "barrios": resumen_por_barrio(precio, ranking, firmes),
     }
-    ruta_seg = resolver(rutas["seguimiento"])
-    if ruta_seg.exists():
-        seg = pd.read_csv(ruta_seg)
+    if seg is not None:
         ok = ~seg["barrio_truncado"].astype(bool)
         marc = precio["marcado"].values
         resumen["indicadores"]["tasa_salida_marcados_pct"] = round(100 * float(seg.loc[ok & marc, "salio"].mean()), 1)

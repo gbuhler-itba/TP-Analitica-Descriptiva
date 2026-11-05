@@ -31,7 +31,8 @@
     <p class="cargando" id="cargando">Cargando los datos…</p>
 
     <section class="pagina" id="pagina-resumen" hidden>
-      <p class="nota nota-aviso">Señales para revisar, no oportunidades confirmadas · <a href="#leer">Cómo leer este tablero</a></p>
+      <p class="nota nota-aviso">Señales para revisar, no oportunidades confirmadas · Datos del 14/08: la mitad ya no estaba
+        publicada al 28/10 · <a href="#leer">Cómo leer este tablero</a></p>
       <div class="indicadores" id="indicadores"></div>
       <section class="bloque">
         <h2>Los que más vale la pena mirar</h2>
@@ -86,6 +87,7 @@
         <label class="caja"><input type="checkbox" id="f-sinriesgo"> Sin señales de riesgo legal</label>
         <label class="caja"><input type="checkbox" id="f-consenso"> Lo marcan los dos modelos</label>
         <label class="caja"><input type="checkbox" id="f-sinalertas"> Sin alertas (barrio popular, casa o PH, uso comercial, barrio dudoso, varias unidades, financiación, en pozo)</label>
+        <label class="caja"><input type="checkbox" id="f-publicados"> Solo los que seguían publicados al 28/10</label>
         <button type="reset" class="secundario">Limpiar</button>
       </form>
       <p class="nota" id="buscador-conteo"></p>
@@ -168,8 +170,11 @@
           llegaron al tope de resultados del portal: son una muestra.</li>
         <li><strong>Precio publicado, no de cierre.</strong> La regla descuenta 4,79% al vender (brecha publicado-cierre) y compra
           al precio publicado, un supuesto conservador.</li>
-        <li><strong>Salir del portal no es venderse.</strong> Puede ser una venta, un retiro o una republicación que no
-          detectamos.</li>
+        <li><strong>Muchos ya no están publicados.</strong> Al 28/10, la mitad de las señales había salido del portal (y un
+          17% estaba republicada con otro aviso): la ficha y las tablas lo indican. Salir del portal no es lo mismo que
+          venderse: puede ser una venta, un retiro o una republicación que no detectamos. Los avisos marcados salen más que el
+          resto (<a href="#tendencias">Tendencias</a>), lo que es consistente con que estaban baratos. En Palermo, Belgrano,
+          Caballito y Recoleta, truncados por el tope del portal, el dato es menos confiable.</li>
         <li><strong>Costos supuestos.</strong> Escribano, Sellos, comisiones y refacción salen de fuentes públicas con un rango,
           no de operaciones del fondo. El impuesto a las ganancias se deja en 0 (depende de la forma jurídica); el simulador
           muestra 15% y 35%. No incluye el costo de tenencia.</li>
