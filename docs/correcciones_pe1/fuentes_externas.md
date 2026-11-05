@@ -40,7 +40,7 @@ barrio no sirve para explicar diferencias dentro de una sub-zona.
 | Granularidad | Punto (estación) |
 | Mecanismo de unión | Distancia haversine de cada aviso geocodificado a la estación más cercana |
 | Variable derivada | `dist_transporte_m` |
-| Aporta a | H3 (efecto de la ubicación), gap ajustado por ubicación, índice de accesibilidad |
+| Aporta a | H3 (efecto de la ubicación), gap ajustado por ubicación, distancias de accesibilidad |
 | Limitaciones | Solo subte. Deja afuera tren y Metrobus, que son el transporte pesado en buena parte del sur y el oeste. Distancia en línea recta, no a pie. No distingue líneas ni frecuencia |
 
 ## 3. Polos de centralidad (integrada, definición propia)

@@ -14,7 +14,7 @@ Las preguntas de la tabla remiten a estas hipótesis. H2 y H3 se mantienen. H1 s
 
 **Resultado en esta entrega:** H1, apoyo débil: la brecha prioriza qué revisar, pero la cola de abajo no es más pesada que la de una normal con la misma dispersión ni que la de arriba, así que no prueba precios atípicos más allá del error del modelo (notebook 03); H2, apoyo parcial: la sub-zona mejora la referencia solo en algunos barrios (notebook 02); H3, no se detectó con estos indicadores: dentro del barrio, la cercanía al subte y a los polos no se asocia al precio una vez controlada la antigüedad, pero los polos están en el microcentro y falta el transporte del sur y el oeste (notebook 02).
 
-**KPIs con nombre actualizado:** precio por m² de la zona de referencia, tasa de completitud, prima por característica (reemplaza al "peso empírico por bloque"), precio esperado, brecha de precio (reemplaza al "gap de confort": diferencia porcentual entre precio publicado y precio esperado), error de estimación fuera de muestra, índice de accesibilidad, eficiencia de expensas y ranking de avisos a investigar (reemplaza al "ranking de oportunidades").
+**KPIs con nombre actualizado:** precio por m² de la zona de referencia, tasa de completitud, prima por característica (reemplaza al "peso empírico por bloque"), precio esperado, brecha de precio (reemplaza al "gap de confort": diferencia porcentual entre precio publicado y precio esperado), error de estimación fuera de muestra, distancias de accesibilidad, eficiencia de expensas y ranking de avisos a investigar (reemplaza al "ranking de oportunidades").
 
 ## Parte 1: preguntas reclasificadas
 
@@ -42,7 +42,7 @@ Criterio usado para asignar el nivel:
 |---|---|---|---|
 | G1 | Dentro de la misma sub-zona, ¿cuánto se asocia cada característica con el precio por m², y cuáles explican más diferencia de precio? | Busca qué variables se relacionan con el precio, controlando por zona. Reemplaza "¿los pesos asignados a mano se sostienen?", que ya no aplica | H1 · Prima por característica |
 | G2 | ¿La prima de una característica es la misma en todas las zonas y en todos los segmentos de precio, o depende de dónde está el departamento y de su gama? | Pregunta si una relación depende de una tercera variable | H1, H2 · Prima por característica por segmento |
-| G3 | ¿Cuánto de la diferencia de precio entre sub-zonas se explica por accesibilidad al transporte y centralidad, y los avisos con precio atípicamente bajo lo siguen siendo después de controlar por ubicación? | Busca la explicación de una diferencia | H3 · Índice de accesibilidad · Brecha de precio |
+| G3 | ¿Cuánto de la diferencia de precio entre sub-zonas se explica por accesibilidad al transporte y centralidad, y los avisos con precio atípicamente bajo lo siguen siendo después de controlar por ubicación? | Busca la explicación de una diferencia | H3 · Distancias de accesibilidad · Brecha de precio |
 | G4 | ¿Qué distingue a los avisos con precio atípicamente bajo: tienen características que el mercado no está pagando, o tienen señales de otro problema (aviso incompleto, baja de precio previa, mucha antigüedad, expensas altas)? | Explica por qué un aviso queda barato. Es la versión correcta de "¿cuál bloque está más regalado?", que estaba como predictiva y es diagnóstica: no anticipa nada, explica | H1 · Tasa de completitud · Eficiencia de expensas |
 
 ### Predictivo
@@ -59,7 +59,7 @@ Criterio usado para asignar el nivel:
 | # | Pregunta | Por qué es este nivel | Aporta a |
 |---|---|---|---|
 | R1 | ¿Qué regla conviene usar para decidir qué avisos pasan a revisión del analista: qué brecha mínima, qué completitud mínima y cómo se tiene en cuenta el error de estimación de su zona? | Define un umbral de decisión | Ranking de avisos a investigar · Brecha de precio · Tasa de completitud |
-| R2 | Al priorizar entre avisos marcados, ¿conviene ponderar distinto uno bien ubicado frente a uno en zona periférica, dado que el primero suele tener más liquidez? | Es una decisión de priorización. Estaba como predictiva y es prescriptiva: no estima nada, elige | H3 · Ranking de avisos a investigar · Índice de accesibilidad |
+| R2 | Al priorizar entre avisos marcados, ¿conviene ponderar distinto uno bien ubicado frente a uno en zona periférica, dado que el primero suele tener más liquidez? | Es una decisión de priorización. Estaba como predictiva y es prescriptiva: no estima nada, elige | H3 · Ranking de avisos a investigar · Distancias de accesibilidad |
 | R3 | ¿En qué sub-zonas conviene concentrar el análisis, según dónde las brechas sean más frecuentes y la estimación más precisa? | Recomienda dónde asignar esfuerzo | H2 · Error de estimación por zona |
 
 **Preguntas eliminadas o absorbidas respecto de la PreEntrega 1:**

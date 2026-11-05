@@ -47,7 +47,8 @@ Qué cambió en cada entrega:
   que permite ver qué pasa con los avisos marcados, fuentes externas de transporte y entorno con cobertura de toda la
   ciudad, una regla de decisión con costos y un dashboard para el analista.
 
-**Resultados de esta entrega** (números de `data/processed/`, regenerados el 02/11/2026)
+**Resultados de esta entrega** (números de `data/processed/`, regenerados el 02/11/2026 y reproducidos de cero, byte a byte, el
+05/11/2026: `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`)
 
 - **El embudo, con sus universos reconciliados:** 27.578 avisos (25.169 unidades) analizados → 1.819 avisos
   (1.714 unidades) piden más de 25% menos que su precio esperado → 1.556 (1.470) siguen marcados con el umbral de su
@@ -58,7 +59,7 @@ Qué cambió en cada entrega:
   (lineal ampliado con el estado del título) erra 12,5% en la mediana fuera de muestra, contra 17,5% de usar la
   mediana de la zona; el gradient boosting llega a 11,3% pero no se explica aviso por aviso, así que se usa como
   segunda opinión (1.124 avisos marcados por los dos). El rango del 80% del precio esperado de un aviso es de
-  alrededor de ±30% y cubre el precio publicado el 79,5% de las veces: por eso la ficha muestra un rango, no un
+  alrededor de ±32% y cubre el precio publicado el 79,5% de las veces: por eso la ficha muestra un rango, no un
   número.
 - **H1 tiene un resultado doble.** La cola de brechas negativas no es más pesada de lo que explica el error del modelo
   (6,6% por debajo de −25% contra 7,7% por encima de +33%): la brecha no prueba precios atípicos. Pero **los avisos
@@ -70,14 +71,17 @@ Qué cambió en cada entrega:
   con mejora significativa en 4 de 41 barrios y grande en uno (Villa Lugano). Por eso el modelo la usa barrio por
   barrio, donde mejora y es estable.
 - **H3 (ubicación): apoyo, menor del esperado.** Con tren, Metrobus, premetro, espacios verdes y permisos de obra,
-  los bloques de transporte y entorno son significativos en conjunto, pero por variable sobreviven 3 de 16 y los
-  efectos son chicos: +1,5% por hectárea de espacio verde a 500 m, +4,4% por cada 10 obras nuevas, y −4,8% a menos de
-  300 m del subte (la avenida pesa más que la estación). En la PE2, con subte y centralidad, no se detectaba nada.
+  los bloques de transporte y entorno son significativos en conjunto, pero por variable quedan 2 de 16 con un efecto
+  interpretable, y chico: +1,5% por hectárea de espacio verde a 500 m y +4,4% por cada 10 obras nuevas. El premetro
+  (−24%) también sobrevive a la corrección de Holm, pero es la zona y no el premetro: sin los avisos a menos de 500 m
+  de un barrio popular pasa a −4%, con un intervalo que incluye el 0. El subte a menos de 300 m da −4,8% pero no
+  sobrevive a Holm (p ajustado 0,27); que la avenida pese más que la estación es una conjetura, no algo medido. En
+  la PE2, con subte y centralidad, no se detectaba nada.
 - **El estado del inmueble pesa más de lo que parecía.** Un aviso "a reciclar" se publica 18% más barato que uno
   igual sin esa marca, y uno "a refaccionar" 16%. Entra al modelo y a la regla: una parte de la brecha es el estado,
   no una subvaluación.
 - **Lo que mira el gradient boosting** (SHAP): la ubicación explica el 47% de la importancia; amenities y cochera,
-  18%; antigüedad, 14%; tamaño, 12%. El orden es estable entre vueltas y coincide con las primas del lineal.
+  17%; antigüedad, 14%; tamaño, 12%. El orden es estable entre vueltas y coincide con las primas del lineal.
 - **Índice de equipamiento y micro-mercados (exploratorio):** sirven para describir la oferta y para marcar dónde el
   precio esperado es menos preciso; no mejoran el precio esperado ni la liquidez frente a las alternativas simples
   (amenities sueltas y cantidad de ambientes). No entran a la lista oficial.
@@ -122,19 +126,23 @@ cambia el orden de los avisos dentro de una zona.
 
 - **Unidad de análisis:** el aviso de departamento usado en venta publicado en MercadoLibre Inmuebles. Para el
   ranking, la **unidad** (dirección y superficie): si varios avisos publican el mismo departamento, cuenta una vez,
-  representada por el aviso que llega más lejos en el embudo.
+  representada por el aviso que llega más lejos en el embudo. Los notebooks 04 y 05 agrupan por dirección y
+  superficie sin mirar el piso (24.552 unidades, para armar las vueltas de la validación); el ranking separa además
+  los avisos con piso declarado distinto (25.169 unidades).
 - **Unidad de comparación:** la **zona de referencia**. Es la sub-zona (cluster espacial de avisos dentro del
   barrio, hasta 5 por barrio) en los barrios donde mejora la referencia de precio fuera de muestra y donde las
   sub-zonas son estables (ARI con bootstrap de 0,7 o más; hoy Villa Santa Rita no lo es y se compara entero), y el
   barrio completo en el resto. Se decide dentro de cada vuelta de la validación, sin fuga. Los avisos sin
-  coordenadas, los de geocodificación dudosa (a más de 1 km del barrio buscado, 249) y las zonas con menos de 10
+  coordenadas, los de geocodificación dudosa (a más de 1 km del barrio buscado: 249 de los 27.922 avisos
+  enriquecidos, 244 de los 27.578 limpios) y las zonas con menos de 10
   avisos se comparan contra el barrio.
 - **Geográfico:** 47 categorías de barrio de MercadoLibre. No coinciden con los 48 barrios oficiales: incluyen
   "Barrio Norte" y no incluyen San Cristóbal ni Parque Chas. Se usa el barrio de búsqueda y no el polígono oficial
   porque es la categoría donde el comprador encuentra el aviso y donde el mercado forma el precio; el polígono
   oficial se usa como control (sección 12).
 - **Tipología:** departamentos usados en venta. Quedan fuera casas, alquileres, avisos de compra y unidades en pozo
-  (237 avisos con antigüedad negativa, se excluyen en la limpieza). Una casa publicada como departamento sigue en el
+  (237 avisos con antigüedad negativa, se excluyen en la limpieza; otros 9 avisos de la lista de señales, 8 unidades, lo
+  dicen solo en el título: la regla de decisión los descarta y el dashboard los marca). Una casa publicada como departamento sigue en el
   dataset, marcada.
 - **Precio:** precio de publicación en USD, no precio de cierre. La regla de decisión descuenta la brecha
   publicado-cierre al vender.
@@ -150,7 +158,7 @@ Versión completa, con el porqué de cada nivel, en [`preguntas_y_alcance.md`](d
 | Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida (notebook 02); la sub-zona se evalúa formalmente en H2 (notebook 05) |
 | | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida: por columna (diccionario y notebook 01) y por aviso, con la tasa de completitud (notebook 03) |
 | | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Parcial: frecuencias generales en el diccionario; por segmento de departamento en el notebook 06 |
-| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (notebook 05) |
+| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (notebooks 01 y 02) |
 | Diagnóstico | G1 | Dentro de la zona, ¿cuánto se asocia cada característica con el precio por m²? | Respondida, ahora con intervalos por bootstrap de unidades (notebook 04, sección 6) |
 | | G2 | ¿La prima de cada característica cambia según la zona o el segmento de precio? | Respondida: cambian poco por tercil de barrio y por segmento de departamento; no justifica un modelo por segmento (notebook 04, sección 7; notebook 06, sección 4.3) |
 | | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y entorno? | Respondida (H3, notebook 05): una parte chica pero significativa, con efectos fijos de barrio |
@@ -173,9 +181,9 @@ comparaciones).
 
 | | Hipótesis | Evidencia (PE3) | Estado |
 |---|---|---|---|
-| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación. Son candidatos a investigar, no oportunidades confirmadas | **H1a (colas):** 6,6% de los avisos por debajo de −25% contra 7,7% por encima de +33%; la cola de abajo no es más pesada que la de una normal con la misma dispersión (test binomial a una cola, no se rechaza H0). **H1b (salida del portal):** los marcados salen 46,7% contra 39,7%; dentro del barrio y a igual valor esperado, +9,4 pp (IC 6,5 a 12,2; logit OR 1,48); gradiente de +2,2 pp por cada 10 pp más de brecha (IC 1,6 a 2,9); placebo (brecha mayor a +33%): −8,4 pp. Se mantiene sin republicaciones y con el gradient boosting; en el tercil de barrios medios el IC incluye el 0 | **Resultado doble:** la brecha no prueba precios atípicos (H1a no), pero predice el comportamiento del aviso en el mercado (H1b sí). En la PE2 solo había H1a |
-| H2 | Un barrio no es homogéneo: la sub-zona da una referencia de precio más precisa que el barrio | Con vueltas agrupadas por unidad: el error de la referencia baja de 17,7% a 17,1%, 0,6 pp (IC 0,4 a 0,85; t y Wilcoxon por unidad rechazan H0). Barrio por barrio, mejora significativa con Holm en 4 de 41 y grande en Villa Lugano; en ninguno empeora significativamente. Sub-zonas estables en 40 de 41 barrios | Apoyo parcial: depende del barrio; el modelo la usa donde mejora y es estable |
-| H3 | Parte de la diferencia de precio dentro de un barrio se explica por la ubicación: transporte, espacios verdes y dinamismo | Regresión del precio por m² con efectos fijos de barrio y errores agrupados por sub-zona: bloque de transporte p = 3,7e-5 y bloque de entorno p = 2,4e-7 (Wald); 3 de 16 variables significativas con Holm: área verde a 500 m (+1,5% por ha), permisos de obra (+4,4% por 10 obras) y subte a menos de 300 m (−4,8%). Fuera de muestra, sumar la ubicación al modelo baja el error 0,19 pp. En el sur y el oeste pesan más el tren y las obras | Apoyo, menor del esperado: la zona de referencia ya capta casi todo; la ubicación explica más que lo que cambia la lista |
+| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación. Son candidatos a investigar, no oportunidades confirmadas | **H1a (colas):** 6,6% de los avisos por debajo de −25% contra 7,7% por encima de +33%; la cola de abajo no es más pesada que la de una normal con la misma dispersión (test binomial a una cola, no se rechaza H0). **H1b (salida del portal):** los marcados salen 46,7% contra 39,7%; dentro del barrio y a igual valor esperado, +9,4 pp (IC 6,5 a 12,2; logit OR 1,48); gradiente de +2,2 pp por cada 10 pp más de brecha (IC 1,6 a 2,9); placebo (brecha mayor a +33%): −8,6 pp. Se mantiene sin republicaciones y con el gradient boosting; en el tercil de barrios medios el IC incluye el 0 | **Resultado doble:** la brecha no prueba precios atípicos (H1a no), pero predice el comportamiento del aviso en el mercado (H1b sí). En la PE2 solo había H1a |
+| H2 | Un barrio no es homogéneo: la sub-zona da una referencia de precio más precisa que el barrio | Con vueltas agrupadas por unidad: el error de la referencia baja de 17,7% a 17,1%, 0,6 pp (IC 0,4 a 0,85; t y Wilcoxon por unidad rechazan H0). Barrio por barrio, mejora significativa con Holm en 4 de 41 y grande en Villa Lugano; en ninguno empeora significativamente. Sub-zonas estables en 40 de 41 barrios, aunque 4 quedan cerca del umbral (ARI entre 0,7 y 0,8: Coghlan, Parque Chacabuco, Barrio Norte y Villa Pueyrredón); compararlos enteros mueve el error 0,01 pp y la lista en un aviso | Apoyo parcial: depende del barrio; el modelo la usa donde mejora y es estable |
+| H3 | Parte de la diferencia de precio dentro de un barrio se explica por la ubicación: transporte, espacios verdes y dinamismo | Regresión del precio por m² con efectos fijos de barrio y errores agrupados por sub-zona: bloque de transporte p = 3,7e-5 y bloque de entorno p = 2,4e-7 (Wald); con Holm sobreviven 3 de 16 variables, pero solo 2 con un efecto interpretable: área verde a 500 m (+1,5% por ha) y permisos de obra (+4,4% por 10 obras); el premetro (−24%) sobrevive pero es un artefacto de zona (sin los avisos a menos de 500 m de un barrio popular, −4% con IC que incluye el 0) y el subte a menos de 300 m (−4,8%) no sobrevive (p ajustado 0,27). Fuera de muestra, sumar la ubicación al modelo baja el error 0,19 pp. En el sur y el oeste las obras pesan más (+12%, IC 5 a 19) y el tren queda en el borde (−10%, IC −20 a +0,1: incluye el 0) | Apoyo, menor del esperado: la zona de referencia ya capta casi todo; la ubicación explica más que lo que cambia la lista |
 
 ### KPIs
 
@@ -191,7 +199,7 @@ comparaciones).
 | Tasa de salida del portal | Si los marcados se comportan distinto en el mercado | Proporción de avisos del primer relevamiento que no están en el segundo, sin republicaciones ni barrios truncados | Calculado (notebook 05): 46,7% marcados, 39,7% resto; por ambientes, como liquidez informativa en la regla |
 | Tasa de completitud | Qué tan confiable es la ficha de un aviso | % de los 26 campos donde el vacío es falta de dato que tienen dato | Calculado: mediana 88%; no se asocia con la marca |
 | Eficiencia de expensas | Si las expensas son altas para lo que ofrece el edificio | Expensas en USD por m², relativas a la mediana de la zona | Calculado (notebook 03) |
-| Índice de accesibilidad | Qué tan bien conectado está un aviso | Distancia al transporte pesado (subte, tren, premetro, Metrobus) y área verde a 500 m | Calculado (`accesibilidad.tsv`) y evaluado en H3 |
+| Distancias de accesibilidad | Qué tan bien conectado está un aviso | Distancia al transporte pesado (subte, tren, premetro, Metrobus) y área verde a 500 m | Calculado (`accesibilidad.tsv`) y evaluado en H3 |
 | Índice de equipamiento | Cuánto equipamiento declara un aviso | Primer eje de un MCA sobre 17 características Sí/No (notebook 06) | Exploratorio: casi coincide con contar amenities (correlación 0,96); no entra al modelo |
 
 ## 7. Datasets y fuentes externas
@@ -217,9 +225,11 @@ y distancias. El detalle de cada columna está en el
 | `data/raw/relevamiento_2/`, `data/processed/relevamiento_2.tsv` | 27.516 | Segundo relevamiento (27 y 28/10/2026) |
 | `data/processed/seguimiento_avisos.csv` | 27.578 | Estado de cada aviso del primer relevamiento en el segundo: sigue, republicado o salió |
 | `docs/dashboard/data/*.json` | 1.375 unidades | Capa de datos del dashboard, exportada de la etapa 6 (sección 9) |
+| `data/processed/chequeo_comparables.csv`, `.json` | 486 destacados | Chequeo del precio esperado contra comparables simples (sección 10) |
 
 **Del crudo al limpio.** Se excluyen 344 avisos: 68 duplicados por ID de aviso (entre dos filas del mismo ID queda
-la que coincide con el polígono oficial del barrio), 237 en pozo, 28 con superficie inválida, 5 con precio en pesos,
+la que coincide con el polígono oficial del barrio; en 17 de los 68 la regla de la PE2, primera aparición, se quedaba
+con la otra fila y en 12 eso cambiaba el barrio), 237 en pozo, 28 con superficie inválida, 5 con precio en pesos,
 4 con precio menor a USD 20.000, 1 con precio imposible y 1 que es una compra, no una venta. Se corrigen 627 precios
 concatenados por "BAJÓ DE PRECIO", baños en 0 y pisos cargados como número de unidad; las expensas de relleno
 (menos de ARS 1.000) pasan a sin dato; se unifican etiquetas mal cargadas y se marcan, sin borrarlos, posibles
@@ -299,7 +309,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── eda.py                       Funciones del análisis exploratorio
 │   ├── indice_confort.py            Índice de la PreEntrega 1, usado en el diagnóstico de la devolución
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           190 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           191 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -320,7 +330,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 190 tests, unos 2 minutos, sin red
+python3 -m pytest -q                                   # 191 tests, unos 2 minutos, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
@@ -364,9 +374,16 @@ del fondo, no para quien corrige: no repite los notebooks, los resume en una dec
 | Ficha del aviso | Publicado contra esperado con el rango del 80%, qué suma y qué resta, la cascada de costos hasta la brecha neta, alertas, consenso, liquidez por ambientes y el link al aviso |
 
 El tercer nivel, **candidato firme**, es el escenario conservador del notebook 07 (candidato aun vendiendo al piso del
-rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`. Las exclusiones de la lista destacada
-también se calculan ahí y no tocan la lista oficial: de las 1.375 señales, 327 tienen alguna alerta y 486 candidatos
-de los dos modelos quedan destacados (38 firmes).
+rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`.
+
+**La lista destacada es un filtro de presentación sobre la lista oficial, no un resultado del análisis.** Parte de los
+664 candidatos que marcan los dos modelos y aparta los casos donde el comparable del modelo (un departamento común de
+su zona) puede no aplicar: barrio popular o a menos de 500 m de uno, casa o PH, uso comercial, oficina u hotel, barrio
+dudoso en el título, posible venta de varias unidades, precio posiblemente con financiación y en pozo. Son 178 de los
+664; quedan 486 destacados (38 firmes). Los 500 m son un criterio de prudencia, no un resultado: el modelo no ve el
+entorno inmediato y el precio de un departamento pegado a un barrio popular responde a cosas que el modelo no mide.
+Es la exclusión que más saca (106 candidatos, 99 solo por eso) y pega sobre todo en el sur. Los apartados siguen en
+el mapa y en el buscador con su alerta, y nada de esto cambia las 1.375 señales ni los 840 candidatos.
 
 **Por qué una página estática y no una herramienta de BI.** El criterio fue el del profesor: lo más fácil de armar,
 mantener y desplegar con nuestro modelo de datos y nuestro volumen. El dashboard es HTML, CSS y JavaScript sin
@@ -398,7 +415,8 @@ mejoraba la experiencia del analista para este volumen y las dos rompían la rep
 | Modelos predictivos contra un baseline, fuera de muestra | Cinco modelos sobre las mismas vueltas; el lineal ampliado es el oficial por ser explicable aviso por aviso; el gradient boosting, segunda opinión | Notebook 04, sección 4 |
 | Técnicas de clase (PCA/MCA, K-means) | Índice de equipamiento con MCA y micro-mercados con K-means, con estabilidad y utilidad frente a la alternativa simple; conclusión: describen, no mejoran el modelo | Notebook 06 |
 
-**Chequeo con comparables** (`src/chequeo_comparables.py`): para cada destacado se buscaron en la base departamentos
+**Chequeo con comparables** (`src/chequeo_comparables.py`; salida en `data/processed/chequeo_comparables.csv` y
+`.json`): para cada destacado se buscaron en la base departamentos
 del mismo barrio con ±1 ambiente, ±30% de superficie y ±15 años de antigüedad, excluida la propia unidad y los
 atípicos. En los 425 destacados con al menos 5 comparables, el precio esperado queda en la mediana 1,9% por encima
 de la mediana de los comparables, y el 83% sigue estando 25% o más por debajo de ellos (los 33 firmes con
@@ -406,14 +424,31 @@ comparables, todos). Por segmento, el esperado queda más alto en "Nuevos con am
 comparables no distinguen amenities y el modelo sí) y en "Familiares amplios y antiguos" (+5,4%), consistente con el
 mayor error del modelo en esos dos segmentos.
 
-**Encontrado además en esta entrega:** 17 duplicados por ID que la PE2 resolvía al azar (12 cambiaban de barrio),
-249 avisos geocodificados a más de 1 km de su barrio (una calle homónima en otro barrio), y que la asignación de las
+**Encontrado además en esta entrega:** 17 de los 68 duplicados por ID en los que la PE2, al quedarse con la primera
+aparición, conservaba la fila equivocada (12 cambiaban de barrio), 249 avisos geocodificados a más de 1 km de su
+barrio (244 en el dataset limpio; una calle homónima en otro barrio), y que la asignación de las
 vueltas de la validación depende del orden de las filas del dataset (`docs/pipeline.md`, sección 10).
 
 La respuesta a la devolución de la PreEntrega 1 (rutas, parametrización, pesos fijos, contexto, fuentes) sigue en
 [`estado_correcciones.md`](docs/correcciones_pe1/estado_correcciones.md).
 
 ## 11. Regla de decisión: de señal a candidato
+
+### Cómo se arma la lista de señales
+
+Tres pasos, con los números del embudo (`embudo_ranking.csv`, por avisos):
+
+1. **Brecha menor a −25%** respecto del precio esperado del modelo oficial: 1.819 avisos (1.714 unidades).
+2. **Umbral según el error de su barrio.** El −25% de la ciudad equivale a 2 veces el error mediano del modelo
+   (12,5%); en cada barrio se exige lo mismo, 2 veces su propio error mediano, para no marcar de más donde el modelo
+   se equivoca más. El umbral va de −16,5% (Villa General Mitre) a −36,4% (Parque Avellaneda); los 4 barrios con
+   menos de 50 avisos usan el error de la ciudad. Saca 263 avisos: quedan 1.556 (1.470 unidades).
+3. **Sin señales de error de carga.** Se apartan los avisos donde el dato parece mal cargado: m² por ambiente fuera
+   del percentil 1 a 99 de la ciudad (51 avisos entre los marcados), dormitorios incoherentes con los ambientes (37),
+   piso incoherente con el edificio (8), mención de alquiler en el título (7) o superficie recuperada del total (3).
+   Saca 101 avisos: quedan **1.455 avisos, 1.375 unidades: la lista oficial**.
+
+Las definiciones están en `src/analisis.py` (`marca_por_barrio`, `senales_error_carga`).
 
 La lista oficial son **señales a investigar**. Para cada una, la regla (`src/regla.py`, notebook 07) calcula qué
 dejaría comprarla al precio publicado, refaccionarla según el estado declarado en el título y venderla al precio
@@ -438,8 +473,9 @@ inquilino, con financiación, no apto crédito, sucesión) se muestran, no desca
 El escenario conservador es el mensaje central: con la incertidumbre del precio esperado tomada en serio, quedan 83
 unidades. El impuesto a las ganancias se deja en 0 en el escenario base porque depende de la forma jurídica del fondo
 (supuesto declarado; el simulador muestra 15% y 35%). La liquidez entra como información (tasa de salida del portal
-por cantidad de ambientes), no como filtro. El costo de tenencia (expensas, impuestos y meses hasta la venta) no está
-en la regla y es un límite declarado.
+por cantidad de ambientes), no como filtro: en esta versión no modifica la regla. El costo de tenencia (expensas,
+impuestos y meses hasta la venta) no está en la regla y es un límite declarado; una sensibilidad que lo descuente
+queda para la entrega final.
 El simulador del dashboard (pestaña Tendencias) permite cambiar escenario de costos, negociación, refacción,
 Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conteos.
 
@@ -447,7 +483,7 @@ Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conte
 
 - **Precio publicado, no de cierre.** La brecha se mide contra precios publicados; la regla descuenta 4,79% al vender,
   pero compra al publicado (supuesto conservador).
-- **Error del modelo.** Un error mediano de 12,5% y un rango del 80% de alrededor de ±30% sirven para ordenar avisos,
+- **Error del modelo.** Un error mediano de 12,5% y un rango del 80% de alrededor de ±32% sirven para ordenar avisos,
   no para tasar uno ni para separar un precio atípico de un error de estimación (H1a). En los departamentos familiares
   antiguos y en los nuevos con amenities el error es mayor (notebook 06). Además, en los familiares amplios y antiguos el
   modelo marca el doble de avisos (11,1% contra 5,2% a 6,5%) con una brecha mediana de −3,1%: el precio esperado tiende
@@ -457,7 +493,7 @@ Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conte
   por 74 días no permiten medir tiempos de venta.
 - **Barrio de búsqueda contra barrio oficial.** El análisis usa el barrio de MercadoLibre, que es donde el comprador
   encuentra el aviso y donde el mercado forma el precio, pero no es el polígono oficial: **4.225 de los 22.912 avisos
-  geocodificados (18,4%) caen en otro polígono**, casi todos de borde (a menos de 1 km), y 249 a más de 1 km, que se
+  geocodificados (18,4%) caen en otro polígono**, casi todos de borde (a menos de 1 km), y 249 (244 en el limpio) a más de 1 km, que se
   tratan como sin coordenadas. El polígono oficial se usa como control (duplicados, geocodificación dudosa), no como
   zona. Además, "Barrio Norte" no es oficial y San Cristóbal y Parque Chas no tienen categoría.
 - **Características declaradas, no verificadas.** El estado del inmueble y el riesgo legal salen del título (expresiones
@@ -469,6 +505,9 @@ Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conte
   muestra de la oferta, no el total, y se excluyen del análisis de salida.
 - **Costos como supuestos.** Los costos vienen de fuentes públicas con un rango, no de operaciones del fondo; Ganancias
   en 0 y sin costo de tenencia. La sensibilidad (notebook 07) muestra cuánto cambia el resultado con cada supuesto.
+- **La liquidez no modifica la regla.** La tasa de salida del portal por ambientes se muestra como referencia, pero ni
+  la liquidez ni el costo de tenencia cambian la brecha neta en esta versión; la sensibilidad con costo de tenencia
+  queda para la entrega final.
 - **Reproducibilidad.** La asignación de las vueltas depende del orden de las filas del dataset, y el gradient boosting
   puede variar un poco entre plataformas; la lista oficial no depende de él. Detalle en `docs/pipeline.md`, sección 10.
 - **Sub-zonas cerca del umbral de estabilidad** dependen de la semilla: la estabilidad es una señal, no una

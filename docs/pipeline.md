@@ -54,7 +54,7 @@ Los números son los de la regeneración del 02/11/2026 en la Mac de referencia 
 | `src/fuentes_externas.py` | Enriquecido más los snapshots de BA Data en `data/external/` (tren, Metrobus, premetro, espacios verdes, barrios, barrios populares) | Distancias a puntos con haversine, a polígonos en UTM 21S; barrio oficial del punto y si coincide con el buscado; distancia al barrio buscado y `geo_dudoso` (más de 1 km) | 27.922 filas; 22.912 con coordenadas; `barrio_coincide` 18.687 sí / 4.225 no; `geo_dudoso` 249; en barrio popular 96. Controles por fuente en `docs/entregas_grupo/control_fuentes.md` | `data/processed/accesibilidad.tsv` (27.922 × 14) |
 | `src/permisos_obra.py` | Enriquecido más `data/external/obras-registradas.csv` | Permisos de obra nueva a menos de 500 m en los 3 años previos al scraping, una vez por obra (deduplicado por parcela y por punto) | 27.922 filas; mediana 9 obras; `tests/test_permisos_obra.py` reproduce el archivo versionado desde el snapshot | `data/processed/permisos_obra.tsv` (27.922 × 2) |
 | `src/seguimiento.py` | Cuotas del segundo relevamiento (`data/raw/relevamiento_2/`, 27 y 28/10/2026) y el dataset limpio | Une las cuotas, deduplica por ID y cruza cada aviso del primer relevamiento: sigue, republicado (misma dirección, m² y ambientes con otro ID) o salió; marca los barrios truncados por el tope de paginación | 27.516 avisos en el segundo relevamiento; una fila por aviso del primero (27.578). Se corre **después** de la etapa 5 y **antes** de la 6, que lo usa para la liquidez por ambientes y corta si las filas no coinciden | `data/processed/relevamiento_2.tsv`, `seguimiento_avisos.csv` |
-| `src/chequeo_comparables.py` | `propiedades_limpias.tsv`, `precio_esperado.tsv`, `docs/dashboard/data/avisos.json` | Para cada destacado del dashboard, comparables del mismo barrio (±1 ambiente, ±30% de m², ±15 años, otra unidad, sin atípicos) y el precio esperado y el publicado contra su mediana (README, sección 10) | `tests/test_chequeo_comparables.py` | Solo imprime el resumen; no escribe archivos |
+| `src/chequeo_comparables.py` | `propiedades_limpias.tsv`, `precio_esperado.tsv`, `docs/dashboard/data/avisos.json` | Para cada destacado del dashboard, comparables del mismo barrio (±1 ambiente, ±30% de m², ±15 años, otra unidad, sin atípicos) y el precio esperado y el publicado contra su mediana (README, sección 10) | `tests/test_chequeo_comparables.py` | `data/processed/chequeo_comparables.csv` (una fila por destacado) y `chequeo_comparables.json` (el resumen que cita el README) |
 | `src/exportar_dashboard.py` | Salidas de la etapa 6, `accesibilidad.tsv`, estaciones y `config/costos.yaml` | Una fila por unidad de la lista oficial con lo que muestra la ficha y lo que necesita el simulador; embudo, indicadores, resumen por barrio, sensibilidad de la regla y parámetros de costos por escenario; capas de estaciones | `tests/test_exportar_dashboard.py` compara los JSON con el embudo y el ranking | `docs/dashboard/data/avisos.json`, `resumen.json`, `estaciones.json`, `fondo.json` (todos los avisos con coordenadas, para el fondo del mapa). Además calcula el tercer nivel del dashboard, **candidato firme** (candidato aun vendiendo al límite inferior del rango del 80%: 83 unidades), las `exclusiones` de la lista destacada del resumen (barrio popular o a menos de 500 m de uno, casa o PH, uso comercial, oficina u hotel, barrio dudoso en el título sin coordenadas, posible venta de varias unidades, precio posiblemente con financiación, en pozo; no cambian la lista oficial), el `segmento` de departamento del notebook 06 (MCA más K-means con la misma semilla; descriptivo, con alerta de revisión en "Familiares amplios y antiguos") y la tasa de salida por decil de brecha del notebook 05 |
 
 El detalle de los desafíos técnicos (bloqueo por CloudFront, IP de datacenter vs.
@@ -86,7 +86,7 @@ reproducible por un tercero.
 | `data/interim/shap_gbm.tsv` | Sí | 1,2 MB | Notebook 04, sección 9: se recalcula solo si no coincide con las predicciones (varios minutos) |
 | `docs/dashboard/data/*.json` | Sí | 2,6 MB | `python3 src/exportar_dashboard.py`, segundos, después de la etapa 6 |
 | `outputs/logs/pipeline.log`, `outputs/logs/qc_*.json` | No | no aplica | Los escribe cada corrida |
-| `docs/corrida-documentada/*` | Sí | 13 KB | No se regenera: es una instantánea curada |
+| `docs/corrida-documentada/*` | Sí | 40 KB | No se regenera: es una instantánea curada. Incluye `corrida_de_cero_2026-11-05.log`, la corrida completa de las etapas 5 y 6, el exportador, los notebooks y los tests de la PreEntrega 3 |
 | `*_parcial.tsv` | No | no aplica | Los escribe y borra el propio pipeline |
 
 Total versionado: unos 225 MB (19 MB son las cuotas crudas del primer relevamiento).
@@ -367,7 +367,7 @@ Hay dos cosas distintas y conviene no confundirlas.
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
 ```bash
-pytest            # toda la suite, 190 tests, unos 2 minutos, sin red
+pytest            # toda la suite, 191 tests, unos 2 minutos, sin red
 pytest -v         # con el nombre de cada test
 pytest tests/test_limpieza.py   # un solo archivo
 ```
@@ -440,6 +440,12 @@ hasta el dataset final, es reproducible byte a byte **sin tocar la red**.
 El smoke test no reemplaza una corrida real: las etapas 1, 3 y 4 dependen de
 MercadoLibre, USIG y BA Data respectivamente. La corrida completa contra los
 servicios reales está documentada en la sección siguiente.
+
+Para las etapas 5 y 6, el exportador del dashboard, los notebooks y los tests,
+la evidencia es `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`: una
+corrida de cero en un worktree limpio del commit `1813043` que reprodujo byte a
+byte todos los archivos versionados de `data/processed/`, `data/interim/` y
+`docs/dashboard/data/`.
 
 ---
 

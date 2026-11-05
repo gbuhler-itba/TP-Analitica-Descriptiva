@@ -1,0 +1,21 @@
+{
+ "destacados": 486,
+ "con_comparables": 425,
+ "esperado_vs_comparables_mediana_pct": 1.9,
+ "debajo_del_umbral_pct": 83.3,
+ "firmes_con_comparables": 33,
+ "firmes_debajo_del_umbral": 33,
+ "esperado_vs_comparables_por_segmento_pct": {
+  "Nuevos con amenities": 11.8,
+  "Familiares amplios y antiguos": 5.4,
+  "Compactos de edificio antiguo": -0.3,
+  "Chicos y recientes": -0.8
+ },
+ "criterio": {
+  "ambientes": 1,
+  "m2_pct": 0.3,
+  "antiguedad": 15,
+  "minimo_comparables": 5,
+  "umbral_brecha": -0.25
+ }
+}

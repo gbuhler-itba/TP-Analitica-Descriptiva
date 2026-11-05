@@ -53,7 +53,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto (estación), en WGS84. Compatible con la sub-zona: la distancia varía entre avisos de la misma sub-zona |
 | Mecanismo de unión | Distancia haversine de cada aviso geocodificado a la estación más cercana. Las estaciones repetidas por combinación no afectan la mínima |
 | Variable derivada | `dist_transporte_m` |
-| Aporta a | H3 (efecto de la ubicación) e índice de accesibilidad. **No entra al modelo de precio esperado:** en el notebook 02, dentro del barrio y a igual antigüedad, la cercanía al subte casi no se relaciona con el precio (H3 no se detectó con este indicador) |
+| Aporta a | H3 (efecto de la ubicación) e distancias de accesibilidad. **No entra al modelo de precio esperado:** en el notebook 02, dentro del barrio y a igual antigüedad, la cercanía al subte casi no se relaciona con el precio (H3 no se detectó con este indicador) |
 | Limitaciones | Solo subte. Deja afuera tren y Metrobus, que son el transporte pesado en buena parte del sur y el oeste. Distancia en línea recta al punto de la estación, no a pie ni a la boca de acceso. No distingue líneas ni frecuencia |
 
 ## 3. Polos de centralidad (integrada, definición propia)
@@ -79,7 +79,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto (estación, una por línea: Retiro figura tres veces), en WGS84. Compatible con la sub-zona: la distancia varía entre avisos de la misma sub-zona |
 | Mecanismo de unión | Haversine de cada aviso geocodificado a la estación más cercana, igual que el subte, **sin filtrar por CABA**: para 403 avisos la estación más cercana está en la provincia (Aristóbulo del Valle para Saavedra y Núñez, Sáenz Peña para Devoto, Villa Madero para Mataderos y Lugano). Con solo estaciones de CABA esos avisos quedarían una mediana de 256 m más lejos, y hasta 903 m. El archivo no trae un campo de estado: se excluye por nombre la única estación cerrada ("Ex-estación La Salada", regex `^Ex-estaci` en `config.yaml`), que de todos modos no era la más cercana de ningún aviso |
 | Variable derivada | `dist_tren_m`; entra en `dist_riel_m` y en `dist_transporte_pesado_m` |
-| Aporta a | H3 e índice de accesibilidad. Corrige el sesgo del subte en el sur y el oeste: la mediana de distancia a riel baja 77% en Liniers y 83% en Villa Luro respecto de solo subte (ver `control_fuentes.md`) |
+| Aporta a | H3 e distancias de accesibilidad. Corrige el sesgo del subte en el sur y el oeste: la mediana de distancia a riel baja 77% en Liniers y 83% en Villa Luro respecto de solo subte (ver `control_fuentes.md`) |
 | Limitaciones | Sin frecuencias ni cantidad de pasajeros: una estación del Belgrano Sur pesa igual que una del Mitre. Distancia en línea recta al punto de la estación. La cercanía al tren puede tener efecto negativo (ruido, barrera urbana): el signo no se puede asumir. Haversine supone una Tierra esférica: contra la distancia geodésica sobre el elipsoide WGS84, el error máximo es de 0,24% (1,2 m a 500 m) |
 
 ## 5. Metrobus, BA Data (integrada en PE3)

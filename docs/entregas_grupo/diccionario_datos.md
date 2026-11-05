@@ -160,18 +160,18 @@ Dicotómicas de la ficha que describen la propia unidad. En las "solo Sí" el va
 | `comedor` | La unidad tiene comedor | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 33,4% · No 39,9% | El 39,9% dice "No". Misma advertencia que `living` |
 | `cocina` | La unidad tiene cocina | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 71,2% · No 21,2% | El 21,2% dice "No", en un universo de departamentos: casi seguro significa cocina integrada o ítem no tildado, no ausencia |
 | `dormitorio_en_suite` | Al menos un dormitorio tiene baño propio | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 13,2% · No 46,1% | 40,7% vacío. Prima del modelo: +6,6% |
-| `toilette` | Tiene toilette (baño de cortesía, sin ducha) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 27,7% (7.740) | — |
-| `estudio` | Tiene estudio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,7% (1.309) | — |
-| `desayunador` | Tiene desayunador | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,6% (1.274) | — |
-| `dependencia_de_servicio` | Tiene dependencia de servicio (cuarto y baño de servicio) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 7,6% (2.113) | — |
-| `vestidor` | Tiene vestidor | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 8,1% (2.256) | — |
-| `placards` | Tiene placards (armarios empotrados) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 24,7% (6.902) | — |
+| `toilette` | Tiene toilette (baño de cortesía, sin ducha) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 27,7% (7.740) | no aplica |
+| `estudio` | Tiene estudio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,7% (1.309) | no aplica |
+| `desayunador` | Tiene desayunador | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,6% (1.274) | no aplica |
+| `dependencia_de_servicio` | Tiene dependencia de servicio (cuarto y baño de servicio) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 7,6% (2.113) | no aplica |
+| `vestidor` | Tiene vestidor | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 8,1% (2.256) | no aplica |
+| `placards` | Tiene placards (armarios empotrados) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 24,7% (6.902) | no aplica |
 | `con_lavadero` | La unidad tiene lavadero propio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 39,3% (10.967) | No confundir con `lavanderia`, que es un servicio común del edificio |
 | `balcon` | La unidad tiene balcón | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 55,6% · No 34,2% | Prima del modelo: +4,3%. Controlar contra `superficie_de_balcon` |
 | `terraza` | La unidad tiene terraza | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 14,7% · No 69,3% | La etiqueta no aclara si es propia o común del edificio. Prima del modelo: +1,9% |
-| `patio` | La unidad tiene patio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 9,8% (2.728) | — |
+| `patio` | La unidad tiene patio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 9,8% (2.728) | no aplica |
 | `jardin` | La unidad tiene jardín | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,2% (1.164) | Raro en departamentos (4,2%): probablemente unidades en planta baja |
-| `chimenea` | La unidad tiene chimenea o hogar | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,5% (139) | — |
+| `chimenea` | La unidad tiene chimenea o hogar | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,5% (139) | no aplica |
 
 ### 7. Servicios e infraestructura
 
@@ -183,14 +183,14 @@ Era el bloque de mayor peso del índice de confort de la PreEntrega 1 (45%). El 
 | `gas_natural` | El inmueble tiene gas natural | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 50,8% · No 38,4% | El 38,4% dice "No". En la PreEntrega 1, la diferencia simple dentro de la sub-zona era negativa (−4,8%): una hipótesis a verificar es que marque edificios nuevos todo-eléctricos, o sea, antigüedad y no confort. No entra al modelo |
 | `aire_acondicionado` | Tiene aire acondicionado | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 38,1% · No 51,8% | Prima del modelo: +2,1% |
 | `calefaccion` | Tiene calefacción | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 23,1% · No 65,1% | No indica el tipo (central, individual, losa radiante) |
-| `caldera` | Tiene caldera | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 7,3% (2.034) | — |
-| `con_conexion_para_lavarropas` | Tiene conexión para lavarropas | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 28,9% · No 54,5% | — |
+| `caldera` | Tiene caldera | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 7,3% (2.034) | no aplica |
+| `con_conexion_para_lavarropas` | Tiene conexión para lavarropas | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 28,9% · No 54,5% | no aplica |
 | `linea_telefonica` | Tiene línea telefónica | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 12,6% (3.525) | Poco relevante hoy para el valor |
-| `acceso_a_internet` | Tiene acceso a internet | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 24,5% (6.836) | — |
+| `acceso_a_internet` | Tiene acceso a internet | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 24,5% (6.836) | no aplica |
 | `ascensor` | El edificio tiene ascensor | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 60,7% · No 32,2% | El 32,2% dice "No", coherente con edificios bajos. Controlar contra `cantidad_de_pisos`. Prima del modelo: −0,1% (sin efecto una vez controlada la antigüedad) |
-| `rampa_para_silla_de_ruedas` | El edificio tiene rampa para silla de ruedas | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 15,3% (4.275) | — |
-| `grupo_electrogeno` | El edificio tiene grupo electrógeno | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,8% (215) | — |
-| `cisterna` | El edificio tiene cisterna | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (208) | — |
+| `rampa_para_silla_de_ruedas` | El edificio tiene rampa para silla de ruedas | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 15,3% (4.275) | no aplica |
+| `grupo_electrogeno` | El edificio tiene grupo electrógeno | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,8% (215) | no aplica |
+| `cisterna` | El edificio tiene cisterna | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (208) | no aplica |
 | `con_energia_solar` | El edificio tiene energía solar | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí <0,1% (13) | La columna no existe en la cuota 5 (sur de la ciudad) porque ningún aviso de esa cuota mostró el ítem; el vacío significa lo mismo que en el resto. Solo 13 avisos |
 
 ### 8. Amenities y servicios del edificio
@@ -205,23 +205,23 @@ En las diferencias simples de la PreEntrega 1 era el bloque que más se asociaba
 | `jacuzzi` | Tiene jacuzzi | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,7% (767) | No aclara si es de la unidad o del edificio |
 | `salon_de_usos_multiples` | El edificio tiene SUM | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 11,3% (3.148) | Prima del modelo: +2,6% |
 | `salon_de_fiestas` | El edificio tiene salón de fiestas | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 1,9% (521) | Se superpone con el SUM: puede ser el mismo espacio declarado de dos formas |
-| `playroom` | El edificio tiene playroom | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,3% (649) | — |
-| `area_de_juegos_infantiles` | El edificio tiene área de juegos infantiles | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 1,6% (460) | — |
-| `area_de_cine` | El edificio tiene sala de cine | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (189) | — |
+| `playroom` | El edificio tiene playroom | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,3% (649) | no aplica |
+| `area_de_juegos_infantiles` | El edificio tiene área de juegos infantiles | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 1,6% (460) | no aplica |
+| `area_de_cine` | El edificio tiene sala de cine | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (189) | no aplica |
 | `parrilla` | Tiene parrilla | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 15,0% (4.200) | No aclara si es propia o común. Prima del modelo: +3,5% |
-| `roof_garden` | El edificio tiene roof garden | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (182) | — |
-| `con_area_verde` | El edificio tiene área verde | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 5,9% (1.642) | — |
-| `cowork` | El edificio tiene espacio de cowork | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (201) | — |
+| `roof_garden` | El edificio tiene roof garden | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (182) | no aplica |
+| `con_area_verde` | El edificio tiene área verde | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 5,9% (1.642) | no aplica |
+| `cowork` | El edificio tiene espacio de cowork | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (201) | no aplica |
 | `lavanderia` | El edificio tiene lavandería común | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 25,6% · No 39,0% | No confundir con `con_lavadero` (lavadero propio de la unidad) |
-| `recepcion` | El edificio tiene recepción | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,1% (580) | — |
+| `recepcion` | El edificio tiene recepción | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,1% (580) | no aplica |
 | `seguridad` | El edificio tiene seguridad | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 26,8% · No 38,4% | Solo 3.388 avisos informan `tipo_de_seguridad`, contra 7.496 con "Sí". Prima del modelo: +0,9% |
 | `tipo_de_seguridad` | Modalidad de la seguridad del edificio | Categórica nominal (5 categorías) | No aplica | MercadoLibre, ficha de detalle | Ninguna | 3.388 (12,1%) | "24 horas" (1.718) y "24 hs" (26) son la misma categoría: **en limpieza** se unifican en "24 horas" (notebook 01, sección 3.4). Las otras: Diurno, Virtual, Nocturno. No entra al análisis |
-| `estacionamiento_para_visitantes` | El edificio tiene estacionamiento para visitantes | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,6% (156) | — |
-| `cancha_de_paddle` | El edificio o complejo tiene cancha de pádel | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,1% (25) | — |
-| `cancha_de_tenis` | El edificio o complejo tiene cancha de tenis | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,5% (133) | — |
-| `con_cancha_de_futbol` | El edificio o complejo tiene cancha de fútbol | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,1% (31) | — |
+| `estacionamiento_para_visitantes` | El edificio tiene estacionamiento para visitantes | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,6% (156) | no aplica |
+| `cancha_de_paddle` | El edificio o complejo tiene cancha de pádel | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,1% (25) | no aplica |
+| `cancha_de_tenis` | El edificio o complejo tiene cancha de tenis | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,5% (133) | no aplica |
+| `con_cancha_de_futbol` | El edificio o complejo tiene cancha de fútbol | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,1% (31) | no aplica |
 | `cancha_de_basquetbol` | El edificio o complejo tiene cancha de básquet | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,1% (14) | La columna no existe en la cuota 2 porque ningún aviso de esa cuota mostró el ítem; el vacío significa lo mismo que en el resto. Solo 14 avisos |
-| `canchas_de_usos_multiples` | El edificio o complejo tiene canchas de usos múltiples | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,2% (58) | — |
+| `canchas_de_usos_multiples` | El edificio o complejo tiene canchas de usos múltiples | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,2% (58) | no aplica |
 | `en_barrio_cerrado` | La unidad está en un barrio o complejo cerrado | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 0,7% (193) | En CABA casi no hay barrios cerrados: probablemente son complejos con acceso controlado |
 
 ### 9. Condiciones comerciales y de uso
@@ -232,8 +232,8 @@ Atributos que no describen el inmueble sino las condiciones de la venta o del us
 |---|---|---|---|---|---|---|---|
 | `apto_credito` | El anunciante declara que la unidad es apta para crédito hipotecario (documentación en regla para que un banco la acepte como garantía) | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 43,1% · No 47,1% | Declarado, no verificado con ningún banco. El 43,1% dice "Sí". Es relevante en un mercado donde la mayoría de las compras se hacen al contado: un "No" puede indicar problemas de documentación, un dato a revisar antes de invertir. Entra al modelo como control: prima de −1,2% |
 | `apto_profesional` | El reglamento permite uso profesional (consultorio, oficina) | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 25,5% (7.128) | Prima del modelo: −3,3% |
-| `admite_mascotas` | El reglamento admite mascotas | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 35,8% · No 49,9% | — |
-| `amoblado` | Se vende amoblado | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,6% (1.295) | — |
+| `admite_mascotas` | El reglamento admite mascotas | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 35,8% · No 49,9% | no aplica |
+| `amoblado` | Se vende amoblado | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 4,6% (1.295) | no aplica |
 | `heladera` | Se vende con heladera incluida | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,4% (667) | Es equipamiento que se incluye, no una característica del inmueble |
 
 ### 10. Ubicación declarada y geocodificación

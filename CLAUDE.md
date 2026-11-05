@@ -103,7 +103,7 @@ docs/pipeline.md             # instalación, ejecución, tests, corrida document
 docs/entregas_grupo/         # documentos de los compañeros (fuentes externas, costos, control de fuentes...)
 data/external/               # snapshots versionados de BA Data (para correr sin red)
 data/processed/              # datasets versionados (ver abajo)
-tests/                       # pytest, 190 tests pasando (unos 70 s)
+tests/                       # pytest, 191 tests pasando (unos 70 s)
 .github/workflows/tests.yml  # CI con Python 3.9
 _material_grupo/             # material de trabajo, NO versionado (zips de los compañeros, PDFs viejos)
 ```
@@ -125,6 +125,7 @@ Datasets clave en `data/processed/`:
 | `../interim/shap_gbm.tsv` | SHAP del GBM de la sección 9 del 04, guardado (se recalcula solo si no coincide con las predicciones) |
 | `relevamiento_2.tsv` | segundo relevamiento consolidado |
 | `seguimiento_avisos.csv` | estado de cada aviso del primer relevamiento en el segundo |
+| `chequeo_comparables.csv`, `.json` | chequeo del esperado de los 486 destacados contra comparables simples (README, sección 10; `src/chequeo_comparables.py`) |
 
 Comandos:
 
@@ -197,7 +198,7 @@ y antiguos" la tabla y la ficha muestran una alerta de revisión (chip `chip-rev
   importancia, amenities y cochera 18%, antigüedad 14%, tamaño 12%. Orden estable entre vueltas (Spearman ≥ 0,98).
   Es aproximado: frente a un fondo de 200 y 1.000 evaluaciones, el top 3 coincide en el 82% de los avisos.
   El TreeExplainer de shap da valores errados con la categórica nativa de barrio: por eso, permutación.
-- Intervalo 80%: ancho mediano aproximado ±30%.
+- Intervalo 80%: ancho mediano 64,9%, o sea alrededor de ±32%.
 - Primas por estado (bootstrap por unidad): "a refaccionar" −16,1%, "a reciclar" −17,7% (con la regex vieja daba −8%:
   la regex vieja agarraba "refaccionado").
 - **Embudo oficial** (`embudo_ranking.csv`): 27.578 avisos / 25.169 unidades analizados → 1.819 / 1.714 marcados
@@ -219,7 +220,7 @@ y antiguos" la tabla y la ficha muestran una alerta de revisión (chip `chip-rev
   barrios y ninguno empeora.
 - **Segundo relevamiento (27 y 28/10/2026):** 27.516 avisos. Republicaciones detectadas por dirección + m² +
   ambientes (~24%). Se excluyen los barrios truncados por el tope de 2.016 resultados en el primer relevamiento
-  (Palermo, Belgrano, Caballito, Recoleta). Los avisos marcados salen del portal 46,8% contra 39,7% (74 días entre
+  (Palermo, Belgrano, Caballito, Recoleta). Los avisos marcados salen del portal 46,7% contra 39,7% (74 días entre
   relevamientos). Dentro del barrio, controlando log del valor esperado, log de m² y baja de precio previa:
   **+9,4 pp** (IC 6,5 a 12,3), logit OR 1,48 (notebook 05). Gradiente (principal, aprobado: brecha en log con dos
   pendientes): cada 10 pp más por debajo del esperado, +2,2 pp de salida (IC 1,6 a 2,8); con una sola pendiente,
@@ -287,7 +288,8 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
    (segmento "Familiares amplios y antiguos" del 06: marca el 11,1% contra 5,2% a 6,5% en el resto, brecha mediana
    −3,1%; son 397 de las 1.375 señales, 170 de los 486 destacados y 19 de los 38 firmes); probar una interacción
    tamaño × antigüedad en el lineal ampliado. Desde el 05/11 el dashboard muestra una alerta de revisión en ese
-   segmento (descriptiva, no excluye).
+   segmento (descriptiva, no excluye). También: una sensibilidad de la regla con costo de tenencia (expensas e
+   impuestos por los meses hasta la venta), porque hoy la liquidez no modifica la regla.
 
 ## 9. Errores conocidos y cuidados
 
