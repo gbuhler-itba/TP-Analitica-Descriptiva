@@ -201,3 +201,15 @@ def test_el_simulador_puede_reproducir_la_brecha_neta_base(exportado):
     exportada = np.array([a["brecha_neta_pct"] for a in avisos])
     assert np.allclose(100 * calculo["brecha_neta"].values, exportada, atol=0.15)
     assert resumen["parametros_costos"]["base"]["negociacion"] == pytest.approx(0.0479)
+
+
+def test_el_estado_del_segundo_relevamiento_no_cambia_ninguna_lista(exportado):
+    """Cada aviso lleva su estado al 28/10 (seguimiento_avisos.csv) y eso no toca los conteos del dashboard."""
+    cfg, avisos, resumen, salida = exportado
+    seg = pd.read_csv(resolver(cfg["rutas"]["seguimiento"])).set_index("id_aviso")["estado"]
+    assert all(a["estado_r2"] in {"sigue", "republicado", "salio"} for a in avisos)
+    assert all(a["estado_r2"] == seg[a["id"]] for a in avisos)
+    salieron = np.mean([a["estado_r2"] == "salio" for a in avisos])
+    assert 0.45 < salieron < 0.6   # "la mitad ya no estaba publicada al 28/10", en la línea del resumen
+    destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
+    assert len(destacados) == 486 and sum(a["firme"] for a in destacados) == 38

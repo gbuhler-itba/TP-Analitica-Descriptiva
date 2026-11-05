@@ -63,7 +63,8 @@ code { font-family: "IBM Plex Mono", Menlo, monospace; font-size: .85em; backgro
 .pestanas a:hover:not(.activa) { color: var(--verde); }
 
 main { flex: 1; display: flex; flex-direction: column; }
-.pagina { padding: 1.25rem 1.5rem 2rem; max-width: 1180px; width: 100%; margin: 0 auto; }
+.pagina { padding: 1.25rem 1.5rem 2rem; max-width: 1280px; width: 100%; margin: 0 auto; }
+#lista-resumen, #lista-buscador { overflow-x: auto; }
 .pagina[hidden] { display: none; }
 .pagina-mapa { max-width: none; padding: 0; flex: 1; position: relative; min-height: 70vh; }
 .pagina-texto { max-width: 860px; }
@@ -78,14 +79,13 @@ main { flex: 1; display: flex; flex-direction: column; }
 .indicadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); border-top: 1px solid var(--verde); border-bottom: 1px solid var(--linea); margin-bottom: 1.25rem; }
 .tarjeta { padding: .8rem 1rem .7rem; border-left: 1px solid var(--linea); }
 .tarjeta:first-child { border-left: none; padding-left: 0; }
-.tarjeta .numero { font-size: 2.1rem; line-height: 1.05; margin: .15rem 0 .2rem; font-variant-numeric: lining-nums tabular-nums; }
-.tarjeta .detalle { color: var(--tinta-2); font-size: .76rem; line-height: 1.35; }
-.tarjeta.nivel-senal .numero::before, .tarjeta.nivel-candidato .numero::before, .tarjeta.nivel-firme .numero::before {
-  content: ""; display: inline-block; width: .5em; height: .5em; margin-right: .3em; vertical-align: .25em; border: 1px solid var(--tinta);
-}
-.tarjeta.nivel-senal .numero::before { background: var(--senal); border-radius: 50%; }
-.tarjeta.nivel-candidato .numero::before { background: var(--candidato); }
-.tarjeta.nivel-firme .numero::before { background: var(--firme); clip-path: polygon(50% 0, 100% 100%, 0 100%); border: none; }
+.tarjeta .etiqueta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 1.2em; }
+.tarjeta .numero { font-size: 2.1rem; line-height: 1.05; margin: .15rem 0 .2rem; font-variant-numeric: lining-nums tabular-nums; display: flex; align-items: center; gap: .3em; }
+.tarjeta .detalle { color: var(--tinta-2); font-size: .76rem; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tarjeta .numero::before { content: ""; display: inline-block; flex: none; width: .5em; height: .5em; border: 1px solid var(--tinta); visibility: hidden; }
+.tarjeta.nivel-senal .numero::before { background: var(--senal); border-radius: 50%; visibility: visible; }
+.tarjeta.nivel-candidato .numero::before { background: var(--candidato); visibility: visible; }
+.tarjeta.nivel-firme .numero::before { background: var(--firme); clip-path: polygon(50% 0, 100% 100%, 0 100%); border: none; visibility: visible; }
 
 /* Chips de nivel, con forma */
 .chip { display: inline-flex; align-items: center; gap: .35em; font-size: .74rem; padding: .08em .5em; border: 1px solid var(--linea); white-space: nowrap; background: #fff; color: var(--tinta); }
@@ -109,7 +109,10 @@ table.avisos td.num { white-space: nowrap; }
 table.avisos tr.fila { cursor: pointer; }
 table.avisos tr.fila:hover { background: var(--crema-2); }
 table.avisos td .chips-fila { display: flex; flex-wrap: wrap; gap: .2rem; }
-.titulo-aviso { color: var(--tinta-2); font-size: .76rem; display: block; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.avisos th.nivel, table.avisos td.nivel { min-width: 19rem; }
+.titulo-aviso { color: var(--tinta-2); font-size: .76rem; display: flex; max-width: 400px; white-space: nowrap; }
+.titulo-aviso .titulo-texto { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.titulo-aviso .estado-r2 { flex: none; margin-left: .3em; }
 .neg { color: var(--negativo); }
 .pos { color: var(--positivo); }
 .vacio { color: var(--tinta-3); padding: 1rem 0; }

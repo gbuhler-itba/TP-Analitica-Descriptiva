@@ -37,6 +37,7 @@
     ? (corto ? `<span class="chip chip-revisar" title="${esc(textoSegmentoAlerta())}">Más error del modelo</span>`
              : `<span class="chip chip-revisar chip-largo">Revisar: ${esc(textoSegmentoAlerta())}</span>`)
     : "";
+  const textoEstadoR2 = (a) => a.estado_r2 === "salio" ? "no publicado al 28/10" : a.estado_r2 === "republicado" ? "republicado al 28/10" : "";
   const chipsExclusion = (a) => a.exclusiones.map(e => `<span class="chip chip-exclusion" title="No entra a la lista destacada del resumen">${esc(e[0].toUpperCase() + e.slice(1))}</span>`).join("");
   const destacable = (a) => esCandidato(a) && a.consenso && a.exclusiones.length === 0;
   const prioridad = (a) => (a.firme ? 2 : esCandidato(a) ? 1 : 0) * 10 + (a.consenso ? 1 : 0);
@@ -77,8 +78,8 @@
     if (!lista.length) { contenedor.innerHTML = '<p class="vacio">Ningún aviso cumple con esos filtros.</p>'; return; }
     const filas = lista.slice(0, maximo || lista.length).map(a => html`
       <tr class="fila" data-id="${a.id}">
-        <td><div class="chips-fila">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso" title="Lo marcan los dos modelos">2 modelos</span>' : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal</span>` : ""}${chipSegmento(a, true)}</div></td>
-        <td>${esc(a.barrio_nombre)}<span class="titulo-aviso" title="${esc(a.titulo)}">${esc(a.titulo)}</span></td>
+        <td class="nivel"><div class="chips-fila">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso" title="Lo marcan los dos modelos">2 modelos</span>' : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal</span>` : ""}${chipSegmento(a, true)}</div></td>
+        <td>${esc(a.barrio_nombre)}<span class="titulo-aviso" title="${esc(a.titulo)}"><span class="titulo-texto">${esc(a.titulo)}</span>${textoEstadoR2(a) ? `<span class="estado-r2">· ${textoEstadoR2(a)}</span>` : ""}</span></td>
         <td class="num">${usd(a.precio_usd)}</td>
         <td class="num">${num(a.m2)} m² · ${num(a.ambientes)} amb.</td>
         <td class="num">${num(a.precio_m2)} / ${num(a.precio_m2_esperado)}</td>
@@ -87,7 +88,7 @@
         <td><button class="chico secundario" data-ficha="${a.id}">Ficha</button></td>
       </tr>`).join("");
     contenedor.innerHTML = html`<table class="avisos">
-      <thead><tr><th>Nivel</th><th>Barrio y aviso</th><th class="num">Precio</th><th class="num">Tamaño</th>
+      <thead><tr><th class="nivel">Nivel</th><th>Barrio y aviso</th><th class="num">Precio</th><th class="num">Tamaño</th>
       <th class="num">USD/m² publicado / esperado</th><th class="num">Brecha</th><th class="num">Brecha neta</th><th></th></tr></thead>
       <tbody>${filas}</tbody></table>`;
     contenedor.querySelectorAll("tr.fila").forEach(tr => tr.addEventListener("click", () => abrirFicha(tr.dataset.id)));
@@ -99,13 +100,13 @@
     document.getElementById("indicadores").innerHTML = html`
       <div class="tarjeta"><div class="etiqueta">Avisos analizados</div><div class="numero">${num(i.avisos_analizados)}</div>
         <div class="detalle">${num(i.unidades_analizadas)} unidades · ${fecha(m.relevamiento_1)}</div></div>
-      <div class="tarjeta nivel-senal"><div class="etiqueta">Señales a investigar</div><div class="numero">${num(i.senales_unidades)}</div>
+      <div class="tarjeta nivel-senal"><div class="etiqueta">Señales</div><div class="numero">${num(i.senales_unidades)}</div>
         <div class="detalle">más de 25% bajo el esperado</div></div>
-      <div class="tarjeta nivel-candidato"><div class="etiqueta">Candidatos después de costos</div><div class="numero">${num(i.candidatos_unidades)}</div>
+      <div class="tarjeta nivel-candidato"><div class="etiqueta">Candidatos</div><div class="numero">${num(i.candidatos_unidades)}</div>
         <div class="detalle">margen ≥ ${pct(100 * m.umbral_brecha_neta, 0)} después de costos</div></div>
-      <div class="tarjeta nivel-firme"><div class="etiqueta">Candidatos firmes</div><div class="numero">${num(i.candidatos_firmes_unidades)}</div>
+      <div class="tarjeta nivel-firme"><div class="etiqueta">Firmes</div><div class="numero">${num(i.candidatos_firmes_unidades)}</div>
         <div class="detalle">margen aun vendiendo al piso</div></div>
-      <div class="tarjeta"><div class="etiqueta">Error del precio esperado</div><div class="numero">${pct(i.error_mediano_pct)}</div>
+      <div class="tarjeta"><div class="etiqueta">Error del modelo</div><div class="numero">${pct(i.error_mediano_pct)}</div>
         <div class="detalle">mediano, fuera de muestra</div></div>`;
     const lista = ordenarDestacados(D.avisos.filter(destacable));
     tablaAvisos(lista, document.getElementById("lista-resumen"), 10);
@@ -158,7 +159,8 @@
       (!nivel || (nivel === "firme" ? a.firme : esCandidato(a))) &&
       (!chk("f-sinriesgo") || (!a.riesgo_descartar && !a.riesgo_revisar)) &&
       (!chk("f-consenso") || a.consenso) &&
-      (!chk("f-sinalertas") || a.exclusiones.length === 0));
+      (!chk("f-sinalertas") || a.exclusiones.length === 0) &&
+      (!chk("f-publicados") || a.estado_r2 !== "salio"));
     const ordenada = ordenar(lista);
     const tope = 60;
     document.getElementById("buscador-conteo").textContent =
@@ -373,7 +375,7 @@
           <div class="chips">${chipNivel(a)}${a.consenso ? '<span class="chip chip-consenso">2 modelos</span>' : ""}${a.motivo ? `<span class="chip">${esc(a.motivo)}</span>` : ""}${chipsExclusion(a)}${a.riesgo_descartar ? `<span class="chip chip-alerta">Riesgo legal (descarta): ${esc(a.riesgo_descartar)}</span>` : ""}${a.riesgo_revisar ? `<span class="chip chip-revisar">Revisar: ${esc(a.riesgo_revisar)}</span>` : ""}${chipSegmento(a, false)}</div>
           ${a.exclusiones.length ? `<p class="nota">No entra a la lista destacada del resumen: ${esc(a.exclusiones.join(", "))}. El modelo lo compara con departamentos comunes de su zona y ese comparable puede no aplicar.</p>` : ""}</div>
         <div class="ficha-acciones">
-          <a class="boton secundario" href="${esc(a.link)}" target="_blank" rel="noopener">Ver en MercadoLibre</a>
+          <a class="boton secundario" href="${esc(a.link)}" target="_blank" rel="noopener">Ver en MercadoLibre${a.estado_r2 === "salio" ? " (ya no publicado al 28/10)" : a.estado_r2 === "republicado" ? " (republicado al 28/10)" : ""}</a>
           <button class="secundario" id="ficha-mapa" ${a.lat === null ? "disabled title='Sin coordenadas'" : ""}>Ver en el mapa</button>
           <button id="ficha-cerrar">Cerrar</button></div>
       </div>
