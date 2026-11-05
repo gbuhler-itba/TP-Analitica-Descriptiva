@@ -288,7 +288,7 @@ proponerle (solo si responde a una pregunta del TP, no por sumar técnica):
    (segmento "Familiares amplios y antiguos" del 06: marca el 11,1% contra 5,2% a 6,5% en el resto, brecha mediana
    −3,1%; son 397 de las 1.375 señales, 170 de los 486 destacados y 19 de los 38 firmes); probar una interacción
    tamaño × antigüedad en el lineal ampliado. Desde el 05/11 el dashboard muestra una alerta de revisión en ese
-   segmento (descriptiva, no excluye). También: una sensibilidad de la regla con costo de tenencia (expensas e
+   segmento (descriptiva, no excluye). También: calcular la estabilidad de las sub-zonas dentro de cada vuelta (hoy `analisis.py` la calcula una vez sobre todo el dataset). También: una sensibilidad de la regla con costo de tenencia (expensas e
    impuestos por los meses hasta la venta), porque hoy la liquidez no modifica la regla.
 
 ## 9. Errores conocidos y cuidados

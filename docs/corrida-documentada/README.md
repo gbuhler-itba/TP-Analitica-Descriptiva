@@ -2,7 +2,7 @@
 
 Instantánea **curada e inmutable** de los controles de calidad, tomada el
 14 de septiembre de 2026. No se regenera con cada corrida: es la evidencia a
-la que apunta la sección 16 del README principal.
+la que apuntan las secciones 1 y 9 del README principal.
 
 Los logs de trabajo viven en `outputs/logs/` y están excluidos por
 `.gitignore`, porque cada corrida los sobrescribe. Esta carpeta existe

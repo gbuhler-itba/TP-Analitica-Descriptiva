@@ -1,5 +1,7 @@
 # Preguntas por nivel, nivel predictivo y alcance
 
+> **Texto de la PreEntrega 2, sin actualizar.** Lo vigente (modelo lineal ampliado con el estado del título y las expensas, validación sin fuga, hipótesis con tests formales, segundo relevamiento, regla de decisión y resultados) está en el `README.md` de la PreEntrega 3. Este documento se conserva por el porqué de cada nivel de pregunta y de lo que el análisis no mide.
+
 Reemplaza la sección de preguntas del README de la PreEntrega 1 y agrega dos secciones nuevas: la definición del nivel predictivo y lo que el análisis no mide.
 
 **Cambio de enfoque que atraviesa todo el documento.** La idea del índice se mantiene, pero sus pesos dejan de ser los 45/30/25 elegidos a mano. Los 45/30/25 quedan como primera propuesta, ya contrastada con los datos (ver `docs/correcciones_pe1/diagnostico.md`), y los pesos pasan a salir de lo que el mercado paga por cada característica dentro de la misma zona. Así, cada aviso tiene un **precio esperado** según sus características. Los avisos que se marcan son **avisos con precio atípicamente bajo para investigar**, es decir, publicados por debajo de su precio esperado. Son una señal para que el analista mire, no una oportunidad comprobada.
