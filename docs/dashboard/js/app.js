@@ -34,7 +34,7 @@
   // Alerta descriptiva del notebook 06: el tipo de departamento con más error del modelo. No excluye de nada.
   const textoSegmentoAlerta = () => `Tipo de departamento con más error del modelo (${pct(D.resumen.indicadores.error_mediano_segmento_alerta_pct, 1)} contra ${pct(D.resumen.indicadores.error_mediano_pct, 1)} de la ciudad): el precio esperado tiende a quedar alto. Revisar con más cuidado.`;
   const chipSegmento = (a, corto) => a.segmento && a.segmento === D.resumen.indicadores.segmento_alerta
-    ? (corto ? `<span class="chip chip-revisar" title="${esc(textoSegmentoAlerta())}">Revisar: tipo con más error del modelo</span>`
+    ? (corto ? `<span class="chip chip-revisar" title="${esc(textoSegmentoAlerta())}">Más error del modelo</span>`
              : `<span class="chip chip-revisar chip-largo">Revisar: ${esc(textoSegmentoAlerta())}</span>`)
     : "";
   const chipsExclusion = (a) => a.exclusiones.map(e => `<span class="chip chip-exclusion" title="No entra a la lista destacada del resumen">${esc(e[0].toUpperCase() + e.slice(1))}</span>`).join("");
@@ -98,15 +98,15 @@
     const i = D.resumen.indicadores, m = D.resumen.metadatos;
     document.getElementById("indicadores").innerHTML = html`
       <div class="tarjeta"><div class="etiqueta">Avisos analizados</div><div class="numero">${num(i.avisos_analizados)}</div>
-        <div class="detalle">${num(i.unidades_analizadas)} unidades · MercadoLibre, ${fecha(m.relevamiento_1)}</div></div>
+        <div class="detalle">${num(i.unidades_analizadas)} unidades · ${fecha(m.relevamiento_1)}</div></div>
       <div class="tarjeta nivel-senal"><div class="etiqueta">Señales a investigar</div><div class="numero">${num(i.senales_unidades)}</div>
-        <div class="detalle">más de 25% por debajo del esperado, también en su barrio, sin errores de carga</div></div>
+        <div class="detalle">más de 25% bajo el esperado</div></div>
       <div class="tarjeta nivel-candidato"><div class="etiqueta">Candidatos después de costos</div><div class="numero">${num(i.candidatos_unidades)}</div>
-        <div class="detalle">margen de al menos ${pct(100 * m.umbral_brecha_neta, 0)} con costos base y Ganancias en 0</div></div>
+        <div class="detalle">margen ≥ ${pct(100 * m.umbral_brecha_neta, 0)} después de costos</div></div>
       <div class="tarjeta nivel-firme"><div class="etiqueta">Candidatos firmes</div><div class="numero">${num(i.candidatos_firmes_unidades)}</div>
-        <div class="detalle">el margen se sostiene vendiendo al piso del rango del 80%</div></div>
+        <div class="detalle">margen aun vendiendo al piso</div></div>
       <div class="tarjeta"><div class="etiqueta">Error del precio esperado</div><div class="numero">${pct(i.error_mediano_pct)}</div>
-        <div class="detalle">mediano, fuera de muestra; el rango del 80% cubre el publicado el ${pct(i.cobertura_intervalo_pct, 1)} de las veces</div></div>`;
+        <div class="detalle">mediano, fuera de muestra</div></div>`;
     const lista = ordenarDestacados(D.avisos.filter(destacable));
     tablaAvisos(lista, document.getElementById("lista-resumen"), 10);
     document.getElementById("lista-resumen").insertAdjacentHTML("beforeend",

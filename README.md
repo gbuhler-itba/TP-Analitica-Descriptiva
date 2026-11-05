@@ -368,11 +368,11 @@ y abrir http://localhost:8000/dashboard/.
 
 | Pestaña | Qué muestra |
 |---|---|
-| Resumen | Los indicadores (avisos analizados, señales, candidatos, candidatos firmes, error del modelo), la advertencia de que son señales a revisar y no oportunidades, la lista "los que más vale la pena mirar" (candidatos de los dos modelos, sin barrio popular a menos de 500 m, casas o PH, usos comerciales, oficinas u hoteles, avisos sin coordenadas con otro barrio en el título, posibles ventas de varias unidades, precio posiblemente con financiación ni en pozo; esos siguen en el mapa y el buscador con su alerta) y el embudo |
+| Resumen | Una línea que recuerda que son señales a revisar y no oportunidades, los indicadores (avisos analizados, señales, candidatos, candidatos firmes, error del modelo) con un subtítulo corto cada uno, la lista "los que más vale la pena mirar" (candidatos de los dos modelos, sin barrio popular a menos de 500 m, casas o PH, usos comerciales, oficinas u hoteles, avisos sin coordenadas con otro barrio en el título, posibles ventas de varias unidades, precio posiblemente con financiación ni en pozo; esos siguen en el mapa y el buscador con su alerta) y el embudo |
 | Mapa | Todos los avisos de fondo en gris, señales, candidatos y firmes con color y forma propios, filtro por barrio y capas de subte, tren, Metrobus y premetro; el clic abre la ficha |
 | Buscador | Filtros por barrio, ambientes, precio, m², estado del título, nivel, riesgo legal, consenso de modelos y alertas; mismo orden que el resumen |
 | Tendencias | La tasa de salida del portal por decil de brecha (H1), el error del modelo por barrio (dónde la brecha es más confiable), señales por barrio, la sensibilidad de la regla y el simulador "¿y si…?" (negociación, costos, refacción, Ganancias, margen mínimo y valor de salida) |
-| Cómo leer este tablero | Los límites en palabras simples y los links a los notebooks |
+| Cómo leer este tablero | La advertencia completa, qué es cada nivel, qué se excluye de la lista destacada, los límites en palabras simples y los links a los notebooks |
 | Ficha del aviso | Publicado contra esperado con el rango del 80%, qué suma y qué resta, la cascada de costos hasta la brecha neta, alertas, consenso, liquidez por ambientes y el link al aviso |
 
 El tercer nivel, **candidato firme**, es el escenario conservador del notebook 07 (candidato aun vendiendo al piso del
