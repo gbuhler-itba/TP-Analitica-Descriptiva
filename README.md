@@ -158,7 +158,7 @@ Versión completa, con el porqué de cada nivel, en [`preguntas_y_alcance.md`](d
 | Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida (notebook 02); la sub-zona se evalúa formalmente en H2 (notebook 05) |
 | | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida: por columna (diccionario y notebook 01) y por aviso, con la tasa de completitud (notebook 03) |
 | | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Parcial: frecuencias generales en el diccionario; por segmento de departamento en el notebook 06 |
-| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (notebooks 01 y 02) |
+| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (calculado desde `seguimiento_avisos.csv`; está en el diccionario de datos, `docs/entregas_grupo/diccionario_datos.md`) |
 | Diagnóstico | G1 | Dentro de la zona, ¿cuánto se asocia cada característica con el precio por m²? | Respondida, ahora con intervalos por bootstrap de unidades (notebook 04, sección 6) |
 | | G2 | ¿La prima de cada característica cambia según la zona o el segmento de precio? | Respondida: cambian poco por tercil de barrio y por segmento de departamento; no justifica un modelo por segmento (notebook 04, sección 7; notebook 06, sección 4.3) |
 | | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y entorno? | Respondida (H3, notebook 05): una parte chica pero significativa, con efectos fijos de barrio |
@@ -240,7 +240,7 @@ reproduce exactamente ese resultado.
 | Métrica (dataset limpio) | Valor |
 |---|---|
 | Avisos | 27.578 (25.169 unidades) |
-| Con coordenadas | 82,1% (menos 249 de geocodificación dudosa) |
+| Con coordenadas | 82,1% (menos 244 de geocodificación dudosa) |
 | Mediana de precio | USD 130.000 |
 | Mediana de precio por m² | USD 2.393 |
 | Mediana de superficie | 57 m² |
@@ -390,7 +390,7 @@ el mapa y en el buscador con su alerta, y nada de esto cambia las 1.375 señales
 **Por qué una página estática y no una herramienta de BI.** El criterio fue el del profesor: lo más fácil de armar,
 mantener y desplegar con nuestro modelo de datos y nuestro volumen. El dashboard es HTML, CSS y JavaScript sin
 dependencias de build (solo Leaflet para el mapa) que lee los JSON que genera el pipeline (`docs/dashboard/data/`,
-2,6 MB para 1.375 unidades y el fondo de 22.389 puntos). Se actualiza con regenerar los datos, un test
+2,7 MB para 1.375 unidades y el fondo de 22.389 puntos). Se actualiza con regenerar los datos, un test
 (`tests/test_exportar_dashboard.py`) verifica que los números coinciden con el embudo y el ranking de la etapa 6, el
 simulador reproduce la regla de `src/regla.py` y da los mismos conteos que la sensibilidad del notebook 07, y GitHub
 Pages lo publica gratis con un link público desde el mismo repo, así que versionar el dashboard es versionar el
@@ -406,7 +406,7 @@ mejoraba la experiencia del analista para este volumen y las dos rompían la rep
 |---|---|---|
 | Universos del ranking sin reconciliar (1.704, 1.434, 1.225, 1.590, 1.150) | Un embudo único por avisos y por unidades, generado por la etapa 6, que todos los documentos citan: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 → 1.455 / 1.375 → 884 / 840 | `embudo_ranking.csv`; notebooks 03 (banner) y 07; dashboard |
 | H3 incompleta: faltaban tren, Metrobus y espacios verdes | Integradas con premetro, barrios populares y permisos de obra, como snapshots versionados con controles; H3 reevaluada con efectos fijos de barrio y errores agrupados por sub-zona | `src/fuentes_externas.py`, `control_fuentes.md`, notebook 05 |
-| Estabilidad de las sub-zonas | ARI con 100 remuestreos por barrio dentro de cada vuelta; un barrio inestable (ARI < 0,7) se compara entero. Hoy, Villa Santa Rita | Notebook 04, sección 3 |
+| Estabilidad de las sub-zonas | ARI con 100 remuestreos por barrio (submuestras del 80% de los avisos con coordenadas), calculado una sola vez sobre todo el dataset y no dentro de cada vuelta, porque solo usa coordenadas; un barrio inestable (ARI < 0,7) se compara entero. Hoy, Villa Santa Rita | Notebook 04, sección 3 |
 | Fuga indirecta (atípicos y elección de zona con todos los datos) | Todas las decisiones se toman dentro de cada vuelta, con atípicos sobre el log; el error casi no cambia, la lista cambia en el borde | Notebook 04, sección 2 |
 | Validación temporal con un segundo relevamiento | Scraping del 27 y 28/10/2026 y seguimiento de cada aviso (sigue, republicado, salió), con republicaciones detectadas por dirección, m² y ambientes y barrios truncados excluidos | `src/seguimiento.py`, notebook 05 (H1b) |
 | Tests formales | Tabla por hipótesis con H0, H1, estadístico, p-valor y decisión; bootstrap por unidad; Holm | `src/inferencia.py`, notebook 05 |
@@ -462,8 +462,8 @@ Tres pasos, con los números del embudo (`embudo_ranking.csv`, por avisos):
    menos de 50 avisos usan el error de la ciudad. Saca 263 avisos: quedan 1.556 (1.470 unidades).
 3. **Sin señales de error de carga.** Se apartan los avisos donde el dato parece mal cargado: m² por ambiente fuera
    del percentil 1 a 99 de la ciudad (51 avisos entre los marcados), dormitorios incoherentes con los ambientes (37),
-   piso incoherente con el edificio (8), mención de alquiler en el título (7) o superficie recuperada del total (3).
-   Saca 101 avisos: quedan **1.455 avisos, 1.375 unidades: la lista oficial**.
+   piso incoherente con el edificio (8), mención de alquiler en el título (7) o superficie recuperada del total (3): 106 marcas en 101 avisos, porque algunos
+   tienen más de una. Saca 101 avisos: quedan **1.455 avisos, 1.375 unidades: la lista oficial**.
 
 Las definiciones están en `src/analisis.py` (`marca_por_barrio`, `senales_error_carga`).
 

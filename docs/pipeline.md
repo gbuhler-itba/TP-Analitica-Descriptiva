@@ -84,7 +84,7 @@ reproducible por un tercero.
 | `data/processed/relevamiento_2.tsv`, `seguimiento_avisos.csv` | Sí | 25 MB | `python3 src/seguimiento.py`, segundos, después de la etapa 5 |
 | `data/processed/precio_esperado.tsv`, `unidades_marcadas.csv`, `avisos_a_investigar.csv`, `embudo_ranking.csv`, `explicacion_avisos.tsv` | Sí | 20 MB | Etapa 6, unos 2 min. **Generados en la Mac de referencia** (sección 10: el gradient boosting puede variar entre plataformas) |
 | `data/interim/shap_gbm.tsv` | Sí | 1,2 MB | Notebook 04, sección 9: se recalcula solo si no coincide con las predicciones (varios minutos) |
-| `docs/dashboard/data/*.json` | Sí | 2,6 MB | `python3 src/exportar_dashboard.py`, segundos, después de la etapa 6 |
+| `docs/dashboard/data/*.json` | Sí | 2,7 MB | `python3 src/exportar_dashboard.py`, segundos, después de la etapa 6 |
 | `outputs/logs/pipeline.log`, `outputs/logs/qc_*.json` | No | no aplica | Los escribe cada corrida |
 | `docs/corrida-documentada/*` | Sí | 40 KB | No se regenera: es una instantánea curada. Incluye `corrida_de_cero_2026-11-05.log`, la corrida completa de las etapas 5 y 6, el exportador, los notebooks y los tests de la PreEntrega 3 |
 | `*_parcial.tsv` | No | no aplica | Los escribe y borra el propio pipeline |
