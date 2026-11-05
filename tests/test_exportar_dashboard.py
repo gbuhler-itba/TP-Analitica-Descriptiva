@@ -171,6 +171,22 @@ def test_los_json_son_validos_y_sin_nan(exportado):
     assert len(deciles) == 10 and all(d["ic_inf_pct"] <= d["tasa_pct"] <= d["ic_sup_pct"] for d in deciles)
 
 
+def test_las_estaciones_de_todos_los_modos_estan_en_latitud_y_longitud(exportado):
+    # El premetro viene en metros (POSGAR 2007 / CABA 2019): sin reproyectar, el mapa no lo mostraba
+    cfg, _, _, salida = exportado
+    capas = json.loads((salida / "estaciones.json").read_text(encoding="utf-8"))
+    assert set(capas) == {"subte", "tren", "metrobus", "premetro"}
+    for modo, puntos in capas.items():
+        assert len(puntos) > 0, modo
+        assert all(-34.8 < p["lat"] < -34.5 and -58.6 < p["lon"] < -58.3 for p in puntos), modo
+    # Las mismas coordenadas que usa el análisis para dist_premetro_m
+    from src import fuentes_externas
+    premetro = fuentes_externas.cargar_estaciones(resolver(cfg["fuentes_externas"]["rutas"]["premetro"]))
+    exportadas = sorted((p["lat"], p["lon"]) for p in capas["premetro"])
+    assert len(exportadas) == len(premetro)
+    assert np.allclose(exportadas, sorted(map(tuple, np.round(premetro, 5))), atol=1e-5)
+
+
 def test_el_simulador_puede_reproducir_la_brecha_neta_base(exportado):
     """Con los campos exportados y los parámetros base, la regla reproduce la brecha neta de la etapa 6."""
     cfg, avisos, resumen, salida = exportado
