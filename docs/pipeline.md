@@ -367,7 +367,7 @@ Hay dos cosas distintas y conviene no confundirlas.
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
 ```bash
-pytest            # toda la suite, 191 tests, unos 2 minutos, sin red
+pytest            # toda la suite, 193 tests, menos de un minuto, sin red
 pytest -v         # con el nombre de cada test
 pytest tests/test_limpieza.py   # un solo archivo
 ```
@@ -443,9 +443,10 @@ servicios reales está documentada en la sección siguiente.
 
 Para las etapas 5 y 6, el exportador del dashboard, los notebooks y los tests,
 la evidencia es `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`: una
-corrida de cero en un worktree limpio del commit `1813043` que reprodujo byte a
+corrida de cero en un worktree limpio del commit `756c139` que reprodujo byte a
 byte todos los archivos versionados de `data/processed/`, `data/interim/` y
-`docs/dashboard/data/`.
+`docs/dashboard/data/` (el `resumen.json` versionado es el de esa corrida, con
+ese commit en sus metadatos).
 
 ---
 

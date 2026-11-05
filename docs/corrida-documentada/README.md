@@ -54,10 +54,10 @@ y el hash del dataset final van a cambiar.
 ## Corrida de cero de la PreEntrega 3 (05/11/2026)
 
 `corrida_de_cero_2026-11-05.log` es el registro de una corrida completa de las etapas 5 y 6, el exportador del
-dashboard, los notebooks 01 a 07 y la suite de tests, hecha en un worktree limpio del commit `1813043` (macOS,
+dashboard, los notebooks 01 a 07 y la suite de tests, hecha en un worktree limpio del commit `756c139` (macOS,
 Python 3.9, `.venv`). Resultado: todos los archivos de `data/processed/`, `data/interim/` y `docs/dashboard/data/`
-quedaron byte a byte iguales a los versionados (solo cambia el commit anotado en `resumen.json`), los notebooks 03 a
-07 reproducen sus salidas y los 190 tests pasan. Es la evidencia de ejecución que respalda los números del README de
+quedaron byte a byte iguales a los versionados (el `resumen.json` versionado es el de esta corrida, con ese commit en
+sus metadatos), los notebooks 02 a 07 reproducen sus salidas y los 193 tests pasan. Es la evidencia de ejecución que respalda los números del README de
 la PreEntrega 3.
 
 ## Hashes de los datasets versionados
