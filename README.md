@@ -441,7 +441,9 @@ Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conte
   pero compra al publicado (supuesto conservador).
 - **Error del modelo.** Un error mediano de 12,5% y un rango del 80% de alrededor de ±30% sirven para ordenar avisos,
   no para tasar uno ni para separar un precio atípico de un error de estimación (H1a). En los departamentos familiares
-  antiguos y en los nuevos con amenities el error es mayor (notebook 06).
+  antiguos y en los nuevos con amenities el error es mayor (notebook 06). Además, en los familiares amplios y antiguos el
+  modelo marca el doble de avisos (11,1% contra 5,2% a 6,5%) con una brecha mediana de −3,1%: el precio esperado tiende
+  a quedar alto ahí y parte de esas señales puede ser sesgo del modelo, no un precio bajo.
 - **Salir del portal no es venderse.** La tasa de salida (H1b) mezcla ventas, retiros y republicaciones no detectadas
   (las detectadas, por dirección, m² y ambientes, son cerca de un cuarto de los avisos). Dos relevamientos separados
   por 74 días no permiten medir tiempos de venta.
