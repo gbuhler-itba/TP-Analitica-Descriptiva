@@ -56,7 +56,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
-from src import inferencia, regla, segmentos, validacion  # noqa: E402
+from src import fuentes_externas, inferencia, regla, segmentos, validacion  # noqa: E402
 from src.configuracion import agregar_argumento_config, cargar_config  # noqa: E402
 from src.eda import nombre_barrio  # noqa: E402
 from src.rutas import asegurar_directorio, resolver  # noqa: E402
@@ -349,7 +349,7 @@ def fondo(precio):
 
 
 def estaciones(cfg_fe, cfg_enr):
-    """Capas del mapa: puntos con nombre y línea."""
+    """Capas del mapa: puntos con nombre y línea, en latitud y longitud."""
     capas = {}
     for capa, ruta, nombre, linea, filtro in [
         ("subte", cfg_enr["subte_geojson"] if "subte_geojson" in cfg_enr else "data/external/estaciones-de-subte.geojson",
@@ -358,7 +358,9 @@ def estaciones(cfg_fe, cfg_enr):
         ("metrobus", cfg_fe["rutas"]["metrobus"], "CALLE", "L1", None),
         ("premetro", cfg_fe["rutas"]["premetro"], "nam", "ral", None),
     ]:
-        g = json.load(open(resolver(ruta), encoding="utf-8"))
+        # Misma reproyección que el análisis (fuentes_externas.cargar_estaciones): el premetro viene en
+        # POSGAR 2007 / CABA 2019, en metros, y leído como grados caía fuera del mapa.
+        g = fuentes_externas.a_wgs84(json.load(open(resolver(ruta), encoding="utf-8")))
         puntos = []
         for f in g["features"]:
             p = f["properties"]
