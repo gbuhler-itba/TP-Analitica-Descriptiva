@@ -445,6 +445,48 @@ diferencia entre referencia y esperado); explican al modelo, no causas.
 | `barrio_truncado` | El barrio llegó al tope de paginación en alguno de los dos relevamientos | Booleana | Palermo, Belgrano, Caballito y Recoleta (7.999 avisos): ahí no aparecer no significa haber salido. Se excluyen del análisis de salida |
 | `salio` ★ | Salió del portal | Booleana | `estado` = `salio`. Entre los no truncados: 46,7% de los marcados contra 39,7% del resto. **Salir no es venderse**: puede ser venta, retiro o una republicación no detectada |
 
+### Campos del dashboard (`docs/dashboard/data/avisos.json`, `src/exportar_dashboard.py`)
+
+Una fila por unidad de la lista oficial (1.375), con lo que muestran la tabla, la ficha, el mapa y el simulador del
+dashboard. Casi todo viene de `precio_esperado.tsv` y `avisos_a_investigar.csv` sin redondear a mano (los porcentajes
+se expresan en puntos, de ahí el sufijo `_pct`); los campos marcados "solo dashboard" se calculan en el exportador y
+no cambian la lista oficial ni ningún conteo del análisis.
+
+| Campo | Significado | Tipo y unidad | De dónde sale |
+|---|---|---|---|
+| `id`, `posicion` | ID de MercadoLibre y posición en el ranking | Texto; entero 1 a 1.375 | `avisos_a_investigar.csv` (`id_aviso`, `posicion`) |
+| `barrio`, `barrio_nombre`, `zona` | Barrio de búsqueda (slug y nombre) y zona de referencia (sub-zona o barrio) | Texto | `precio_esperado.tsv` |
+| `titulo`, `link` | Título y link del aviso, sin los parámetros de tracking | Texto | `propiedades_limpias.tsv` |
+| `lat`, `lon` | Coordenadas con 5 decimales; `null` sin coordenadas o con geocodificación dudosa | Numéricas; grados | `precio_esperado.tsv` |
+| `precio_usd`, `m2`, `ambientes`, `antiguedad` | Precio publicado, superficie, ambientes y antigüedad | Numéricas; USD, m², unidades, años | `precio_usd`, `m2_final`, `ambientes`, `antiguedad` |
+| `precio_m2`, `precio_m2_esperado`, `precio_m2_inf`, `precio_m2_sup` | Precio por m² publicado, esperado y límites del intervalo del 80% | Numéricas; USD por m² | `precio_m2_usd`, `precio_m2_esperado`, `precio_m2_esperado_inf`, `_sup` |
+| `precio_m2_referencia_zona` | Mediana del precio por m² de la zona de referencia, fuera de muestra | Numérica; USD por m² | `precio_m2_referencia_zona` |
+| `brecha_pct`, `brecha_otro_modelo_pct` | Brecha del modelo oficial y del gradient boosting | Numéricas; puntos porcentuales | `brecha` × 100; `brecha_otro_modelo_%` del ranking |
+| `consenso` ★ | Los dos modelos lo marcan (brecha menor a −25% en ambos) | Booleana | `marcado_consenso` |
+| `debajo_del_intervalo` | El precio publicado queda por debajo del límite inferior del 80% | Booleana | `debajo_del_intervalo` |
+| `avisos_de_la_unidad`, `avisos_discordantes` | Cuántos avisos tiene la unidad y si alguno no está marcado | Entero; booleana | `avisos_a_investigar.csv` |
+| `bajo_de_precio`, `tasa_completitud` | "BAJÓ DE PRECIO" en el primer relevamiento; completitud de la ficha | Booleana; proporción 0 a 1 | Limpieza (notebook 01) y etapa 6 |
+| `estado`, `estado_nombre`, `prima_estado` | Estado del inmueble según el título (`sin_marca`, `a_estrenar`, `ya_reformado`, `a_reciclar`, `a_refaccionar`), su nombre y su prima en el modelo | Texto; texto; proporción | `estado_titulo`, `prima_estado` |
+| `nivel_refaccion` | Nivel de refacción que asume la regla en cada escenario (`central`, `baja`, `alta`): `ninguna`, `liviana`, `media` o `integral` | Objeto de texto | `regla.nivel_de_refaccion` con `config/costos.yaml` |
+| `riesgo_descartar`, `riesgo_revisar` | Señales legales del título que descartan o piden revisar; vacío si no hay | Texto | `precio_esperado.tsv` |
+| `titulo_casa`, `titulo_barrio_popular`, `geo_dudoso` | Marcas del título y de la geocodificación | Booleanas | Limpieza y `accesibilidad.tsv` |
+| `dist_barrio_popular_m` | Distancia al barrio popular más cercano; `null` sin coordenadas | Entero; metros | Solo dashboard: polígonos de BA Data proyectados |
+| `exclusiones` ★ | Motivos por los que el aviso no entra a la lista destacada del resumen: `barrio popular`, `a menos de 500 m de un barrio popular`, `casa`, `PH`, `uso comercial u oficina`, `barrio dudoso`, `posible venta de varias unidades`, `precio posiblemente con financiación`, `en pozo: precio no comparable con usados`; lista vacía si no tiene | Lista de texto | Solo dashboard: regex sobre el título y distancia (`exclusiones_del_destacado`). No cambia la lista oficial |
+| `segmento` | Tipo de departamento del notebook 06 (`Compactos de edificio antiguo`, `Nuevos con amenities`, `Familiares amplios y antiguos`, `Chicos y recientes`); en "Familiares amplios y antiguos" la ficha muestra una alerta de revisión | Texto | Solo dashboard: `segmento_por_aviso` reproduce el MCA y el K-means del 06 con la misma semilla |
+| `estado_r2` | Qué pasó con el aviso en el segundo relevamiento: `sigue`, `republicado` o `salio` | Categórica nominal | `seguimiento_avisos.csv` (`estado`) |
+| `brecha_neta_pct` ★ | Brecha neta de costos en el escenario base (resultado sobre costo total) | Numérica; puntos porcentuales | `brecha_neta` × 100 |
+| `nivel` ★ | Nivel de decisión: `señal a investigar` o `candidato después de costos` | Categórica | `nivel_decision` |
+| `firme` ★ | Candidato firme: sigue siendo candidato vendiendo al límite inferior del rango del 80% (83 unidades) | Booleana | Solo dashboard: `unidades_firmes`, misma regla del notebook 07 |
+| `motivo` | Por qué no es candidato (por ejemplo "brecha neta 6% < 10%"); vacío si lo es | Texto | `motivo_decision` |
+| `costos` | Cascada del escenario base: `entrada`, `refaccion`, `total`, `valor_salida`, `venta_cierre`, `salida`, `resultado` | Objeto numérico; USD | `costo_entrada_usd`, `refaccion_usd`, `costo_total_usd`, `valor_salida_usd`, `venta_cierre_usd` y derivados |
+| `tasa_salida_ambientes_pct` | Tasa de salida del portal de los avisos con la misma cantidad de ambientes (liquidez, informativa) | Numérica; puntos porcentuales | `tasa_salida_ambientes` × 100 |
+| `factores` | Hasta tres factores que más suben y tres que más bajan el precio esperado del aviso respecto del típico de su zona, con su efecto | Lista de objetos (`factor`, `efecto_pct`) | `explicacion_avisos.tsv` (modelo oficial) |
+
+Los nombres de los segmentos son los de `segmentos.nombrar_segmentos`; si un nombre no coincide con esta lista, manda
+el notebook 06. `resumen.json` lleva los indicadores, el embudo, la sensibilidad y los parámetros de costos por
+escenario; `estaciones.json`, las capas de transporte; `fondo.json`, todos los avisos con coordenadas para el fondo
+del mapa.
+
 ## Resumen de anomalías y qué se hizo con cada una
 
 Problemas detectados en las 93 columnas originales y su resolución en la limpieza (etapa 5, notebook 01) o en el
