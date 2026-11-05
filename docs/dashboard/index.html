@@ -16,8 +16,7 @@
   <header class="cabecera">
     <div class="marca">
       <h1 class="marca-titulo">Radar de avisos · CABA</h1>
-      <span class="marca-sub">Fondo de inversión inmobiliario · Departamentos usados en venta publicados por debajo de su precio
-        esperado · MercadoLibre, relevamientos del 14/08/2026 y del 27 y 28/10/2026</span>
+      <span class="marca-sub">Departamentos usados en venta en CABA · MercadoLibre, 14/08 y 27-28/10/2026</span>
     </div>
     <nav class="pestanas" aria-label="Páginas">
       <a href="#resumen" data-pagina="resumen">Resumen</a>
@@ -32,20 +31,12 @@
     <p class="cargando" id="cargando">Cargando los datos…</p>
 
     <section class="pagina" id="pagina-resumen" hidden>
-      <div class="aviso-importante" role="note">
-        <strong>Son señales para revisar, no oportunidades confirmadas.</strong>
-        El precio esperado de un aviso tiene un rango de alrededor de ±32%: la brecha ordena qué mirar primero,
-        no prueba que un departamento esté barato. Nada de este tablero reemplaza la visita ni la tasación.
-      </div>
+      <p class="nota nota-aviso">Señales para revisar, no oportunidades confirmadas · <a href="#leer">Cómo leer este tablero</a></p>
       <div class="indicadores" id="indicadores"></div>
       <section class="bloque">
         <h2>Los que más vale la pena mirar</h2>
-        <p class="nota">Candidatos después de costos que marcan los dos modelos, sin los casos que el análisis mostró como
-          especiales: en un barrio popular o a menos de 500 m de uno, casas o PH, usos comerciales, oficinas u hoteles,
-          sin coordenadas y con otro barrio en el título, posibles ventas de varias unidades, precio posiblemente con
-          financiación y en pozo (esos siguen en el mapa y en el buscador, con su alerta). Primero los
-          <span class="chip chip-firme">firmes</span>, que dejan margen aun vendiendo al piso del rango del 80%; después,
-          por brecha neta.</p>
+        <p class="nota">Candidatos de los dos modelos, sin casos especiales (<a href="#leer">qué se excluye</a>). Primero los
+          <span class="chip chip-firme">firmes</span>, después por brecha neta.</p>
         <div id="lista-resumen"></div>
       </section>
       <section class="bloque">
@@ -155,15 +146,23 @@
     <section class="pagina pagina-texto" id="pagina-leer" hidden>
       <h2>Cómo leer este tablero</h2>
       <ul class="limites">
+        <li><strong>Son señales para revisar, no oportunidades confirmadas.</strong> El precio esperado de un aviso tiene un
+          rango de alrededor de ±32%: la brecha ordena qué mirar primero, no prueba que un departamento esté barato. Nada de
+          este tablero reemplaza la visita ni la tasación.</li>
         <li><strong>Qué es una señal.</strong> Un aviso publicado más de 25% por debajo del precio que el modelo espera para sus
-          características y su zona, también por debajo del umbral de su barrio, y sin señales de error de carga.
-          <strong>No es una oportunidad:</strong> es un aviso para revisar.</li>
+          características y su zona, también por debajo del umbral de su barrio (dos veces el error mediano del barrio), y sin
+          señales de error de carga. <strong>No es una oportunidad:</strong> es un aviso para revisar.</li>
         <li><strong>Qué es un candidato.</strong> Una señal que, comprándola al precio publicado, refaccionándola según lo que dice
           el título y vendiéndola al precio esperado menos la negociación, deja un margen de al menos 10% después de todos los
-          costos, y sin un riesgo legal que la descarte. <strong>Firme</strong>: sigue dejando ese margen aun vendiendo al piso del
-          rango del 80%. Tampoco es una oportunidad confirmada.</li>
-        <li><strong>El precio esperado tiene error.</strong> Se equivoca 12,5% en la mediana y el rango del 80% de un aviso es de
-          alrededor de ±32%. Sirve para ordenar avisos, no para tasar uno.</li>
+          costos (escenario base, Ganancias en 0), y sin un riesgo legal que la descarte. <strong>Firme</strong>: sigue dejando
+          ese margen aun vendiendo al piso del rango del 80%. Tampoco es una oportunidad confirmada.</li>
+        <li><strong>Qué se excluye de la lista destacada del resumen.</strong> Candidatos que marcan los dos modelos pero que el
+          análisis mostró como casos especiales: en un barrio popular o a menos de 500 m de uno, casas o PH, usos comerciales,
+          oficinas u hoteles, sin coordenadas y con otro barrio en el título, posibles ventas de varias unidades, precio
+          posiblemente con financiación y en pozo. Siguen en el mapa y en el buscador, con su alerta.</li>
+        <li><strong>El precio esperado tiene error.</strong> Se equivoca 12,5% en la mediana, fuera de muestra, y el rango del 80%
+          de un aviso es de alrededor de ±32%; ese rango cubre el precio publicado el 79,5% de las veces. Sirve para ordenar
+          avisos, no para tasar uno.</li>
         <li><strong>Un solo portal y dos fechas.</strong> Avisos de MercadoLibre del 14/08/2026; el segundo relevamiento, del
           27 y 28/10/2026, solo se usa para ver qué avisos siguen publicados. Palermo, Belgrano, Caballito y Recoleta
           llegaron al tope de resultados del portal: son una muestra.</li>
