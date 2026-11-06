@@ -2,6 +2,8 @@
 
 **Analítica Descriptiva, ITBA, 2026 C2 · PreEntrega 3**
 
+Grupo: Lola Herrmann, Teo López Sanson, Matías Cachenot, Gonzalo Bühler · Docente: José Ignacio López Sáez
+
 Herramienta para que el analista de un fondo de inversión inmobiliario encuentre, entre decenas de miles de
 avisos de departamentos usados en venta en CABA, los que se publican claramente por debajo del precio que el
 mercado paga por sus características en su zona. Son **señales de precio atípicamente bajo para investigar**, no
