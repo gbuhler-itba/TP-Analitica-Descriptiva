@@ -11,7 +11,7 @@ SALIDA:  data/processed/permisos_obra.tsv     (link + permisos_obra_500m)
 No modifica el dataset enriquecido: la salida es un archivo aparte, con
 `link` como clave, que se une después al dataset de trabajo.
 
-Decisiones (justificadas en docs/entregas_grupo/fuentes_externas.md, ficha 9):
+Decisiones (justificadas en docs/fuentes_externas.md, ficha 9):
   - Tipos: solo trámites de obra nueva o ampliación mayor (TIPOS_OBRA). Quedan
     afuera instalaciones, demoliciones, regularizaciones y planos.
   - Ventana: 3 años antes del scraping (14/08/2023 a 13/08/2026). Todo lo

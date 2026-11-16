@@ -1,5 +1,5 @@
 """
-Regla de decisión (PreEntrega 3): de "señal a investigar" a "candidato después de costos".
+Regla de decisión: de "señal a investigar" a "candidato después de costos".
 
 La lista oficial (avisos que cumplen la regla R1) son señales a investigar. Un
 aviso pasa a "candidato después de costos" si, además, comprarlo, refaccionarlo

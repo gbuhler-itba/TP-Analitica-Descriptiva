@@ -34,7 +34,7 @@ def incoherencia_piso(df, pisos_edificio_desde=3):
 
     `cantidad_de_pisos` mezcla las plantas del departamento (1, o 2 en un
     dúplex) con los pisos del edificio: solo se compara desde
-    `pisos_edificio_desde` (con 0 se reproduce el criterio de la PreEntrega 2).
+    `pisos_edificio_desde` (con 0 se reproduce el criterio anterior).
     """
     piso = df["numero_de_piso_de_la_unidad"]
     pisos = df["cantidad_de_pisos"]

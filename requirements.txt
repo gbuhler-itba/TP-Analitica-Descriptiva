@@ -17,7 +17,7 @@ scikit-learn==1.6.1
 # proyecto, para leer config/config.yaml.
 PyYAML==6.0.3
 
-# Análisis exploratorio (PreEntrega 2): estadística, gráficos y notebooks.
+# Análisis exploratorio: estadística, gráficos y notebooks.
 # scipy ya venía instalado como dependencia de scikit-learn; se fija explícito.
 scipy==1.13.1
 matplotlib==3.9.4
@@ -28,10 +28,10 @@ ipykernel==6.29.5
 nbconvert==7.17.2
 jupyter_core==5.8.1
 
-# Tests (PreEntrega 3): suite formal con pytest, corre también en GitHub Actions.
+# Tests: suite formal con pytest, corre también en GitHub Actions.
 pytest==8.3.5
 
-# Fuentes externas (PreEntrega 3): polígonos de espacios verdes, barrios y
+# Fuentes externas: polígonos de espacios verdes, barrios y
 # barrios populares (src/fuentes_externas.py). Las cuatro requieren Python 3.9
 # o superior. pyproj y pyogrio no compilan contra la API C de numpy, y shapely
 # admite numpy < 3, así que conviven con numpy 2.0.2.
@@ -40,17 +40,17 @@ shapely==2.0.7
 pyproj==3.6.1
 pyogrio==0.10.0
 
-# Segundo relevamiento (PreEntrega 3): regresiones con errores agrupados (notebook 05).
+# Segundo relevamiento: regresiones con errores agrupados (notebook 05).
 statsmodels==0.14.4
 
-# Explicación del gradient boosting (PreEntrega 3): valores SHAP (notebook 04 y
+# Explicación del gradient boosting: valores SHAP (notebook 04 y
 # etapa 6). Versiones probadas con CPython 3.9 y numpy 2.0.2, con wheels para
 # macOS y Linux; numba y llvmlite son dependencias de shap.
 shap==0.49.1
 numba==0.60.0
 llvmlite==0.43.0
 
-# Segmentos exploratorios (PreEntrega 3, notebook 06): MCA con prince, como en
+# Segmentos exploratorios (notebook 06): MCA con prince, como en
 # la clase. altair es dependencia de prince.
 prince==0.14.0
 altair==5.5.0

@@ -156,13 +156,13 @@ def prima_porcentual(coef):
 
 
 # ---------------------------------------------------------------------------
-# Validación cruzada sin fuga de información (PreEntrega 3)
+# Validación cruzada sin fuga de información
 # ---------------------------------------------------------------------------
 def vueltas_sin_fuga(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, atipicos_en_log=True,
                      barrios_excluidos=()):
     """Genera, para cada vuelta de la validación cruzada, las decisiones tomadas SOLO con entrenamiento.
 
-    En la PreEntrega 2 dos decisiones se tomaban con todos los avisos antes de
+    En la primera versión dos decisiones se tomaban con todos los avisos antes de
     la validación cruzada: qué barrios usan sub-zona y qué avisos son atípicos
     (y quedan fuera del ajuste). Eso deja que los avisos de prueba influyan en
     el modelo que los evalúa. Acá, en cada vuelta y solo con los avisos de
@@ -173,7 +173,7 @@ def vueltas_sin_fuga(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, atipico
          dentro de la zona, y se dejan fuera del ajuste.
     Las partes se arman por unidad (misma dirección y superficie).
 
-    `atipicos_en_log=False` reproduce el criterio de la PreEntrega 2 (IQR sobre
+    `atipicos_en_log=False` reproduce el criterio de la primera versión (IQR sobre
     el precio por m², que solo detecta la cola de arriba), para comparar.
     `barrios_excluidos`: barrios que nunca usan sub-zona (por ejemplo, los de
     sub-zonas inestables).

@@ -101,7 +101,7 @@ def leer_geojson(ruta) -> dict:
     if not destino.exists():
         raise ErrorFuenteExterna(
             f"No se encontró el snapshot {ruta_relativa(destino)}. "
-            "Ver la ficha de la fuente en docs/entregas_grupo/fuentes_externas.md."
+            "Ver la ficha de la fuente en docs/fuentes_externas.md."
         )
     with open(destino, "r", encoding="utf-8") as fh:
         return json.load(fh)
@@ -415,7 +415,7 @@ def calcular_accesibilidad(df, cfg) -> tuple:
     # Distancia del punto al barrio con el que se buscó el aviso. Un punto a
     # más de `umbral_geo_dudoso_m` del barrio buscado es casi seguro un error de
     # geocodificación (calles homónimas: "Arroyo 800" cae en Villa Crespo).
-    # Agregado en la integración de la PreEntrega 3 (control_fuentes.md, sección 4).
+    # Ver docs/control_fuentes.md, sección 4.
     poly = dict(zip(barrios["nombre"].map(lambda t: normalizar_texto(t, abrev)), barrios.geometry))
     geom_busqueda = {}
     for b in df.loc[ok_mask, "barrio"].unique():

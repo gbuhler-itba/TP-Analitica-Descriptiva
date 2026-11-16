@@ -1,4 +1,4 @@
-"""Tests de la etapa 6 (análisis) y de las herramientas de validación de la PreEntrega 3."""
+"""Tests de la etapa 6 (análisis) y de las herramientas de validación."""
 
 import numpy as np
 import pandas as pd

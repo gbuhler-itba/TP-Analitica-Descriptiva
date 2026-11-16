@@ -1,5 +1,5 @@
 """
-Segmentos exploratorios (PreEntrega 3, notebook 06): índice de equipamiento con
+Segmentos exploratorios (notebook 06): índice de equipamiento con
 MCA y micro-mercados con K-means.
 
 EXPLORATORIO: nada de este módulo alimenta la etapa 6, la lista oficial ni la
