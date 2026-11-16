@@ -198,7 +198,7 @@ y antiguos" la tabla y la ficha muestran una alerta de revisión (chip `chip-rev
   importancia, amenities y cochera 18%, antigüedad 14%, tamaño 12%. Orden estable entre vueltas (Spearman ≥ 0,98).
   Es aproximado: frente a un fondo de 200 y 1.000 evaluaciones, el top 3 coincide en el 82% de los avisos.
   El TreeExplainer de shap da valores errados con la categórica nativa de barrio: por eso, permutación.
-- Intervalo 80%: ancho mediano 64,9%, o sea alrededor de ±32%.
+- Intervalo 80%: medido contra el precio esperado va de −21,3% a +28,7% (medianas), semiancho mediano 25,4%. Ojo: el 64,9% es sup/inf − 1 y partirlo a la mitad (±32%) estaba mal (devolución de la PE3).
 - Primas por estado (bootstrap por unidad): "a refaccionar" −16,1%, "a reciclar" −17,7% (con la regex vieja daba −8%:
   la regex vieja agarraba "refaccionado").
 - **Embudo oficial** (`embudo_ranking.csv`): 27.578 avisos / 25.169 unidades analizados → 1.819 / 1.714 marcados
