@@ -1,5 +1,5 @@
 """
-Validación y comparación de modelos de precio esperado (PreEntrega 3, notebook 04).
+Validación y comparación de modelos de precio esperado (notebook 04).
 
 Todas las funciones usan las mismas vueltas de validación cruzada sin fuga de
 información (`modelo.vueltas_sin_fuga`), así los modelos se comparan sobre
@@ -25,7 +25,7 @@ def caracteristicas_ampliadas(df, reglas_titulo=None):
     El estado ("a reciclar", "a refaccionar", "ya reformado", "a estrenar"; base:
     sin marca) y las señales "con inquilino" y "casa" / "tipo casa" recogen lo que
     la ficha no informa. Las reglas salen de config/costos.yaml (corregidas en la
-    PreEntrega 3: la marca de la PreEntrega 2 tomaba "refaccionado" como "a
+    La marca anterior tomaba "refaccionado" como "a
     refaccionar"). Las expensas relativas a la zona se agregan dentro de cada
     vuelta, porque la zona depende de la vuelta.
     """
@@ -65,7 +65,7 @@ def comparar_modelos(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, alpha_r
     """Predicción fuera de muestra (log del precio por m²) de cada modelo, con las mismas vueltas.
 
     - mediana_zona: la referencia simple, la mediana de la zona.
-    - lineal: el modelo hedónico de la PreEntrega 2 (características + zona).
+    - lineal: el modelo hedónico de la primera versión (características + zona).
     - lineal_ampliado: más las marcas del título y las expensas relativas.
     - ridge: el ampliado con regularización L2.
     - gbm: gradient boosting con las mismas características más latitud,
@@ -237,7 +237,7 @@ def bootstrap_primas(y, A, usar, unidad, columnas, b=200, semilla=42):
 
 
 # ---------------------------------------------------------------------------
-# Explicación de las predicciones (PreEntrega 3)
+# Explicación de las predicciones
 # ---------------------------------------------------------------------------
 # Columnas que se explican juntas, como una sola variable: cada dato con su marca
 # de "sin dato" y la ubicación del gradient boosting. Por separado arman

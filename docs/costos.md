@@ -1,6 +1,6 @@
 # Costos y liquidez para la regla de decisión
 
-*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 3 · Tarea 3*
+*Analítica Descriptiva (ITBA, 2026 C2)*
 
 Estos parámetros convierten la brecha de precio en una brecha neta: lo que queda después de comprar, refaccionar y negociar. Los valores se leen de `config/costos.yaml`. Cada uno tiene un rango para el análisis de sensibilidad. Fuentes consultadas el 29/10/2026. Los montos en pesos se pasaron a dólares con el MEP de la fecha de cada fuente.
 

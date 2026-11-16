@@ -38,8 +38,8 @@ def deduplicar_por_id(df, coincide_barrio_oficial=None):
     pasa `coincide_barrio_oficial` (Serie booleana alineada con `df`: el barrio
     de búsqueda de esa fila coincide con el polígono oficial de BA Data), entre
     las filas de un mismo ID se conserva la primera que coincide; si ninguna
-    coincide o no hay coordenadas, la primera aparición (devolución de la
-    PreEntrega 2: resolver el barrio con la geocodificación oficial). Las
+    coincide o no hay coordenadas, la primera aparición (el barrio se resuelve con la
+    geocodificación oficial). Las
     filas eliminadas porque la conservada era la del barrio oficial llevan el
     motivo "duplicado_mismo_id_barrio_no_oficial"; el resto,
     "duplicado_mismo_id".
@@ -265,7 +265,7 @@ def menciona_barrio_popular(titulo):
 
     Rodrigo Bueno está dentro de Puerto Madero y sus avisos no tienen
     coordenadas, así que el cruce con los polígonos de barrios populares no los
-    detecta (docs/entregas_grupo/control_fuentes.md).
+    detecta (docs/control_fuentes.md).
     """
     return titulo.fillna("").str.contains(r"rodrigo bueno|barrio mugica|padre mugica|villa 31", case=False)
 
@@ -301,9 +301,9 @@ def marcas_del_titulo(titulo):
 
 
 def estado_y_riesgo_del_titulo(titulo, reglas):
-    """Estado del inmueble y señales de riesgo legal según el título (PreEntrega 3).
+    """Estado del inmueble y señales de riesgo legal según el título.
 
-    Reemplaza a `marcas_del_titulo` en el análisis de la PreEntrega 3: la marca
+    Reemplaza a `marcas_del_titulo` en el análisis: la marca
     anterior "a refaccionar" también tomaba "refaccionado", que es lo contrario,
     y "con renta" mezclaba avisos con inquilino con publicidad ("ideal renta").
     Las expresiones regulares están en config/costos.yaml (tarea 3):

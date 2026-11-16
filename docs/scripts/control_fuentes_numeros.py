@@ -1,7 +1,7 @@
 """
 Números citados en control_fuentes.md.
 Correr desde la raíz del repo, después de src/fuentes_externas.py:
-    python3 docs/entregas_grupo/control_fuentes_numeros.py
+    python3 docs/scripts/control_fuentes_numeros.py
 No modifica ningún archivo. Imprime las tablas en Markdown.
 
 Las medianas por barrio se calculan por barrio oficial (el polígono donde cae

@@ -70,3 +70,7 @@ _material_grupo/
 
 # Configuración local de Claude Code (launch.json para servir el dashboard en local)
 .claude/
+
+# Contexto de trabajo local de Claude Code (no es parte del proyecto)
+CLAUDE.md
+CLAUDE.local.md

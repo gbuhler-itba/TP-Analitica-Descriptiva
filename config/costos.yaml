@@ -1,5 +1,5 @@
 # =============================================================================
-# Costos y liquidez para la regla de decisión (PE3, Tarea 3)
+# Costos y liquidez para la regla de decisión
 # TP Analítica Descriptiva (ITBA, 2026 C2)
 # =============================================================================
 # Cada parámetro tiene: valor (central), minimo, maximo, unidad, fuente y
@@ -13,14 +13,14 @@
 #   incluyen: un fondo que compra vivienda usada no puede computarlo como
 #   crédito fiscal, porque la venta de inmuebles usados no está gravada.
 # - Todas las fuentes se consultaron el 2026-10-29.
-# - Detalle y confiabilidad de cada número: docs/entregas_grupo/costos_y_liquidez.md
+# - Detalle y confiabilidad de cada número: docs/costos.md
 # =============================================================================
 
 consultado: "2026-10-29"
 
 tipo_de_cambio:
   # Dólar MEP de cierre, ARS por USD. El de la fecha del scraping es el
-  # mismo que usa contexto_argentino.md para las expensas.
+  # mismo que usa docs/contexto.md para las expensas.
   mep_2026_08_14: 1518.05   # fecha del scraping
   mep_2026_10_01: 1552.44   # arancel notarial vigente desde el 01/10/2026
   mep_2026_05_11: 1425.02   # costos de refacción de Reporte Inmobiliario
@@ -334,7 +334,7 @@ liquidez:
 # -----------------------------------------------------------------------------
 # Se basa en marcas del título. Las regex son una propuesta: la marca actual
 # titulo_a_refaccionar incluye "refaccionado", que significa lo contrario
-# (ver costos_y_liquidez.md, sección 3). Orden de evaluación: el primero que
+# (ver docs/costos.md, sección 3). Orden de evaluación: el primero que
 # coincide gana.
 estado_refaccion:
   - estado: a_reciclar

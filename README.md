@@ -1,6 +1,6 @@
 # Fondo de inversión inmobiliario: avisos con precio atípicamente bajo en CABA
 
-**Analítica Descriptiva, ITBA, 2026 C2 · PreEntrega 3**
+**Analítica Descriptiva, ITBA, 2026 C2**
 
 Grupo: Lola Herrmann, Teo López Sanson, Matías Cachenot, Gonzalo Bühler · Docente: José Ignacio López Sáez
 
@@ -14,19 +14,17 @@ esas señales, los **candidatos después de costos**. En ningún nivel se afirma
 |---|---|
 | **Dashboard para el analista del fondo** | [Radar de avisos · CABA en GitHub Pages](https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/) (código y datos en [`docs/dashboard/`](docs/dashboard/)) |
 | Limpieza y calidad del dato | [`notebooks/01_calidad_y_limpieza.ipynb`](notebooks/01_calidad_y_limpieza.ipynb) |
-| Análisis exploratorio (PE2) | [`notebooks/02_eda.ipynb`](notebooks/02_eda.ipynb) |
-| Precio esperado, brecha y ranking (PE2, números actualizados) | [`notebooks/03_precio_esperado.ipynb`](notebooks/03_precio_esperado.ipynb) |
+| Análisis exploratorio | [`notebooks/02_eda.ipynb`](notebooks/02_eda.ipynb) |
+| Precio esperado, brecha y ranking (primera versión del modelo, con los números actualizados) | [`notebooks/03_precio_esperado.ipynb`](notebooks/03_precio_esperado.ipynb) |
 | Validación y comparación de modelos, intervalo, primas, SHAP | [`notebooks/04_validacion_modelos.ipynb`](notebooks/04_validacion_modelos.ipynb) |
 | Evaluación de las hipótesis H1, H2 y H3 | [`notebooks/05_hipotesis.ipynb`](notebooks/05_hipotesis.ipynb) |
 | Índice de equipamiento (MCA) y micro-mercados (K-means), exploratorio | [`notebooks/06_segmentos_exploratorio.ipynb`](notebooks/06_segmentos_exploratorio.ipynb) |
 | Regla de decisión con costos | [`notebooks/07_regla_de_decision.ipynb`](notebooks/07_regla_de_decision.ipynb) |
-| Diccionario de datos | [`docs/entregas_grupo/diccionario_datos.md`](docs/entregas_grupo/diccionario_datos.md) |
-| Fuentes externas (fichas) y sus controles | [`fuentes_externas.md`](docs/entregas_grupo/fuentes_externas.md), [`control_fuentes.md`](docs/entregas_grupo/control_fuentes.md) |
-| Costos, liquidez, estado y riesgo legal (fuentes) | [`costos_y_liquidez.md`](docs/entregas_grupo/costos_y_liquidez.md), [`config/costos.yaml`](config/costos.yaml) |
-| Contexto del mercado argentino | [`contexto_argentino.md`](docs/entregas_grupo/contexto_argentino.md) |
-| Preguntas, nivel predictivo y qué no mide el análisis | [`preguntas_y_alcance.md`](docs/entregas_grupo/preguntas_y_alcance.md) |
+| Diccionario de datos | [`docs/diccionario_datos.md`](docs/diccionario_datos.md) |
+| Fuentes externas (fichas) y sus controles | [`fuentes_externas.md`](docs/fuentes_externas.md), [`control_fuentes.md`](docs/control_fuentes.md) |
+| Costos, liquidez, estado y riesgo legal (fuentes) | [`costos.md`](docs/costos.md), [`config/costos.yaml`](config/costos.yaml) |
+| Contexto del mercado argentino | [`contexto.md`](docs/contexto.md) |
 | Pipeline de datos (scraping a lista oficial), tests y reproducibilidad | [`docs/pipeline.md`](docs/pipeline.md) |
-| Respuesta a la devolución de la PreEntrega 1 | [`docs/correcciones_pe1/estado_correcciones.md`](docs/correcciones_pe1/estado_correcciones.md) |
 
 ---
 
@@ -39,17 +37,15 @@ aleja el precio publicado de ese valor. Los avisos con una brecha muy negativa p
 investigar**; sobre esa lista, una regla con costos de entrada, refacción, venta y riesgo legal señala cuáles
 dejarían margen si el precio esperado fuera el de venta.
 
-Qué cambió en cada entrega:
+Cómo evolucionó el enfoque: la primera versión usaba un índice de confort con pesos fijos (45/30/25); después los
+pesos pasaron a salir de los datos, como la prima que el mercado paga por cada característica dentro de la zona
+(modelo hedónico, validado fuera de muestra); la versión actual suma validación sin fuga de información, comparación
+contra un baseline y contra un gradient boosting, intervalo de predicción por aviso, hipótesis evaluadas con tests
+formales e intervalos, un **segundo relevamiento** que permite ver qué pasa con los avisos marcados, fuentes externas
+de transporte y entorno con cobertura de toda la ciudad, una regla de decisión con costos y un dashboard para el
+analista.
 
-- **PreEntrega 1:** un índice de confort con pesos fijos (45/30/25).
-- **PreEntrega 2:** los pesos salen de los datos, como la prima que el mercado paga por cada característica dentro
-  de la zona (modelo hedónico, validado fuera de muestra). H1 quedó con apoyo débil.
-- **PreEntrega 3:** validación sin fuga de información, comparación contra un baseline y contra un gradient boosting,
-  intervalo de predicción por aviso, hipótesis evaluadas con tests formales e intervalos, un **segundo relevamiento**
-  que permite ver qué pasa con los avisos marcados, fuentes externas de transporte y entorno con cobertura de toda la
-  ciudad, una regla de decisión con costos y un dashboard para el analista.
-
-**Resultados de esta entrega** (números de `data/processed/`, regenerados el 02/11/2026 y reproducidos de cero, byte a byte, el
+**Resultados** (números de `data/processed/`, regenerados el 02/11/2026 y reproducidos de cero, byte a byte, el
 05/11/2026: `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`)
 
 - **Recomendación · El embudo, con sus universos reconciliados:** 27.578 avisos (25.169 unidades) analizados → 1.819 avisos
@@ -77,8 +73,8 @@ Qué cambió en cada entrega:
   interpretable, y chico: +1,5% por hectárea de espacio verde a 500 m y +4,4% por cada 10 obras nuevas. El premetro
   (−24%) también sobrevive a la corrección de Holm, pero es la zona y no el premetro: sin los avisos a menos de 500 m
   de un barrio popular pasa a −4%, con un intervalo que incluye el 0. El subte a menos de 300 m da −4,8% pero no
-  sobrevive a Holm (p ajustado 0,27); que la avenida pese más que la estación es una conjetura, no algo medido. En
-  la PE2, con subte y centralidad, no se detectaba nada.
+  sobrevive a Holm (p ajustado 0,27); que la avenida pese más que la estación es una conjetura, no algo medido. Con
+  solo subte y centralidad, como en la versión anterior, no se detectaba nada.
 - **Relación estadística · El estado del inmueble pesa más de lo que parecía.** Un aviso "a reciclar" se publica 18% más barato que uno
   igual sin esa marca, y uno "a refaccionar" 16%. Entra al modelo y a la regla: una parte de la brecha es el estado,
   no una subvaluación.
@@ -106,8 +102,8 @@ El fondo compra departamentos usados en CABA. Busca avisos publicados por debajo
 departamentos comparables, para después verificarlos y decidir la compra.
 
 El mercado argentino condiciona cómo se lee un precio publicado. Resumen (detalle, fuentes y números propios en
-[`contexto_argentino.md`](docs/entregas_grupo/contexto_argentino.md) y
-[`costos_y_liquidez.md`](docs/entregas_grupo/costos_y_liquidez.md)):
+[`contexto_argentino.md`](docs/contexto.md) y
+[`costos.md`](docs/costos.md)):
 
 | Rasgo | Qué implica para el análisis |
 |---|---|
@@ -153,14 +149,12 @@ cambia el orden de los avisos dentro de una zona.
 
 ## 5. Preguntas por nivel analítico
 
-Versión completa, con el porqué de cada nivel, en [`preguntas_y_alcance.md`](docs/entregas_grupo/preguntas_y_alcance.md).
-
-| Nivel | # | Pregunta (resumida) | Estado en esta entrega |
+| Nivel | # | Pregunta (resumida) | Estado |
 |---|---|---|---|
 | Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida (notebook 02); la sub-zona se evalúa formalmente en H2 (notebook 05) |
 | | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida: por columna (diccionario y notebook 01) y por aviso, con la tasa de completitud (notebook 03) |
 | | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Parcial: frecuencias generales en el diccionario; por segmento de departamento en el notebook 06 |
-| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (calculado desde `seguimiento_avisos.csv`; está en el diccionario de datos, `docs/entregas_grupo/diccionario_datos.md`) |
+| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (calculado desde `seguimiento_avisos.csv`; está en el diccionario de datos, `docs/diccionario_datos.md`) |
 | Diagnóstico | G1 | Dentro de la zona, ¿cuánto se asocia cada característica con el precio por m²? | Respondida, ahora con intervalos por bootstrap de unidades (notebook 04, sección 6) |
 | | G2 | ¿La prima de cada característica cambia según la zona o el segmento de precio? | Respondida: cambian poco por tercil de barrio y por segmento de departamento; no justifica un modelo por segmento (notebook 04, sección 7; notebook 06, sección 4.3) |
 | | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y entorno? | Respondida (H3, notebook 05): una parte chica pero significativa, con efectos fijos de barrio |
@@ -181,9 +175,9 @@ Las tres se evalúan en el notebook 05 con magnitud, intervalo (bootstrap por un
 y una tabla de tests formales por hipótesis (H0, H1, estadístico, p-valor, decisión; Holm cuando hay varias
 comparaciones).
 
-| | Hipótesis | Evidencia (PE3) | Estado |
+| | Hipótesis | Evidencia | Estado |
 |---|---|---|---|
-| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación. Son candidatos a investigar, no oportunidades confirmadas | **H1a (colas):** 6,6% de los avisos por debajo de −25% contra 7,7% por encima de +33%; la cola de abajo no es más pesada que la de una normal con la misma dispersión (test binomial a una cola, no se rechaza H0). **H1b (salida del portal):** los marcados salen 46,7% contra 39,7%; dentro del barrio y a igual valor esperado, +9,4 pp (IC 6,5 a 12,2; logit OR 1,48); gradiente de +2,2 pp por cada 10 pp más de brecha (IC 1,6 a 2,9); placebo (brecha mayor a +33%): −8,6 pp. Se mantiene sin republicaciones y con el gradient boosting; en el tercil de barrios medios el IC incluye el 0 | **Resultado doble:** la brecha no prueba precios atípicos (H1a no), pero predice el comportamiento del aviso en el mercado (H1b sí). En la PE2 solo había H1a |
+| H1 | Dentro de una zona hay avisos publicados claramente por debajo del precio esperado para sus características, más allá del margen normal de negociación. Son candidatos a investigar, no oportunidades confirmadas | **H1a (colas):** 6,6% de los avisos por debajo de −25% contra 7,7% por encima de +33%; la cola de abajo no es más pesada que la de una normal con la misma dispersión (test binomial a una cola, no se rechaza H0). **H1b (salida del portal):** los marcados salen 46,7% contra 39,7%; dentro del barrio y a igual valor esperado, +9,4 pp (IC 6,5 a 12,2; logit OR 1,48); gradiente de +2,2 pp por cada 10 pp más de brecha (IC 1,6 a 2,9); placebo (brecha mayor a +33%): −8,6 pp. Se mantiene sin republicaciones y con el gradient boosting; en el tercil de barrios medios el IC incluye el 0 | **Resultado doble:** la brecha no prueba precios atípicos (H1a no), pero predice el comportamiento del aviso en el mercado (H1b sí). La versión anterior solo evaluaba H1a |
 | H2 | Un barrio no es homogéneo: la sub-zona da una referencia de precio más precisa que el barrio | Con vueltas agrupadas por unidad: el error de la referencia baja de 17,7% a 17,1%, 0,6 pp (IC 0,4 a 0,85; t y Wilcoxon por unidad rechazan H0). Barrio por barrio, mejora significativa con Holm en 4 de 41 y grande en Villa Lugano; en ninguno empeora significativamente. Sub-zonas estables en 40 de 41 barrios, aunque 4 quedan cerca del umbral (ARI entre 0,7 y 0,8: Coghlan, Parque Chacabuco, Barrio Norte y Villa Pueyrredón); compararlos enteros mueve el error 0,01 pp y la lista en un aviso | Apoyo parcial: depende del barrio; el modelo la usa donde mejora y es estable |
 | H3 | Parte de la diferencia de precio dentro de un barrio se explica por la ubicación: transporte, espacios verdes y dinamismo | Regresión del precio por m² con efectos fijos de barrio y errores agrupados por sub-zona: bloque de transporte p = 3,7e-5 y bloque de entorno p = 2,4e-7 (Wald); con Holm sobreviven 3 de 16 variables, pero solo 2 con un efecto interpretable: área verde a 500 m (+1,5% por ha) y permisos de obra (+4,4% por 10 obras); el premetro (−24%) sobrevive pero es un artefacto de zona (sin los avisos a menos de 500 m de un barrio popular, −4% con IC que incluye el 0) y el subte a menos de 300 m (−4,8%) no sobrevive (p ajustado 0,27). Fuera de muestra, sumar la ubicación al modelo baja el error 0,19 pp. En el sur y el oeste las obras pesan más (+12%, IC 5 a 19) y el tren queda en el borde (−10%, IC −20 a +0,1: incluye el 0) | Apoyo, menor del esperado: la zona de referencia ya capta casi todo; la ubicación explica más que lo que cambia la lista |
 
@@ -210,7 +204,7 @@ comparaciones).
 
 Construido por web scraping de MercadoLibre Inmuebles, extraído el 14/08/2026, y enriquecido con geocodificación
 y distancias. El detalle de cada columna está en el
-[diccionario de datos](docs/entregas_grupo/diccionario_datos.md).
+[diccionario de datos](docs/diccionario_datos.md).
 
 | Archivo | Filas × columnas | Qué es |
 |---|---|---|
@@ -230,7 +224,7 @@ y distancias. El detalle de cada columna está en el
 | `data/processed/chequeo_comparables.csv`, `.json` | 486 destacados | Chequeo del precio esperado contra comparables simples (sección 10) |
 
 **Del crudo al limpio.** Se excluyen 344 avisos: 68 duplicados por ID de aviso (entre dos filas del mismo ID queda
-la que coincide con el polígono oficial del barrio; en 17 de los 68 la regla de la PE2, primera aparición, se quedaba
+la que coincide con el polígono oficial del barrio; en 17 de los 68 la regla anterior, primera aparición, se quedaba
 con la otra fila y en 12 eso cambiaba el barrio), 237 en pozo, 28 con superficie inválida, 5 con precio en pesos,
 4 con precio menor a USD 20.000, 1 con precio imposible y 1 que es una compra, no una venta. Se corrigen 627 precios
 concatenados por "BAJÓ DE PRECIO", baños en 0 y pisos cargados como número de unidad; las expensas de relleno
@@ -249,25 +243,25 @@ reproduce exactamente ese resultado.
 
 ### Fuentes externas
 
-Fichas completas, con el formato del enunciado (fuente, cobertura, período, granularidad, unión, variable, aporte
-y límites), en [`fuentes_externas.md`](docs/entregas_grupo/fuentes_externas.md); controles de cada una (conteos,
-distancias por barrio, aporte) en [`control_fuentes.md`](docs/entregas_grupo/control_fuentes.md). Todas son
+Fichas completas, con un formato fijo (fuente, cobertura, período, granularidad, unión, variable, aporte
+y límites), en [`fuentes_externas.md`](docs/fuentes_externas.md); controles de cada una (conteos,
+distancias por barrio, aporte) en [`control_fuentes.md`](docs/control_fuentes.md). Todas son
 snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin red.
 
 | Fuente | Granularidad | Variable | Uso |
 |---|---|---|---|
 | Normalizador de direcciones USIG (GCBA) | Punto | `lat`, `lon` | Ubica cada aviso |
 | Estaciones de subte (BA Data) | Punto | `dist_transporte_m` | H3, modelo con ubicación |
-| Polos de centralidad (definición propia) | Punto | `dist_centralidad_m` | PE2; sin efecto |
+| Polos de centralidad (definición propia) | Punto | `dist_centralidad_m` | H3; sin efecto |
 | Dólar MEP del 14/08/2026 | Un valor | `expensas_usd` | KPI de expensas |
-| Estaciones de ferrocarril (BA Data) | Punto | `dist_tren_m` | H3 (integrada en PE3) |
-| Metrobus (BA Data) | Punto | `dist_metrobus_m` | H3 (integrada en PE3) |
-| Premetro (BA Data) | Punto | `dist_premetro_m` | H3, robustez en el sur (integrada en PE3) |
-| Espacios verdes (BA Data) | Polígono | `dist_espacio_verde_m`, `area_verde_500m_ha` | H3 (integrada en PE3) |
-| Polígonos de barrios (BA Data) | Polígono | `barrio_oficial`, `barrio_coincide`, `geo_dudoso` | Control de calidad: duplicados por ID y geocodificación dudosa (integrada en PE3) |
-| Barrios populares (BA Data) | Polígono | `en_barrio_popular`, `tipo_barrio_popular` | Alerta en la ficha; robustez de H3 (integrada en PE3) |
-| Permisos de obra (BA Data) | Punto | `permisos_obra_500m` | H3, dinamismo de la zona (integrada en PE3) |
-| Costos de transacción, refacción, liquidez y riesgo legal (UCEMA, Colegio de Escribanos, AGIP, cámaras del sector) | Parámetros | `config/costos.yaml` | Regla de decisión (PE3) |
+| Estaciones de ferrocarril (BA Data) | Punto | `dist_tren_m` | H3 |
+| Metrobus (BA Data) | Punto | `dist_metrobus_m` | H3 |
+| Premetro (BA Data) | Punto | `dist_premetro_m` | H3, robustez en el sur |
+| Espacios verdes (BA Data) | Polígono | `dist_espacio_verde_m`, `area_verde_500m_ha` | H3 |
+| Polígonos de barrios (BA Data) | Polígono | `barrio_oficial`, `barrio_coincide`, `geo_dudoso` | Control de calidad: duplicados por ID y geocodificación dudosa |
+| Barrios populares (BA Data) | Polígono | `en_barrio_popular`, `tipo_barrio_popular` | Alerta en la ficha; robustez de H3 |
+| Permisos de obra (BA Data) | Punto | `permisos_obra_500m` | H3, dinamismo de la zona |
+| Costos de transacción, refacción, liquidez y riesgo legal (UCEMA, Colegio de Escribanos, AGIP, cámaras del sector) | Parámetros | `config/costos.yaml` | Regla de decisión |
 
 ## 8. Estructura del repositorio
 
@@ -309,18 +303,21 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── seguimiento.py               Segundo relevamiento y seguimiento de avisos
 │   ├── exportar_dashboard.py        Capa de datos del dashboard
 │   ├── eda.py                       Funciones del análisis exploratorio
-│   ├── indice_confort.py            Índice de la PreEntrega 1, usado en el diagnóstico de la devolución
+│   ├── indice_confort.py            Índice de confort de la primera versión (pesos fijos), conservado como referencia
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
 ├── tests/                           193 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
-    ├── entregas_grupo/              Contexto, preguntas, diccionario, fuentes externas, controles, costos
-    ├── correcciones_pe1/            Diagnóstico de la devolución de la PE1 y estado de las correcciones
+    ├── diccionario_datos.md         Diccionario de datos: todas las columnas, de dónde salen y qué anomalías tenían
+    ├── fuentes_externas.md          Fichas de las fuentes externas; control_fuentes.md, sus controles
+    ├── costos.md                    Costos, liquidez, estado y riesgo legal: valores, fuentes y confiabilidad
+    ├── contexto.md                  Contexto del mercado inmobiliario argentino, con números propios
+    ├── scripts/                     Scripts que reproducen los números de contexto.md y control_fuentes.md
     ├── pipeline.md                  Pipeline: instalación, ejecución, controles, tests y limitaciones técnicas
     ├── proceso_tecnico.md           Desafíos técnicos del scraping
     ├── corrida-documentada/         Evidencia de la corrida del pipeline
-    └── caso_de_negocio.pdf          Documento de negocio de la PreEntrega 1
+    └── caso_de_negocio.pdf          Documento de negocio inicial
 ```
 
 ## 9. Cómo reproducir el análisis
@@ -350,16 +347,16 @@ residencial) solo corre con `--incluir-scraping` y no hace falta repetirlo.
 ### Mapa de notebooks: qué leer y en qué orden
 
 Los notebooks leen las salidas del pipeline y las explican; no generan la lista oficial (la genera la etapa 6, para
-que el resultado no dependa de una celda). Orden de lectura sugerido para corregir:
+que el resultado no dependa de una celda). Orden de lectura sugerido:
 
-| Orden | Notebook | Qué responde | Qué pide la consigna de la PE3 |
+| Orden | Notebook | Qué responde | Qué aporta |
 |---|---|---|---|
 | 1 | `01_calidad_y_limpieza` | Qué se limpió y por qué; verifica que coincide con la etapa 5 | Repo reproducible |
 | 2 | `04_validacion_modelos` | Fuga indirecta, estabilidad de sub-zonas, **modelos comparados contra el baseline fuera de muestra** (mediana de la zona, lineal, lineal ampliado, Ridge, gradient boosting), intervalo de predicción, primas con IC, primas por segmento, **SHAP** | Técnicas avanzadas con supuestos, validación, qué agregan y límites; modelos contra baseline |
 | 3 | `05_hipotesis` | **H1, H2 y H3 con magnitud, IC, robustez y tests formales**; el segundo relevamiento | Hipótesis evaluadas con estadística |
-| 4 | `07_regla_de_decision` | De señal a candidato: costos, refacción por estado, riesgo legal, liquidez, **sensibilidad y escenario conservador** | Regla de decisión con costos, liquidez, estado y riesgo (devolución de la PE2) |
+| 4 | `07_regla_de_decision` | De señal a candidato: costos, refacción por estado, riesgo legal, liquidez, **sensibilidad y escenario conservador** | Regla de decisión con costos, liquidez, estado y riesgo |
 | 5 | `06_segmentos_exploratorio` | Índice con MCA y micro-mercados con K-means: codo, silhouette, **estabilidad (ARI 0,99)**, nombres, utilidad frente a la alternativa simple, y por qué no entran a la lista | Segmentos e índices con estabilidad verificada; qué agrega frente a lo simple |
-| 6 | `02_eda`, `03_precio_esperado` | El análisis exploratorio y el modelo de la PE2, con los números actualizados a la limpieza nueva (banner al principio) | Contexto |
+| 6 | `02_eda`, `03_precio_esperado` | El análisis exploratorio y la primera versión del modelo (lineal simple), con los números actualizados a la limpieza nueva (aviso al principio) | Contexto |
 
 ### El dashboard: "Radar de avisos · CABA"
 
@@ -389,7 +386,7 @@ entorno inmediato y el precio de un departamento pegado a un barrio popular resp
 Es la exclusión que más saca (106 candidatos, 99 solo por eso) y pega sobre todo en el sur. Los apartados siguen en
 el mapa y en el buscador con su alerta, y nada de esto cambia las 1.375 señales ni los 840 candidatos.
 
-**Por qué una página estática y no una herramienta de BI.** El criterio fue el del profesor: lo más fácil de armar,
+**Por qué una página estática y no una herramienta de BI.** El criterio fue elegir lo más fácil de armar,
 mantener y desplegar con nuestro modelo de datos y nuestro volumen. El dashboard es HTML, CSS y JavaScript sin
 dependencias de build (solo Leaflet para el mapa) que lee los JSON que genera el pipeline (`docs/dashboard/data/`,
 2,7 MB para 1.375 unidades y el fondo de 22.389 puntos). Se actualiza con regenerar los datos, un test
@@ -402,11 +399,14 @@ para cada lector. Se evaluó **Databricks**: un workspace y un clúster son una 
 pagar para 27.578 filas que entran en 26 MB, y el tablero no es público sin acceso al workspace. Ninguna de las dos
 mejoraba la experiencia del analista para este volumen y las dos rompían la reproducibilidad del repo.
 
-## 10. Cambios a partir de la devolución de la PreEntrega 2
+## 10. Qué se corrigió respecto de la versión anterior y por qué
 
-| Observación de la devolución | Qué se hizo | Dónde |
+La primera versión del análisis (modelo lineal simple, notebook 03) fue revisada externamente; estas son las
+observaciones y lo que se hizo con cada una.
+
+| Observación sobre la versión anterior | Qué se hizo | Dónde |
 |---|---|---|
-| Universos del ranking sin reconciliar (1.704, 1.434, 1.225, 1.590, 1.150) | Un embudo único por avisos y por unidades, generado por la etapa 6, que todos los documentos citan: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 → 1.455 / 1.375 → 884 / 840 | `embudo_ranking.csv`; notebooks 03 (banner) y 07; dashboard |
+| Universos del ranking sin reconciliar (1.704, 1.434, 1.225, 1.590, 1.150) | Un embudo único por avisos y por unidades, generado por la etapa 6, que todos los documentos citan: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 → 1.455 / 1.375 → 884 / 840 | `embudo_ranking.csv`; notebooks 03 (aviso inicial) y 07; dashboard |
 | H3 incompleta: faltaban tren, Metrobus y espacios verdes | Integradas con premetro, barrios populares y permisos de obra, como snapshots versionados con controles; H3 reevaluada con efectos fijos de barrio y errores agrupados por sub-zona | `src/fuentes_externas.py`, `control_fuentes.md`, notebook 05 |
 | Estabilidad de las sub-zonas | ARI con 100 remuestreos por barrio (submuestras del 80% de los avisos con coordenadas), calculado una sola vez sobre todo el dataset y no dentro de cada vuelta, porque solo usa coordenadas; un barrio inestable (ARI < 0,7) se compara entero. Hoy, Villa Santa Rita | Notebook 04, sección 3 |
 | Fuga indirecta (atípicos y elección de zona con todos los datos) | Todas las decisiones se toman dentro de cada vuelta, con atípicos sobre el log; el error casi no cambia, la lista cambia en el borde | Notebook 04, sección 2 |
@@ -417,7 +417,7 @@ mejoraba la experiencia del analista para este volumen y las dos rompían la rep
 | H1 con apoyo débil | H1 dividida en H1a (colas, no se sostiene) y H1b (salida del portal, se sostiene) | Notebook 05, sección 2 |
 | Errores residuales de la limpieza (baños en 0, pisos como número de unidad, expensas de relleno, casas) | Corregidos o marcados en la etapa 5; duplicados por ID resueltos con el polígono oficial | Notebook 01, diccionario |
 | Modelos predictivos contra un baseline, fuera de muestra | Cinco modelos sobre las mismas vueltas; el lineal ampliado es el oficial por ser explicable aviso por aviso; el gradient boosting, segunda opinión | Notebook 04, sección 4 |
-| Técnicas de clase (PCA/MCA, K-means) | Índice de equipamiento con MCA y micro-mercados con K-means, con estabilidad y utilidad frente a la alternativa simple; conclusión: describen, no mejoran el modelo | Notebook 06 |
+| Índice sintético y segmentación (MCA, K-means) | Índice de equipamiento con MCA y micro-mercados con K-means, con estabilidad y utilidad frente a la alternativa simple; conclusión: describen, no mejoran el modelo | Notebook 06 |
 
 **Chequeo con comparables** (`src/chequeo_comparables.py`; salida en `data/processed/chequeo_comparables.csv` y
 `.json`): para cada destacado se buscaron en la base departamentos
@@ -428,18 +428,15 @@ comparables, todos). Por segmento, el esperado queda más alto en "Nuevos con am
 comparables no distinguen amenities y el modelo sí) y en "Familiares amplios y antiguos" (+5,4%), consistente con el
 mayor error del modelo en esos dos segmentos.
 
-**Encontrado además en esta entrega:** 17 de los 68 duplicados por ID en los que la PE2, al quedarse con la primera
-aparición, conservaba la fila equivocada (12 cambiaban de barrio), 249 avisos geocodificados a más de 1 km de su
+**Encontrado además en la revisión:** 17 de los 68 duplicados por ID en los que la regla anterior, al quedarse con la
+primera aparición, conservaba la fila equivocada (12 cambiaban de barrio), 249 avisos geocodificados a más de 1 km de su
 barrio (244 en el dataset limpio; una calle homónima en otro barrio), y que la asignación de las
 vueltas de la validación depende del orden de las filas del dataset (`docs/pipeline.md`, sección 10).
 
-La respuesta a la devolución de la PreEntrega 1 (rutas, parametrización, pesos fijos, contexto, fuentes) sigue en
-[`estado_correcciones.md`](docs/correcciones_pe1/estado_correcciones.md).
-
 ## 11. Técnicas utilizadas
 
-Una fila por técnica, con lo que pide la consigna: qué resuelve, supuestos, validación, qué agrega frente a una
-alternativa más simple y su límite principal. Los números son los de los notebooks indicados.
+Una fila por técnica: qué resuelve, supuestos, validación, qué agrega frente a una alternativa más simple y su
+límite principal. Los números son los de los notebooks indicados.
 
 | Técnica | Qué problema resuelve | Supuestos o transformaciones | Cómo se valida | Qué aporta frente a la alternativa simple (y cuál es) | Limitación principal | Dónde |
 |---|---|---|---|---|---|---|
@@ -447,7 +444,7 @@ alternativa más simple y su límite principal. Los números son los de los note
 | Gradient boosting con SHAP | Una segunda opinión no lineal sobre el precio esperado, y qué mira ese modelo | Sin forma funcional; barrio como categórica nativa; SHAP por permutación (el TreeExplainer da valores errados con esa categórica) | Mismas vueltas: 11,3%; el orden de los bloques de importancia es estable entre vueltas (Spearman mínimo 0,98) | 1,2 puntos menos de error que el lineal ampliado; el consenso de los dos modelos (1.124 avisos; Jaccard 0,52) es la marca de robustez del dashboard | No se explica aviso por aviso, por eso no es el oficial; SHAP explica al modelo, no causas | Notebook 04 (secciones 4 y 9), `src/validacion.py` |
 | Intervalo conformal del 80% | Cuánto puede equivocarse el precio esperado en un aviso concreto, en su barrio | Cuantiles de los residuos fuera de muestra de las otras vueltas, dentro del barrio (50 avisos o más; si no, toda la ciudad); no supone normalidad | Cobertura fuera de muestra 79,5% para un nivel nominal de 80%; por barrio es menos pareja (74,5% en el 10% de barrios peor cubiertos) | Frente a un único número o a un ±25% fijo: un rango por aviso (de −21% a +29% alrededor del esperado (semiancho mediano 25%)) que define el candidato firme (83 unidades) | El rango es ancho: ordena avisos, no tasa uno | Notebook 04 (sección 5), `src/validacion.py`, columnas `precio_m2_esperado_inf` y `_sup` |
 | H1b: modelo lineal de probabilidad y logit con efectos fijos de barrio | Si los avisos marcados salen más del portal que sus comparables, a igual valor esperado | Controla el log del valor esperado, el log de m² y la baja de precio previa (no el precio publicado, que es un mal control); errores agrupados por unidad; sin los 4 barrios truncados | Robustez sin republicaciones, con la brecha del gradient boosting y por terciles de barrio; placebo con brecha mayor a +33%: −8,6 pp | Frente a la diferencia bruta (46,7% contra 39,7%): +9,4 pp dentro del barrio (IC 6,5 a 12,2; OR 1,48) y un gradiente de +2,2 pp por cada 10 pp más de brecha | Salir del portal no es venderse (venta, retiro o republicación no detectada); en el tercil de barrios medios el IC incluye el 0 | Notebook 05 (H1), `src/inferencia.py`, `src/seguimiento.py` |
-| H3: regresión con efectos fijos de barrio y errores agrupados, Wald y Holm | Cuánto de la diferencia de precio dentro de un barrio se explica por transporte, espacios verdes y obras | Log del precio por m²; distancias y entorno a 500 m; errores agrupados por sub-zona; avisos con geocodificación dudosa excluidos | Wald por bloque (transporte p = 3,7e-5, entorno p = 2,4e-7); Holm por variable; fuera de muestra, la ubicación baja el error 0,19 pp | Frente a la PE2 (subte y centralidad, sin detectar nada): 2 de 16 efectos interpretables, +1,5% por ha de espacio verde y +4,4% por cada 10 obras | Efectos chicos; el premetro (−24%) es un artefacto de zona (barrios populares), no una causa | Notebook 05 (H3), `src/fuentes_externas.py`, `src/inferencia.py` |
+| H3: regresión con efectos fijos de barrio y errores agrupados, Wald y Holm | Cuánto de la diferencia de precio dentro de un barrio se explica por transporte, espacios verdes y obras | Log del precio por m²; distancias y entorno a 500 m; errores agrupados por sub-zona; avisos con geocodificación dudosa excluidos | Wald por bloque (transporte p = 3,7e-5, entorno p = 2,4e-7); Holm por variable; fuera de muestra, la ubicación baja el error 0,19 pp | Frente a la versión anterior (subte y centralidad, sin detectar nada): 2 de 16 efectos interpretables, +1,5% por ha de espacio verde y +4,4% por cada 10 obras | Efectos chicos; el premetro (−24%) es un artefacto de zona (barrios populares), no una causa | Notebook 05 (H3), `src/fuentes_externas.py`, `src/inferencia.py` |
 | MCA (índice de equipamiento) | Resumir 17 características Sí/No en un índice de equipamiento | El vacío se lee como "No" (el MCA ingenuo medía la completitud del aviso: −0,94); se usa el primer eje | Correlación 0,99 con el índice calculado solo en avisos completos; 0,96 con el conteo de amenities | Frente a contar amenities: hace aparecer el segmento "Nuevos con amenities", que con el conteo se diluye, y en el modelo le gana al conteo por 0,15 pp | No mejora el precio esperado: sube el error 0,19 pp (IC 0,09 a 0,26) frente a las amenities sueltas, así que no entra al modelo | Notebook 06 (secciones 2 y 5), `src/segmentos.py` |
 | K-means (tipos de departamento) | Describir la oferta en tipos de departamento y ver dónde el precio esperado es menos preciso | K = 4 (sin codo claro; silhouette parecida entre 2 y 6) sobre ambientes, log de m² por ambiente, antigüedad, log de expensas por m² e índice de equipamiento, estandarizados; sin ubicación ni precio | Estabilidad con bootstrap: ARI 0,99 en 100 remuestreos (umbral de clase 0,8), tamaños que se mueven menos de 0,5 pp; silhouette 0,22 | Frente a terciles de barrio y ambientes: una mirada que la ubicación no da (ARI 0,045 con los terciles); error del modelo 14,3% y 13,4% en dos tipos contra 11,9% en el resto, y la alerta de sesgo del dashboard | No son grupos separados (silhouette 0,22); para la liquidez no le ganan a las ambientes; no entran a la lista oficial | Notebook 06 (secciones 3 a 5), `src/segmentos.py`, alerta en la ficha del dashboard |
 
@@ -494,7 +491,7 @@ unidades. El impuesto a las ganancias se deja en 0 en el escenario base porque d
 (supuesto declarado; el simulador muestra 15% y 35%). La liquidez entra como información (tasa de salida del portal
 por cantidad de ambientes), no como filtro: en esta versión no modifica la regla. El costo de tenencia (expensas,
 impuestos y meses hasta la venta) no está en la regla y es un límite declarado; una sensibilidad que lo descuente
-queda para la entrega final.
+queda como trabajo futuro.
 El simulador del dashboard (pestaña Tendencias) permite cambiar escenario de costos, negociación, refacción,
 Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conteos.
 
@@ -526,7 +523,7 @@ Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conte
   en 0 y sin costo de tenencia. La sensibilidad (notebook 07) muestra cuánto cambia el resultado con cada supuesto.
 - **La liquidez no modifica la regla.** La tasa de salida del portal por ambientes se muestra como referencia, pero ni
   la liquidez ni el costo de tenencia cambian la brecha neta en esta versión; la sensibilidad con costo de tenencia
-  queda para la entrega final.
+  queda como trabajo futuro.
 - **Reproducibilidad.** La asignación de las vueltas depende del orden de las filas del dataset, y el gradient boosting
   puede variar un poco entre plataformas; la lista oficial no depende de él. Detalle en `docs/pipeline.md`, sección 10.
 - **Sub-zonas cerca del umbral de estabilidad** dependen de la semilla: la estabilidad es una señal, no una

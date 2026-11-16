@@ -1,5 +1,5 @@
 """
-Herramientas de inferencia para la evaluación de hipótesis (PreEntrega 3, notebook 05).
+Herramientas de inferencia para la evaluación de hipótesis (notebook 05).
 
 Intervalos con bootstrap por unidad, la fila de un test formal (H0, H1,
 estadístico, p-valor y decisión), corrección por comparaciones múltiples y

@@ -1,5 +1,5 @@
 """
-Segundo relevamiento y seguimiento de los avisos (PreEntrega 3, pregunta P4).
+Segundo relevamiento y seguimiento de los avisos (pregunta P4).
 
 Une las cuotas del segundo scraping (27 y 28 de octubre de 2026) y cruza cada
 aviso del dataset limpio del primer relevamiento (14 de agosto) con lo que se

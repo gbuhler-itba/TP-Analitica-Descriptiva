@@ -39,7 +39,7 @@ rutas:
   # SHAP del gradient boosting del notebook 04 (sección 9), guardado porque tarda varios minutos.
   shap_gbm: data/interim/shap_gbm.tsv
   accesibilidad: data/processed/accesibilidad.tsv
-  # Permisos de obra (src/permisos_obra.py, PreEntrega 3).
+  # Permisos de obra (src/permisos_obra.py).
   permisos_obra_snapshot: data/external/obras-registradas.csv
   permisos_obra: data/processed/permisos_obra.tsv
 
@@ -173,7 +173,7 @@ limpieza:
   pisos_edificio_desde: 3
 
 # -----------------------------------------------------------------------------
-# ETAPA 6 - Análisis: precio esperado, brecha y ranking (PreEntrega 3)
+# ETAPA 6 - Análisis: precio esperado, brecha y ranking
 # -----------------------------------------------------------------------------
 analisis:
   k_folds: 5                     # partes de la validación cruzada (agrupadas por unidad)
@@ -182,7 +182,7 @@ analisis:
   iqr_k: 1.5                     # atípicos: IQR sobre el log del precio por m², dentro de la zona
   umbral: -0.25                  # brecha desde la que un aviso queda marcado
   minimo_avisos_barrio: 50       # barrios más chicos usan el error de la ciudad en el umbral por barrio
-  # Decisiones del notebook 04 (PreEntrega 3)
+  # Decisiones del notebook 04
   modelo_oficial: lineal_ampliado   # lineal_ampliado o gbm; el otro se usa para la marca de consenso
   nivel_intervalo: 0.80             # intervalo de predicción por aviso (conformal cruzado, por barrio)
   ari_minimo_subzona: 0.7           # debajo: sub-zonas inestables, el barrio se compara entero
@@ -203,12 +203,12 @@ qc:
 
 
 # -----------------------------------------------------------------------------
-# FUENTES EXTERNAS (PreEntrega 3): accesibilidad, espacios verdes y barrios
+# FUENTES EXTERNAS: accesibilidad, espacios verdes y barrios
 # -----------------------------------------------------------------------------
 # src/fuentes_externas.py lee el dataset enriquecido y escribe un TSV aparte,
 # con link como clave. No modifica ningún dataset existente. Todas las fuentes
 # son snapshots de BA Data descargados el 27/10/2026 (el de premetro, el 28/10/2026): las fichas, con link y
-# SHA-256, están en docs/entregas_grupo/fuentes_externas.md.
+# SHA-256, están en docs/fuentes_externas.md.
 fuentes_externas:
   rutas:
     salida: data/processed/accesibilidad.tsv
@@ -275,7 +275,7 @@ fuentes_externas:
     GRAL: GENERAL
 
 # -----------------------------------------------------------------------------
-# PERMISOS DE OBRA (PreEntrega 3): src/permisos_obra.py
+# PERMISOS DE OBRA: src/permisos_obra.py
 # -----------------------------------------------------------------------------
 permisos_obra:
   fecha_scraping: "2026-08-14"     # fin de la ventana (no incluido)

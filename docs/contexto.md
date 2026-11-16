@@ -1,6 +1,6 @@
 # Contexto del mercado inmobiliario argentino
 
-Un precio publicado en CABA no se lee igual que en un mercado con crédito y moneda estable. Seis rasgos del mercado argentino condicionan qué significa cada precio de nuestro dataset y qué se puede concluir cuando un aviso aparece por debajo del precio esperado para lo que tiene. Fecha de corte: 14/08/2026. Los números propios salen de `docs/entregas_grupo/contexto_argentino_numeros.py`, sobre el dataset limpio (`data/processed/propiedades_limpias.tsv`).
+Un precio publicado en CABA no se lee igual que en un mercado con crédito y moneda estable. Seis rasgos del mercado argentino condicionan qué significa cada precio de nuestro dataset y qué se puede concluir cuando un aviso aparece por debajo del precio esperado para lo que tiene. Fecha de corte: 14/08/2026. Los números propios salen de `docs/scripts/contexto_numeros.py`, sobre el dataset limpio (`data/processed/propiedades_limpias.tsv`).
 
 **1. Dolarización.** Los inmuebles se publican y se pagan en dólares billete desde fines de los años setenta: los primeros avisos en dólares aparecieron en julio de 1977, cuando la inflación le quitó al peso la función de reserva de valor [1]. En nuestro dataset, 27.917 de los 27.922 avisos están en USD. *Qué implica:* los precios se pueden comparar entre sí sin ajustar por inflación. Las expensas, en cambio, están en pesos (mediana de ARS 200.000) y hay que convertirlas con un tipo de cambio declarado, que se detalla al final.
 

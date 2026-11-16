@@ -1,15 +1,15 @@
 # Fuentes externas: fichas
 
-*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 2, actualizado en la PreEntrega 3*
+*Analítica Descriptiva (ITBA, 2026 C2)*
 
-Formato pedido por el enunciado de la PreEntrega 2: fuente concreta, cobertura
+Formato de cada ficha: fuente concreta, cobertura
 geográfica, período, granularidad, mecanismo de unión, variable derivada,
 análisis/KPI/hipótesis al que aporta y limitaciones conocidas.
 
 Estado: **integrada** (ya está en el dataset), **prevista** (compatible, todavía
 no integrada) o **descartada** (se evaluó y no sirve para esta unidad de análisis).
 
-Todos los datasets se verificaron en el portal el **05/10/2026** (el de barrios populares, el 06/10/2026). Las fuentes integradas en la PreEntrega 3 (fichas 4 a 7, 10 y 11) se descargaron el **27/10/2026** como snapshots en `data/external/`, con su SHA-256 en la ficha: `src/fuentes_externas.py` las lee sin red y escribe `data/processed/accesibilidad.tsv`. En cada ficha,
+Todos los datasets se verificaron en el portal el **05/10/2026** (el de barrios populares, el 06/10/2026). Las fuentes de las fichas 4 a 7, 10 y 11 se descargaron el **27/10/2026** como snapshots en `data/external/`, con su SHA-256 en la ficha: `src/fuentes_externas.py` las lee sin red y escribe `data/processed/accesibilidad.tsv`. En cada ficha,
 "Fuente concreta" lleva el link y el responsable, y "Período" lleva la fecha de
 actualización que muestra el portal. Esa fecha indica que algo del recurso se
 modificó, no que hayan cambiado los datos: en subte, por ejemplo, el portal marca un
@@ -67,9 +67,9 @@ todos los avisos que se comparan.
 | Mecanismo de unión | Distancia haversine mínima a cualquiera de los tres polos |
 | Variable derivada | `dist_centralidad_m` |
 | Aporta a | H3, que no se detectó con este indicador: dentro del barrio la distancia a los polos no se relaciona con el precio (ρ ≈ 0, notebook 02). No entra al modelo de precio esperado |
-| Limitaciones | Es una elección del grupo, no un dato externo, y hay que presentarla como tal. Hallazgo de la PreEntrega 1: correlación casi nula con el precio por m², porque el valor está en el corredor norte y no en el centro geográfico |
+| Limitaciones | Es una elección del grupo, no un dato externo, y hay que presentarla como tal. Hallazgo de la primera versión: correlación casi nula con el precio por m², porque el valor está en el corredor norte y no en el centro geográfico |
 
-## 4. Estaciones de ferrocarril, BA Data (integrada en PE3)
+## 4. Estaciones de ferrocarril, BA Data
 
 | Campo | Detalle |
 |---|---|
@@ -82,7 +82,7 @@ todos los avisos que se comparan.
 | Aporta a | H3 e distancias de accesibilidad. Corrige el sesgo del subte en el sur y el oeste: la mediana de distancia a riel baja 77% en Liniers y 83% en Villa Luro respecto de solo subte (ver `control_fuentes.md`) |
 | Limitaciones | Sin frecuencias ni cantidad de pasajeros: una estación del Belgrano Sur pesa igual que una del Mitre. Distancia en línea recta al punto de la estación. La cercanía al tren puede tener efecto negativo (ruido, barrera urbana): el signo no se puede asumir. Haversine supone una Tierra esférica: contra la distancia geodésica sobre el elipsoide WGS84, el error máximo es de 0,24% (1,2 m a 500 m) |
 
-## 5. Metrobus, BA Data (integrada en PE3)
+## 5. Metrobus, BA Data
 
 | Campo | Detalle |
 |---|---|
@@ -92,10 +92,10 @@ todos los avisos que se comparan.
 | Granularidad | Punto: cada registro es una parada **por sentido**, en WGS84, con barrio, comuna y las líneas de colectivo que paran. Hay 139 nombres de parada distintos y 38 paradas sin nombre. Compatible con la sub-zona |
 | Mecanismo de unión | Haversine a la parada más cercana. Las paradas repetidas por sentido no afectan la mínima |
 | Variable derivada | `dist_metrobus_m`; entra en `dist_transporte_pesado_m` pero **no** en `dist_riel_m` |
-| Aporta a | H3. Se dejó como variable propia además de sumarla al transporte pesado, porque la ficha de la PE2 advertía que su efecto no es comparable con el del subte. Los datos lo confirman: es el transporte más cercano para el 29,7% de los avisos y su distancia casi no se correlaciona con la del riel (Spearman −0,08). El sábado se puede probar H3 con cada definición |
+| Aporta a | H3. Se dejó como variable propia además de sumarla al transporte pesado, porque la ficha original advertía que su efecto no es comparable con el del subte. Los datos lo confirman: es el transporte más cercano para el 29,7% de los avisos y su distancia casi no se correlaciona con la del riel (Spearman −0,08). El sábado se puede probar H3 con cada definición |
 | Limitaciones | Es transporte de superficie. Estar sobre un corredor también puede significar estar sobre una avenida ruidosa. El campo `BARRIO` trae errores de tipeo ("VELEZ SARFIELD"), pero no se usa |
 
-## 6. Espacios verdes, BA Data (integrada en PE3)
+## 6. Espacios verdes, BA Data
 
 | Campo | Detalle |
 |---|---|
@@ -109,7 +109,7 @@ todos los avisos que se comparan.
 | Aporta a | H3 (pregunta de diagnóstico "efecto infraestructura" del enunciado general). La distancia mide acceso a una plaza; el área distingue una plaza chica de un parque |
 | Limitaciones | La calidad, el estado y la seguridad del espacio verde no están en el dataset. La clase la asigna la Ciudad y no siempre coincide con el uso: hay plazoletas de más de 4 ha. Los parques semipúblicos tienen horario |
 
-## 7. Polígonos de barrios, BA Data (integrada en PE3, para control de calidad)
+## 7. Polígonos de barrios, BA Data (para control de calidad)
 
 | Campo | Detalle |
 |---|---|
@@ -121,7 +121,7 @@ todos los avisos que se comparan.
 | Variable derivada | `barrio_oficial`, `barrio_coincide` |
 | Regla de `barrio_coincide` | 1 si el barrio de búsqueda de MercadoLibre coincide con el oficial. Se comparan los nombres normalizados: mayúsculas, sin tildes, sin guiones ni puntos, y "Gral." expandido a "General" para que `villa-general-mitre` coincida con "Villa Gral. Mitre". **Barrio Norte**, que no es un barrio oficial, se toma como coincidente si cae en Recoleta, Retiro o Palermo. La equivalencia está en `config.yaml` (`equivalencias_barrio`) |
 | Aporta a | Evaluación de calidad y control de los duplicados con discrepancia territorial. El 81,6% de los avisos geocodificados coincide (el 2,2% gracias a la equivalencia de Barrio Norte). Las discrepancias más grandes son de borde: "belgrano" en Palermo (253), "recoleta" en Retiro (227). Aparecen 100 avisos en San Cristóbal y 39 en Parque Chas, los dos barrios que el scraping no buscaba |
-| Limitaciones | Solo para los geocodificados (82,1%). Una discrepancia no siempre es un error: el 94% de las discrepancias está a menos de 1 km del barrio buscado (avisos de borde). Pero 249 avisos quedan a más de 1 km, y en 246 la dirección nombra el barrio buscado: son errores de geocodificación por calles homónimas. Por ejemplo, "Arroyo 800, Retiro" quedó en Villa Crespo, "Madero 100, Liniers" en San Nicolás y "Beruti 4400, Palermo" en Nueva Pompeya. Esos 246 avisos tienen mal todas las variables espaciales, también las de la PE2 (`control_fuentes.md`, sección 4) |
+| Limitaciones | Solo para los geocodificados (82,1%). Una discrepancia no siempre es un error: el 94% de las discrepancias está a menos de 1 km del barrio buscado (avisos de borde). Pero 249 avisos quedan a más de 1 km, y en 246 la dirección nombra el barrio buscado: son errores de geocodificación por calles homónimas. Por ejemplo, "Arroyo 800, Retiro" quedó en Villa Crespo, "Madero 100, Liniers" en San Nicolás y "Beruti 4400, Palermo" en Nueva Pompeya. Esos 246 avisos tienen mal todas las variables espaciales, también las originales (`control_fuentes.md`, sección 4) |
 
 ## 8. Tipo de cambio: dólar MEP (integrada)
 
@@ -210,7 +210,7 @@ Villa Ortúzar, Chacarita, Colegiales, Saavedra) y el mínimo en el sur (Villa L
 con la mitad de sus avisos sin ninguna obra cerca, Villa Soldati y Nueva Pompeya).
 Puerto Madero y La Boca también dan bajo, probablemente porque el primero ya está casi completo y el segundo tiene poca obra privada nueva.
 
-## 10. Barrios populares, BA Data (integrada en PE3)
+## 10. Barrios populares, BA Data
 
 | Campo | Detalle |
 |---|---|
@@ -223,7 +223,7 @@ Puerto Madero y La Boca también dan bajo, probablemente porque el primero ya es
 | Aporta a | Modelo de precio esperado, como control de ubicación. De los 96 avisos que caen en un barrio popular, 76 son barrios municipales, sobre todo Lugano I y II (38) y Piedrabuena (20), que son conjuntos de vivienda social. Villas propiamente dichas hay 11 (Padre Mugica, en Retiro). Por eso el tipo va en una columna aparte: el modelo probablemente use solo villas y asentamientos |
 | Limitaciones | Solo sirve para los geocodificados (82,1%). **No detecta el caso que motivó la fuente**: el aviso de Rodrigo Bueno del ranking (Simone de Beauvoir 1100) no tiene coordenadas, igual que el otro aviso que lo menciona. Esos avisos se marcan por el título en la limpieza, junto con las otras marcas |
 
-## 11. Estaciones de premetro, BA Data (integrada en PE3)
+## 11. Estaciones de premetro, BA Data
 
 | Campo | Detalle |
 |---|---|

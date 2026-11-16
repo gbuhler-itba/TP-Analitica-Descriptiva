@@ -101,7 +101,7 @@ def marca_por_barrio(brecha, barrio, umbral, minimo_avisos=50):
 
 
 def kpis_del_aviso(df, zona):
-    """Tasa de completitud y eficiencia de expensas (definidas en la PreEntrega 2)."""
+    """Tasa de completitud y eficiencia de expensas."""
     si_no = [c for c in df.columns if tipo_de_columna(df[c]) == "si_no"]
     principales = ["antiguedad", "cocheras", "bauleras", "numero_de_piso_de_la_unidad", "cantidad_de_pisos",
                    "disposicion", "orientacion", "tipo_de_departamento", "expensas_usd", "superficie_cubierta"]
@@ -239,7 +239,7 @@ def tabla_explicacion(contrib, df, n=3):
 def analizar(df, cfg_an, cfg_enr=None, seguimiento=None):
     """Corre el análisis completo sobre el dataset limpio. Devuelve (df, unidades, embudo, explicacion, info).
 
-    Decisiones de la PreEntrega 3 (notebook 04):
+    Decisiones (notebook 04):
       - avisos con geocodificación dudosa: sin coordenadas para el modelo;
       - barrios con sub-zonas inestables (ARI < `ari_minimo_subzona`): comparados contra el barrio;
       - modelo oficial configurable (`modelo_oficial`); se calcula también el otro modelo y la

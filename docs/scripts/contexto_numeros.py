@@ -1,6 +1,6 @@
 """
-Números propios citados en contexto_argentino.md.
-Correr desde la raíz del repo:  python3 docs/entregas_grupo/contexto_argentino_numeros.py
+Números propios citados en contexto.md.
+Correr desde la raíz del repo:  python3 docs/scripts/contexto_numeros.py
 No modifica ningún archivo.
 
 Usa el dataset limpio (salida del notebook 01), el mismo que el resto del análisis.

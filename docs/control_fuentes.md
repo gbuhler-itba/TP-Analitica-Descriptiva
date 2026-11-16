@@ -1,6 +1,6 @@
 # Control de las fuentes externas
 
-*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 3, tarea 2*
+*Analítica Descriptiva (ITBA, 2026 C2)*
 
 Este documento controla las columnas que agrega `src/fuentes_externas.py` en
 `data/processed/accesibilidad.tsv`: distancias a tren, Metrobus y premetro,
@@ -12,7 +12,7 @@ Todos los números salen de un script, así que se pueden volver a generar:
 
 ```bash
 python3 src/fuentes_externas.py                              # escribe accesibilidad.tsv
-python3 docs/entregas_grupo/control_fuentes_numeros.py       # imprime las tablas de este documento
+python3 docs/scripts/control_fuentes_numeros.py       # imprime las tablas de este documento
 ```
 
 Las medianas por barrio usan el **barrio oficial**, es decir, el polígono donde
@@ -82,7 +82,7 @@ Para el área se excluye además la franja de la General Paz (sección 6).
 Mediana de cada distancia por barrio oficial, en metros. "Riel" es el mínimo
 entre subte, tren y premetro; "Pesado" suma el Metrobus. "Verde 500 m" son las
 hectáreas de espacio verde dentro del círculo de 500 m. La última columna compara
-transporte pesado contra solo subte, que era el único indicador de la PE2.
+transporte pesado contra solo subte, que era el único indicador de la primera versión.
 
 Barrios del sur y el oeste, ordenados por la caída:
 
@@ -179,8 +179,8 @@ error es de la categoría. Ejemplos del primer grupo:
 | retiro | Arroyo 800, Retiro | Villa Crespo | 4 | 6,0 |
 | belgrano | Mendoza Al 900, Belgrano | La Boca | 4 | 10,7 |
 
-Esos 246 avisos tienen mal **todas** las variables espaciales, incluidas las de la
-PE2 (`dist_transporte_m`, `dist_centralidad_m` y `subzona`), no solo las nuevas.
+Esos 246 avisos tienen mal **todas** las variables espaciales, incluidas las
+originales (`dist_transporte_m`, `dist_centralidad_m` y `subzona`), no solo las nuevas.
 Se puede usar `barrio_coincide` para excluirlos o revisarlos, pero no todos los 0
 son errores. Sugerencia para la limpieza: marcar como sospechosos de mal
 geocoding los avisos a más de 1 km del barrio buscado cuya dirección nombra ese
@@ -213,7 +213,7 @@ Ninguno cae en dos polígonos a la vez.
 | Barrio Los Perales (ex Dorrego) | Barrio municipal | Mataderos | 2 |
 | Otros 6 barrios municipales | Barrio municipal | Lugano, La Boca, Villa del Parque, Soldati | 6 |
 
-`en_barrio_popular` marca todos los tipos, como pide la consigna. Pero la mayoría
+`en_barrio_popular` marca todos los tipos. Pero la mayoría
 de los avisos marcados son conjuntos de vivienda social, que se comportan distinto
 de una villa o un asentamiento. Por eso `tipo_barrio_popular` va aparte: para el
 modelo conviene filtrar villas y asentamientos.

@@ -21,7 +21,7 @@ escenario conservador del notebook 07). Se calcula acá, por unidad, con la mism
 regla.
 
 Lista destacada del resumen: candidatos que marcan los dos modelos, sin los casos
-que la PE2 mostró como especiales (barrio popular o a menos de 500 m de uno, casa
+que el análisis mostró como especiales (barrio popular o a menos de 500 m de uno, casa
 o PH), usos que no son vivienda (oficina, comercial, local, hotel), avisos sin
 coordenadas cuyo título nombra otro barrio oficial ("barrio dudoso"), posibles
 ventas de varias unidades (en block, departamentos en plural), precio posiblemente
@@ -71,7 +71,7 @@ ESCENARIOS = ["optimista", "base", "pesimista"]
 ESTADOS = {"sin_marca": "sin marca en el título", "a_reciclar": "a reciclar", "a_refaccionar": "a refaccionar",
            "ya_reformado": "ya reformado", "a_estrenar": "a estrenar"}
 # Motivos por los que un aviso no entra a la lista destacada del resumen ("los que más vale la pena mirar"):
-# casos que la PE2 mostró como especiales (barrio popular, PH o casa) y usos que no son vivienda. Siguen en el
+# casos que el análisis mostró como especiales (barrio popular, PH o casa) y usos que no son vivienda. Siguen en el
 # mapa, en el buscador y en la ficha, con el motivo a la vista.
 RADIO_BARRIO_POPULAR_M = 500
 REGEX_PH = r"\bph\b"

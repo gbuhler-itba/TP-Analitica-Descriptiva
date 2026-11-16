@@ -1,15 +1,15 @@
 # Diccionario de datos
 
-*Analítica Descriptiva (ITBA, 2026 C2) · PreEntrega 2, actualizado en la PreEntrega 3*
+*Analítica Descriptiva (ITBA, 2026 C2)*
 
 Describe el dataset de trabajo, `data/processed/propiedades_limpias.tsv` (27.578 filas × 115 columnas), que sale de la
 etapa 5 del pipeline (`src/limpiar.py`, la misma lógica que explica el notebook 01), y los archivos que se derivan de él.
 Tiene dos partes:
 
 - **Las 93 columnas originales** del pipeline (`propiedades_enriquecidas.tsv`), una fila por columna, con significado,
-  tipo, unidad, fuente y transformaciones, como pide el enunciado. Las cifras de **Con dato** y **Observaciones** se
+  tipo, unidad, fuente y transformaciones. Las cifras de **Con dato** y **Observaciones** se
   calcularon sobre las 27.922 filas antes de la limpieza, para mostrar los problemas que tuvo que resolver.
-- **Las 22 columnas que crea la limpieza** (etapa 5, notebook 01), las de las fuentes externas por aviso de la PreEntrega 3
+- **Las 22 columnas que crea la limpieza** (etapa 5, notebook 01), las de las fuentes externas por aviso
   (`accesibilidad.tsv`, `permisos_obra.tsv`), las de la etapa 6 (precio esperado, intervalo, marcas, regla de decisión y
   ranking) y las del seguimiento con el segundo relevamiento, con su fórmula final.
 
@@ -21,16 +21,16 @@ Al final, un resumen de anomalías con lo que se hizo con cada una.
 |---|---|
 | Archivo de entrada | `data/processed/propiedades_enriquecidas.tsv`: 27.922 filas × 93 columnas |
 | Archivo de trabajo | `data/processed/propiedades_limpias.tsv`: 27.578 filas × 115 columnas (93 originales + 22 nuevas). Los 344 avisos excluidos y su motivo están en `data/processed/registro_limpieza.csv` |
-| Fuentes externas por aviso (PE3) | `data/processed/accesibilidad.tsv` (tren, Metrobus, premetro, espacios verdes, barrio oficial, barrios populares, `geo_dudoso`) y `data/processed/permisos_obra.tsv`, con `link` como clave |
+| Fuentes externas por aviso | `data/processed/accesibilidad.tsv` (tren, Metrobus, premetro, espacios verdes, barrio oficial, barrios populares, `geo_dudoso`) y `data/processed/permisos_obra.tsv`, con `link` como clave |
 | Salidas de la etapa 6 | `data/processed/precio_esperado.tsv` (una fila por aviso: precio esperado, intervalo, brecha, marcas, estado, riesgo legal y regla de decisión), `unidades_marcadas.csv`, `avisos_a_investigar.csv` (la lista oficial, una fila por unidad), `embudo_ranking.csv` y `explicacion_avisos.tsv` |
-| Segundo relevamiento (PE3) | `data/processed/relevamiento_2.tsv` (27.516 avisos del 27 y 28/10/2026) y `seguimiento_avisos.csv` (estado de cada aviso del primero en el segundo) |
+| Segundo relevamiento | `data/processed/relevamiento_2.tsv` (27.516 avisos del 27 y 28/10/2026) y `seguimiento_avisos.csv` (estado de cada aviso del primero en el segundo) |
 | Formato | Texto separado por tabulaciones, UTF-8. El enriquecido tiene BOM (se lee con `utf-8-sig`); el limpio, no |
 | Unidad de observación | Un aviso de departamento usado en venta, publicado en MercadoLibre Inmuebles, en CABA |
 | Fecha de extracción | 14/08/2026, declarada por el grupo. El dataset no tiene una columna de fecha. El segundo relevamiento es del 27 y 28/10/2026 (74 días después) y sí la tiene (`fecha_relevamiento`) |
 | Filtros de la búsqueda | Departamentos, venta, propiedades individuales, usados; 47 barrios en 5 cuotas (`config.yaml`) |
 | Geocodificación | Normalizador de USIG, consultado en septiembre de 2026 |
 | Estaciones de subte | Snapshot de BA Data del 14/09/2026 (90 estaciones) |
-| Otras fuentes de BA Data (PE3) | Tren, Metrobus, premetro, espacios verdes, barrios, barrios populares y obras registradas: snapshots del 27 y 28/10/2026 en `data/external/`, con SHA-256 en `fuentes_externas.md` |
+| Otras fuentes de BA Data | Tren, Metrobus, premetro, espacios verdes, barrios, barrios populares y obras registradas: snapshots del 27 y 28/10/2026 en `data/external/`, con SHA-256 en `fuentes_externas.md` |
 | Origen de las cifras | Las 93 columnas originales: perfil calculado sobre `propiedades_enriquecidas.tsv`, sin modificarlo. Las columnas nuevas: sobre `propiedades_limpias.tsv` |
 
 ## De dónde sale cada columna
@@ -82,7 +82,7 @@ unifican dos etiquetas mal cargadas. Las transformaciones generan las columnas n
 **Primas.** Para las variables que entran al modelo se cita la **prima del modelo** (notebook 03, sección 5): la
 diferencia de precio por m² asociada a la característica comparando dentro de la misma zona y con las demás
 características fijas (antigüedad, superficie, amenities, etc.). Son asociación, no efecto causal. Las diferencias
-simples del diagnóstico de la PreEntrega 1 (`docs/correcciones_pe1/diagnostico.md`) eran mucho más grandes (por
+simples de la primera versión (índice de confort) eran mucho más grandes (por
 ejemplo, +33,5% para la pileta contra +4,0% en el modelo) porque mezclaban el efecto de la antigüedad: los amenities son
 casi exclusivos de los edificios nuevos.
 
@@ -175,12 +175,12 @@ Dicotómicas de la ficha que describen la propia unidad. En las "solo Sí" el va
 
 ### 7. Servicios e infraestructura
 
-Era el bloque de mayor peso del índice de confort de la PreEntrega 1 (45%). El diagnóstico mostró que es el que menos se relaciona con el precio dentro de la sub-zona y que, en las columnas "solo Sí", mide lo completo que está el aviso más que la infraestructura real.
+Era el bloque de mayor peso del índice de confort de la primera versión (45%). El diagnóstico mostró que es el que menos se relaciona con el precio dentro de la sub-zona y que, en las columnas "solo Sí", mide lo completo que está el aviso más que la infraestructura real.
 
 | Variable | Significado | Tipo | Unidad | Fuente | Transformación | Con dato | Observaciones |
 |---|---|---|---|---|---|---|---|
 | `agua_corriente` | El inmueble tiene agua corriente | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 62,4% (17.415) | Nunca aparece "No": mide si el anunciante tildó el ítem, no si hay agua. No entra al modelo |
-| `gas_natural` | El inmueble tiene gas natural | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 50,8% · No 38,4% | El 38,4% dice "No". En la PreEntrega 1, la diferencia simple dentro de la sub-zona era negativa (−4,8%): una hipótesis a verificar es que marque edificios nuevos todo-eléctricos, o sea, antigüedad y no confort. No entra al modelo |
+| `gas_natural` | El inmueble tiene gas natural | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 50,8% · No 38,4% | El 38,4% dice "No". En la primera versión, la diferencia simple dentro de la sub-zona era negativa (−4,8%): una hipótesis a verificar es que marque edificios nuevos todo-eléctricos, o sea, antigüedad y no confort. No entra al modelo |
 | `aire_acondicionado` | Tiene aire acondicionado | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 38,1% · No 51,8% | Prima del modelo: +2,1% |
 | `calefaccion` | Tiene calefacción | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 23,1% · No 65,1% | No indica el tipo (central, individual, losa radiante) |
 | `caldera` | Tiene caldera | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 7,3% (2.034) | no aplica |
@@ -195,13 +195,13 @@ Era el bloque de mayor peso del índice de confort de la PreEntrega 1 (45%). El 
 
 ### 8. Amenities y servicios del edificio
 
-En las diferencias simples de la PreEntrega 1 era el bloque que más se asociaba con el precio, pero buena parte era efecto de la antigüedad: en el modelo, cada amenity suma entre 2% y 5%. Casi todas son "solo Sí" y muy poco frecuentes: varias tienen menos de 1% de avisos con dato, así que no alcanzan para estimar una prima propia.
+En las diferencias simples de la primera versión era el bloque que más se asociaba con el precio, pero buena parte era efecto de la antigüedad: en el modelo, cada amenity suma entre 2% y 5%. Casi todas son "solo Sí" y muy poco frecuentes: varias tienen menos de 1% de avisos con dato, así que no alcanzan para estimar una prima propia.
 
 | Variable | Significado | Tipo | Unidad | Fuente | Transformación | Con dato | Observaciones |
 |---|---|---|---|---|---|---|---|
-| `pileta` | El edificio tiene pileta | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 14,4% · No 52,2% | Prima del modelo: +4,0% (la diferencia simple de la PreEntrega 1 era +33,5%) |
+| `pileta` | El edificio tiene pileta | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 14,4% · No 52,2% | Prima del modelo: +4,0% (la diferencia simple de la primera versión era +33,5%) |
 | `gimnasio` | El edificio tiene gimnasio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 9,1% (2.530) | Prima del modelo: +5,2% |
-| `sauna` | El edificio tiene sauna | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 3,5% (970) | No entra al modelo: se superpone con gimnasio y pileta, y la diferencia simple de la PreEntrega 1 salía de solo 16 sub-zonas comparables |
+| `sauna` | El edificio tiene sauna | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 3,5% (970) | No entra al modelo: se superpone con gimnasio y pileta, y la diferencia simple de la primera versión salía de solo 16 sub-zonas comparables |
 | `jacuzzi` | Tiene jacuzzi | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,7% (767) | No aclara si es de la unidad o del edificio |
 | `salon_de_usos_multiples` | El edificio tiene SUM | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 11,3% (3.148) | Prima del modelo: +2,6% |
 | `salon_de_fiestas` | El edificio tiene salón de fiestas | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 1,9% (521) | Se superpone con el SUM: puede ser el mismo espacio declarado de dos formas |
@@ -257,7 +257,7 @@ Las agrega la etapa 4 solo para los avisos con `geo_status` = OK. Los demás que
 |---|---|---|---|---|---|---|---|
 | `dist_transporte_m` | Distancia a la estación de subte más cercana | Numérica continua (`float64`) | metros | BA Data ("Subte: estaciones", snapshot del 14/09/2026, 90 estaciones) + cálculo propio | Haversine (radio 6.371 km) desde `lat`/`lon` a cada estación; queda la mínima, redondeada a metro entero | 22.912 (82,1%) | Mediana 508 m, media 925 m, máximo 5.805 m. Distancia en línea recta, no a pie. Solo subte: deja afuera tren y Metrobus, que son el transporte pesado del sur y el oeste. El snapshot es un mes posterior al scraping |
 | `dist_centralidad_m` | Distancia al polo de centralidad más cercano: Obelisco, Puerto Madero o Catalinas | Numérica continua (`float64`) | metros | Cálculo propio; coordenadas fijadas por el grupo en `config.yaml` | Haversine a los tres polos; queda la mínima, redondeada a metro entero | 22.912 (82,1%) | Mediana 5.265 m, máximo 14.384 m. Los polos son una elección del grupo, no un dato externo. Hallazgo del TP1: casi no se relaciona con el precio por m², porque el valor se concentra en el corredor norte |
-| `subzona` | Sub-zona geográfica dentro del barrio: la unidad de comparación del análisis | Categórica nominal (198 categorías) | No aplica (etiqueta `barrio_k`) | Cálculo propio (KMeans, scikit-learn) | Por barrio, con los avisos geocodificados: si son menos de 30, una sola sub-zona `barrio_0`; si no, KMeans sobre `lat`/`lon` con k = min(5, máx(1, n // 30)), `random_state=42`, `n_init=10` | 22.912 (82,1%) | **No hay un mínimo de 30 avisos por sub-zona**, aunque el README de la PreEntrega 1 lo dijera: k limita la cantidad de clusters, pero KMeans no garantiza su tamaño. 42 de 198 tienen menos de 30 avisos y varias tienen 1 (mediana 68, máximo 532). 6 barrios tienen una sola sub-zona. El número k es arbitrario: `palermo_0` y `belgrano_0` no se corresponden. KMeans corre sobre grados sin proyectar (a esta latitud, 1° de longitud mide 0,82 de 1° de latitud), con una leve distorsión. **En el modelo:** la sub-zona se usa solo en los barrios donde mejora la referencia y es estable, decidido dentro de cada vuelta; las zonas con menos de 10 avisos, los avisos con `geo_dudoso` y los barrios inestables vuelven al barrio (`zona`, etapa 6; ver "Variables nuevas") |
+| `subzona` | Sub-zona geográfica dentro del barrio: la unidad de comparación del análisis | Categórica nominal (198 categorías) | No aplica (etiqueta `barrio_k`) | Cálculo propio (KMeans, scikit-learn) | Por barrio, con los avisos geocodificados: si son menos de 30, una sola sub-zona `barrio_0`; si no, KMeans sobre `lat`/`lon` con k = min(5, máx(1, n // 30)), `random_state=42`, `n_init=10` | 22.912 (82,1%) | **No hay un mínimo de 30 avisos por sub-zona**, aunque una versión anterior del README lo dijera: k limita la cantidad de clusters, pero KMeans no garantiza su tamaño. 42 de 198 tienen menos de 30 avisos y varias tienen 1 (mediana 68, máximo 532). 6 barrios tienen una sola sub-zona. El número k es arbitrario: `palermo_0` y `belgrano_0` no se corresponden. KMeans corre sobre grados sin proyectar (a esta latitud, 1° de longitud mide 0,82 de 1° de latitud), con una leve distorsión. **En el modelo:** la sub-zona se usa solo en los barrios donde mejora la referencia y es estable, decidido dentro de cada vuelta; las zonas con menos de 10 avisos, los avisos con `geo_dudoso` y los barrios inestables vuelven al barrio (`zona`, etapa 6; ver "Variables nuevas") |
 
 ## Variables nuevas
 
@@ -279,18 +279,18 @@ los dos resultados coinciden.
 | `precio_m2_usd` ★ | Precio por m²: la variable objetivo | Numérica continua; USD/m² | `precio_usd` / `m2_final` | 27.578 (100%). Mediana USD 2.393 |
 | `antiguedad` ★ | Antigüedad del edificio | Numérica discreta; años | `parsear_antiguedad(antig_edad)`: valores de 1800 o más se toman como año de construcción (2026 menos el año); mayores a 150 pasan a vacío. Los 1.479 "1 años" se conservan como 1 | 26.809 (97,2%). Mediana 40 años |
 | `en_construccion` | Unidad en pozo o en construcción | Booleana | Antigüedad declarada negativa. Esos avisos se excluyen (`en_pozo`, 237), así que en el dataset limpio vale False en todas las filas | False en 100% |
-| `expensas_monto` | Monto de las expensas | Numérica continua; ARS o USD por mes, según `expensas_moneda` | `parsear_expensas(expensas)`: 0 pasa a vacío; ARS mayores a 10 millones pasan a vacío; en USD, 10.000 o más se reinterpreta como pesos y menos de 10 pasa a vacío. **Nuevo en la PE3:** las menores a ARS 1.000 (`expensas_minimo_ars`) pasan a vacío, son valores de relleno (267) | 22.884 (83,0%) |
+| `expensas_monto` | Monto de las expensas | Numérica continua; ARS o USD por mes, según `expensas_moneda` | `parsear_expensas(expensas)`: 0 pasa a vacío; ARS mayores a 10 millones pasan a vacío; en USD, 10.000 o más se reinterpreta como pesos y menos de 10 pasa a vacío. **Además,** las menores a ARS 1.000 (`expensas_minimo_ars`) pasan a vacío, son valores de relleno (267) | 22.884 (83,0%) |
 | `expensas_moneda` | Moneda de las expensas | Categórica nominal: ARS, USD | Segundo valor de `parsear_expensas()` | ARS 26.732, USD 27 |
 | `expensas_ars` | Expensas en pesos | Numérica continua; ARS por mes | `expensas_en_ars()`: las de USD × 1.518,05 (dólar MEP, 14/08/2026); las de ARS sin cambio | 22.884 (83,0%). Mediana ARS 200.000 |
 | `expensas_usd` ★ | Expensas en dólares | Numérica continua; USD por mes | `expensas_ars` / 1.518,05 | 22.884 (83,0%). Mediana USD 131,7 |
 | `posible_duplicado` | Otro aviso, con otro ID, tiene el mismo precio, superficie, dirección y ambientes | Booleana | `marcar_posible_duplicado()`, solo entre avisos con dirección. Se marca, no se borra: puede ser el mismo departamento publicado por dos inmobiliarias o unidades gemelas de un edificio | True en 3.059 (11,1%) |
 | `menciona_alquiler` | El título menciona alquiler | Booleana | `menciona_alquiler(titulo)`. Se marca, no se excluye: los precios de esos avisos son de venta | True en 162 (0,6%) |
-| `titulo_casa` | El título dice que es una casa publicada como departamento | Booleana | `marcas_casa(titulo)`: "casa" en el título, sin contar "casa de" ni "tipo casa". Se marca, no se excluye: el anunciante la publicó como departamento. Entra como señal en el ranking (**nueva en la PE3**) | True en 25 (0,1%) |
-| `titulo_tipo_casa` | El título dice "tipo casa" (un departamento con características de casa, no una casa) | Booleana | Ídem, con la expresión "tipo casa" (**nueva en la PE3**) | True en 51 (0,2%) |
-| `titulo_barrio_popular` | El título nombra un barrio popular (Rodrigo Bueno, barrio Mugica, villa 31) | Booleana | `menciona_barrio_popular(titulo)` (**nueva en la PE3**). Complementa a `en_barrio_popular` de `accesibilidad.tsv`, que usa el polígono | True en 2 |
-| `outlier_precio_m2` | Precio por m² atípico para su zona | Booleana | `outliers_iqr_por_grupo()` sobre `precio_m2_usd`, por sub-zona y por barrio para los avisos sin sub-zona: fuera de [Q1 − 1,5·IQR; Q3 + 1,5·IQR], solo en grupos con 10 datos o más. **Marca informativa:** desde la PE3 el modelo recalcula los atípicos dentro de cada vuelta, sobre el logaritmo del precio por m² y en la zona de referencia | True en 931 (3,4%), 96% por encima de su zona |
+| `titulo_casa` | El título dice que es una casa publicada como departamento | Booleana | `marcas_casa(titulo)`: "casa" en el título, sin contar "casa de" ni "tipo casa". Se marca, no se excluye: el anunciante la publicó como departamento. Entra como señal en el ranking | True en 25 (0,1%) |
+| `titulo_tipo_casa` | El título dice "tipo casa" (un departamento con características de casa, no una casa) | Booleana | Ídem, con la expresión "tipo casa" | True en 51 (0,2%) |
+| `titulo_barrio_popular` | El título nombra un barrio popular (Rodrigo Bueno, barrio Mugica, villa 31) | Booleana | `menciona_barrio_popular(titulo)`. Complementa a `en_barrio_popular` de `accesibilidad.tsv`, que usa el polígono | True en 2 |
+| `outlier_precio_m2` | Precio por m² atípico para su zona | Booleana | `outliers_iqr_por_grupo()` sobre `precio_m2_usd`, por sub-zona y por barrio para los avisos sin sub-zona: fuera de [Q1 − 1,5·IQR; Q3 + 1,5·IQR], solo en grupos con 10 datos o más. **Marca informativa:** el modelo recalcula los atípicos dentro de cada vuelta, sobre el logaritmo del precio por m² y en la zona de referencia | True en 931 (3,4%), 96% por encima de su zona |
 | `incoherencia_dormitorios` | Dormitorios mayor o igual que ambientes, sin contar el monoambiente | Booleana | `dormitorios >= ambientes`, salvo 1 ambiente con 1 dormitorio, que es la convención de la plataforma para un monoambiente | True en 376 (1,4%) |
-| `incoherencia_piso` | El piso de la unidad supera la cantidad de pisos | Booleana | `numero_de_piso_de_la_unidad > cantidad_de_pisos`, **solo cuando el edificio declara 3 pisos o más** (`pisos_edificio_desde`): con 1 o 2, `cantidad_de_pisos` suele ser las plantas del departamento, no los pisos del edificio (en la PE2 se comparaba siempre y marcaba 2.299) | True en 80 (0,3%) |
+| `incoherencia_piso` | El piso de la unidad supera la cantidad de pisos | Booleana | `numero_de_piso_de_la_unidad > cantidad_de_pisos`, **solo cuando el edificio declara 3 pisos o más** (`pisos_edificio_desde`): con 1 o 2, `cantidad_de_pisos` suele ser las plantas del departamento, no los pisos del edificio (antes se comparaba siempre y marcaba 2.299) | True en 80 (0,3%) |
 
 Además, en las columnas originales: `ambientes` en 0 o negativo pasa a vacío; **`banos` en 0 pasa a vacío** (303; en el
 modelo se completan con 1 más la marca `banos_sin_dato`); **`numero_de_piso_de_la_unidad` de 100 o más se queda con las
@@ -300,7 +300,7 @@ centenas** (`piso_desde_numero_de_unidad()`: el anunciante cargó el número de 
 con superficie inválida, 5 en pesos, 4 con precio menor a USD 20.000, 1 con precio imposible y 1 que no es una venta,
 "compro") están en `registro_limpieza.csv` con su motivo.
 
-### Fuentes externas por aviso (PreEntrega 3)
+### Fuentes externas por aviso
 
 Archivos aparte, con `link` como clave, que no modifican el dataset enriquecido. Se unen al dataset de trabajo en la
 etapa 6. Las fichas de cada fuente, con link, fecha y SHA-256 del snapshot, están en
@@ -360,7 +360,7 @@ de referencia.
 | `cumple_regla` ★ | Pasa la regla R1: marcado con el umbral de la ciudad y el de su barrio, y sin señales de error de carga | Booleana | `marcado_barrio` y no `senal_error_carga`. True en 1.455 avisos (1.375 unidades): **la lista oficial de señales a investigar** |
 
 *Estado y riesgo legal según el título* (`estado_y_riesgo_del_titulo()` con las expresiones regulares de
-`config/costos.yaml`; reemplazan a las `marcas_del_titulo` de la PE2, que el notebook 03 conserva)
+`config/costos.yaml`; reemplazan a las `marcas_del_titulo` de la primera versión, que el notebook 03 conserva)
 
 | Variable | Significado | Tipo y unidad | Fórmula final |
 |---|---|---|---|
@@ -418,7 +418,7 @@ del paso al que llega; la segunda es **la lista oficial** (unidades que cumplen 
 
 **`embudo_ranking.csv`**: 5 filas, una por paso (`analizados`, `marcado`, `marcado_barrio`, `cumple_regla`,
 `candidato`), con el filtro en palabras, `avisos`, `unidades` y el porcentaje respecto del paso anterior. Es la
-reconciliación de universos que pidió la devolución de la PE2: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 →
+reconciliación de universos: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 →
 1.455 / 1.375 → 884 / 840.
 
 **`explicacion_avisos.tsv`** (1.819 filas × 16, una por aviso marcado): la ficha del dashboard. `precio_m2_referencia_zona`
@@ -490,8 +490,7 @@ del mapa.
 ## Resumen de anomalías y qué se hizo con cada una
 
 Problemas detectados en las 93 columnas originales y su resolución en la limpieza (etapa 5, notebook 01) o en el
-modelo (etapa 6, notebooks 03 y 04). "Se acepta" quiere decir que se deja como está y se declara como limitación. Las
-filas marcadas con **PE3** cambiaron respecto de la PreEntrega 2.
+modelo (etapa 6, notebooks 03 y 04). "Se acepta" quiere decir que se deja como está y se declara como limitación.
 
 | Problema | Columna | Filas | Resolución |
 |---|---|---|---|
@@ -499,37 +498,37 @@ filas marcadas con **PE3** cambiaron respecto de la PreEntrega 2.
 | Precios en USD mayores a 10 millones que no son de la baja | `precio` | 4 | 1 se excluye como `precio_imposible`. Los otros 3 son edificios enteros en Belgrano (USD 12 millones, 367 m²): quedan como atípicos y no se usan para ajustar el modelo |
 | Precios menores a USD 20.000 | `precio` | 4 | Excluidos (`precio_menor_a_minimo`) |
 | Precios en ARS que no cierran como pesos | `precio`, `moneda` | 5 | Excluidos (`precio_en_pesos`) |
-| **PE3** Avisos que no son una venta ("compro", "compramos") | `titulo` | 1 | Excluido (`no_es_venta`) |
+| Avisos que no son una venta ("compro", "compramos") | `titulo` | 1 | Excluido (`no_es_venta`) |
 | Superficie menor a 15 m² en el listado | `m2` | 36 | Se recupera de `superficie_total` si está en rango (32 en el dataset limpio); si no, se excluye (`superficie_invalida`) |
 | `m2` mezcla superficie cubierta y total | `m2`, `superficie_total` | 527 avisos con total en la tarjeta, más los recuperados | Se acepta: `m2_final` es la cubierta en el 98% de los avisos y `m2_origen` guarda los recuperados |
 | Superficie en hectáreas ("0 ha", "0,01 ha", "42 ha") | `superficie_total` | 73 | Pasa a vacío; se usa `m2` |
 | Coma decimal en superficies de la ficha | superficies de la ficha | 1.589 / 1.494 / 2.401 | `parsear_superficie()` |
 | Punto de miles ambiguo | superficies de la ficha | 9 / 9 / 1 | Pasa a vacío |
 | Ceros y negativo que son faltantes | `ambientes` | 312 + 1 | Pasan a vacío. En el modelo se completan con dormitorios + 1 |
-| **PE3** Ceros que son faltantes | `banos` | 313 (303 en el dataset limpio) | Pasan a vacío. En el modelo se completan con 1 más la marca `banos_sin_dato` (en la PE2 no se corregían) |
+| Ceros que son faltantes | `banos` | 313 (303 en el dataset limpio) | Pasan a vacío. En el modelo se completan con 1 más la marca `banos_sin_dato` (antes no se corregían) |
 | Dormitorios mayor o igual que ambientes | `dormitorios`, `ambientes` | 1.717; 376 en el dataset limpio sin contar el monoambiente 1/1 | Marcados (`incoherencia_dormitorios`); el tamaño se mide con la superficie |
 | 99 como valor de relleno | `departamentos_por_piso` | 6.970 | Pasa a vacío |
 | Años y valores imposibles | `cantidad_de_pisos` | 12 mayores a 60 | Se acepta: la variable no entra al modelo |
-| **PE3** Números de unidad cargados como piso | `numero_de_piso_de_la_unidad` | 19 de 100 o más | Se quedan con las centenas (1203 es el piso 12). La incoherencia de piso solo se mide cuando el edificio declara 3 pisos o más (80 marcados; en la PE2, 2.299) |
+| Números de unidad cargados como piso | `numero_de_piso_de_la_unidad` | 19 de 100 o más | Se quedan con las centenas (1203 es el piso 12). La incoherencia de piso solo se mide cuando el edificio declara 3 pisos o más (80 marcados; antes, 2.299) |
 | Antigüedad negativa (unidades en pozo) | `antig_edad` | 235, más 2 "40.000 años" que el parser deja negativos | Excluidos (`en_pozo`, 237) |
 | Año de construcción en lugar de antigüedad | `antig_edad` | 66 | Convertido a edad |
 | Antigüedad entre 151 y 1.799 o no numérica | `antig_edad` | 6 + 1 | Pasa a vacío |
 | Antigüedad "1 años" (posible carga por defecto de "a estrenar") | `antig_edad` | 1.479 | Se acepta: queda en el tramo de 0 a 5 años, que es donde caería un "a estrenar" |
 | Expensas en cero | `expensas` | 3.805 | Pasan a vacío |
-| **PE3** Expensas en ARS entre 1 y 1.000 | `expensas` | 267 | Pasan a vacío: son valores de relleno (en la PE2 se aceptaban). Importa para el KPI de eficiencia de expensas |
+| Expensas en ARS entre 1 y 1.000 | `expensas` | 267 | Pasan a vacío: son valores de relleno (antes se aceptaban). Importa para el KPI de eficiencia de expensas |
 | Expensas en ARS mayores a 10 millones | `expensas` | 13 | Pasan a vacío |
 | Expensas que no se pueden convertir a número | `expensas` | 40 | Pasan a vacío |
 | Expensas en USD no confiables | `expensas` | 41 | Las de 10.000 o más se leen como pesos; las menores a 10, vacío. Quedan 27 en USD, convertidas con el dólar MEP |
-| **PE3** Mismo aviso en dos filas | `link` | 136 filas (68 sobrantes) | Deduplicado por `id_aviso`: queda la fila cuyo barrio coincide con el polígono oficial (17, de las cuales 12 cambian de barrio respecto de la PE2) y, si no, la primera, siempre en la posición de la primera aparición |
+| Mismo aviso en dos filas | `link` | 136 filas (68 sobrantes) | Deduplicado por `id_aviso`: queda la fila cuyo barrio coincide con el polígono oficial (17, de las cuales 12 cambian de barrio respecto de la regla anterior) y, si no, la primera, siempre en la posición de la primera aparición |
 | Misma unidad publicada con otro ID | varias | 3.059 | Marcados (`posible_duplicado`), no se borran. En el modelo, las vueltas de la validación se arman por unidad para que no estén de los dos lados |
-| **PE3** Casas publicadas como departamento | `titulo` | 25 ("casa") y 51 ("tipo casa") | Marcadas (`titulo_casa`, `titulo_tipo_casa`), no se excluyen; `titulo_casa` se muestra en el ranking |
+| Casas publicadas como departamento | `titulo` | 25 ("casa") y 51 ("tipo casa") | Marcadas (`titulo_casa`, `titulo_tipo_casa`), no se excluyen; `titulo_casa` se muestra en el ranking |
 | Avisos clasificados como PH | `tipo_de_departamento` | 60 | Se conservan: el anunciante los publicó como departamento |
 | Dos etiquetas para la misma categoría | `tipo_de_seguridad`, `tipo_de_departamento` | 26 ("24 hs") y 31 ("Penthhouse") | Unificadas en la limpieza ("24 horas", "Penthouse") |
 | "No" que no significa ausencia | `cocina`, `living`, `comedor` | 5.907 / 14.638 / 11.143 | No se usan en el modelo |
-| **PE3** Barrio no oficial y barrios oficiales ausentes | `barrio` | 801 en "barrio-norte"; San Cristóbal y Parque Chas sin avisos | Se acepta: el barrio de búsqueda es la categoría donde el comprador encuentra el aviso. El cruce con los polígonos oficiales (`barrio_oficial`, `barrio_coincide`) se usa como control: 4.225 de los 22.912 avisos geocodificados (18,4%) caen en otro polígono, casi todos de borde (a menos de 1 km) |
-| **PE3** Geocodificación dudosa | `lat`, `lon` | 249 (244 en el dataset limpio) | Punto a más de 1 km del barrio buscado (`geo_dudoso`): se tratan como sin coordenadas en la etapa 6 y las sub-zonas se recalculan sin ellos |
-| **PE3** Avisos en barrios populares | `lat`, `lon`, `titulo` | 96 por polígono, 2 por el título | Marcados (`en_barrio_popular`, `tipo_barrio_popular`, `titulo_barrio_popular`); el modelo los compara con el resto del barrio y la marca se muestra como alerta |
+| Barrio no oficial y barrios oficiales ausentes | `barrio` | 801 en "barrio-norte"; San Cristóbal y Parque Chas sin avisos | Se acepta: el barrio de búsqueda es la categoría donde el comprador encuentra el aviso. El cruce con los polígonos oficiales (`barrio_oficial`, `barrio_coincide`) se usa como control: 4.225 de los 22.912 avisos geocodificados (18,4%) caen en otro polígono, casi todos de borde (a menos de 1 km) |
+| Geocodificación dudosa | `lat`, `lon` | 249 (244 en el dataset limpio) | Punto a más de 1 km del barrio buscado (`geo_dudoso`): se tratan como sin coordenadas en la etapa 6 y las sub-zonas se recalculan sin ellos |
+| Avisos en barrios populares | `lat`, `lon`, `titulo` | 96 por polígono, 2 por el título | Marcados (`en_barrio_popular`, `tipo_barrio_popular`, `titulo_barrio_popular`); el modelo los compara con el resto del barrio y la marca se muestra como alerta |
 | Barrios truncados por el tope de paginación | `barrio` | 4 barrios con 2.016 avisos | Se acepta y se declara como limitación; se excluyen del análisis de salida del segundo relevamiento |
-| **PE3** Sub-zonas con menos de 30 avisos o inestables | `subzona` | 42 de 198 con menos de 30 avisos; 1 barrio inestable (Villa Santa Rita, ARI 0,68) | El modelo elige barrio por barrio, dentro de cada vuelta, si la sub-zona mejora la referencia; vuelve al barrio en zonas con menos de 10 avisos y en los barrios con sub-zonas inestables (ARI < 0,7) |
+| Sub-zonas con menos de 30 avisos o inestables | `subzona` | 42 de 198 con menos de 30 avisos; 1 barrio inestable (Villa Santa Rita, ARI 0,68) | El modelo elige barrio por barrio, dentro de cada vuelta, si la sub-zona mejora la referencia; vuelve al barrio en zonas con menos de 10 avisos y en los barrios con sub-zonas inestables (ARI < 0,7) |
 | Avisos sin coordenadas | `lat`, `lon`, `subzona` | 5.010 (17,9%), más los 244 dudosos | Se comparan contra su barrio en el modelo |
 | Columnas constantes | `tipo`, `es_emprendimiento` | Todas | Se conservan en el archivo, pero no se usan |
