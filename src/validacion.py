@@ -132,6 +132,39 @@ def comparar_modelos(df, y, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, alpha_r
     return pred, vuelta
 
 
+def lineal_ampliado_con_extras(df, y, extras, k=5, semilla=42, minimo_grupo=10, iqr_k=1.5, barrios_excluidos=()):
+    """Lineal ampliado fuera de muestra con columnas adicionales por variante, con las mismas vueltas sin fuga.
+
+    `extras`: {nombre: DataFrame de columnas extra alineado con `df`, o None para el
+    modelo oficial tal cual}. Sirve para evaluar una corrección del modelo (por
+    ejemplo, una interacción) sin tocar la etapa 6. Devuelve (predicciones en log
+    por variante, ajustes por vuelta con `coef_<variante>`), de modo que
+    `regla.primas_estado` funciona si se renombra la variante elegida a
+    `coef_lineal_ampliado`.
+    """
+    Xa = caracteristicas_ampliadas(df)
+    pred = pd.DataFrame(np.nan, index=df.index, columns=list(extras))
+    vuelta = pd.Series(-1, index=df.index)
+    zonas = pd.Series(np.nan, index=df.index, dtype="object")
+    ajustes = {}
+    for p, prueba, ajusta, zona in modelo.vueltas_sin_fuga(df, y, k, semilla, minimo_grupo, iqr_k,
+                                                         barrios_excluidos=barrios_excluidos):
+        vuelta[prueba] = p
+        zonas[prueba] = zona[prueba]
+        exp_rel, exp_nan = _expensas_relativas(df, zona, ajusta)
+        Xb = Xa.assign(expensas_rel_zona=exp_rel, expensas_sin_dato=exp_nan)
+        ajustes[p] = {"prueba": prueba, "ajusta": ajusta, "zona": zona}
+        for nombre, extra in extras.items():
+            XX = Xb if extra is None else pd.concat([Xb, extra], axis=1)
+            A = modelo.matriz_diseno(XX, zona)
+            coef, *_ = np.linalg.lstsq(A[ajusta].values, y[ajusta].values, rcond=None)
+            pred.loc[prueba, nombre] = A[prueba].values @ coef
+            ajustes[p][f"coef_{nombre}"] = pd.Series(coef, index=A.columns)
+    pred.attrs["zona"] = zonas
+    pred.attrs["vuelta"] = vuelta
+    return pred, ajustes
+
+
 def metricas(y, pred, umbral=-0.25):
     """Error porcentual absoluto (mediana, p75, % dentro de ±10%) y avisos marcados por modelo."""
     filas = {}
