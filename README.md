@@ -153,8 +153,8 @@ cambia el orden de los avisos dentro de una zona.
 |---|---|---|---|
 | Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida (notebook 02); la sub-zona se evalúa formalmente en H2 (notebook 05) |
 | | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida: por columna (diccionario y notebook 01) y por aviso, con la tasa de completitud (notebook 03) |
-| | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Parcial: frecuencias generales en el diccionario; por segmento de departamento en el notebook 06 |
-| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (calculado desde `seguimiento_avisos.csv`; está en el diccionario de datos, `docs/diccionario_datos.md`) |
+| | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Respondida: tabla barrio × característica (16 columnas Sí/No) y construcción reciente por barrio en el notebook 02, sección 7.1; por segmento de departamento en el notebook 06 |
+| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5%, y los marcados bajaron menos que el resto (23,7% contra 29,8%; notebook 05, sección 2.2.1) |
 | Diagnóstico | G1 | Dentro de la zona, ¿cuánto se asocia cada característica con el precio por m²? | Respondida, ahora con intervalos por bootstrap de unidades (notebook 04, sección 6) |
 | | G2 | ¿La prima de cada característica cambia según la zona o el segmento de precio? | Respondida: cambian poco por tercil de barrio y por segmento de departamento; no justifica un modelo por segmento (notebook 04, sección 7; notebook 06, sección 4.3) |
 | | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y entorno? | Respondida (H3, notebook 05): una parte chica pero significativa, con efectos fijos de barrio |
@@ -427,6 +427,19 @@ de la mediana de los comparables, y el 83% sigue estando 25% o más por debajo d
 comparables, todos). Por segmento, el esperado queda más alto en "Nuevos con amenities" (+11,8%, en parte porque los
 comparables no distinguen amenities y el modelo sí) y en "Familiares amplios y antiguos" (+5,4%), consistente con el
 mayor error del modelo en esos dos segmentos.
+
+**Tres preguntas que quedaban abiertas desde la primera versión** (cerradas con los datos ya versionados):
+
+- **¿Los avisos marcados bajan de precio? ¿Se achica la brecha?** No. Entre los avisos con precio en el segundo
+  relevamiento (fuera de los barrios truncados), bajó más de 0,5% el 23,7% de los marcados contra el 29,8% del resto
+  (−6,1 pp, IC −9,4 a −2,7), y la brecha mediana de los marcados que siguen pasa de −30,7% a −31,8%. Lo que distingue
+  a los marcados es que salen del portal, no que corrijan el precio. Notebook 05, sección 2.2.1.
+- **¿Con qué frecuencia aparece cada característica en cada barrio?** Tabla barrio × característica para las 16
+  columnas Sí/No. Lo que más cambia entre barrios es el equipamiento de edificio: pileta (83% de los avisos en Puerto
+  Madero, 1% en Villa Lugano), seguridad (86% a 10%) y dormitorio en suite (72% a 3%). Notebook 02, sección 7.1.
+- **¿Qué proporción de la oferta es construcción reciente, y dónde?** El 21,8% de los avisos tiene 10 años o menos.
+  Se concentra fuera del corredor caro: Villa Ortúzar (52%), Saavedra (49%) y Villa Luro (41%) contra San Nicolás
+  (4%), Retiro (6%) y Recoleta (7%). Notebook 02, sección 7.1.
 
 **Encontrado además en la revisión:** 17 de los 68 duplicados por ID en los que la regla anterior, al quedarse con la
 primera aparición, conservaba la fila equivocada (12 cambiaban de barrio), 249 avisos geocodificados a más de 1 km de su
