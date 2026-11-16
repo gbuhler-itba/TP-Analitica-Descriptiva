@@ -76,6 +76,37 @@ def indice_mca(mca, X, eje=0):
     return coord if coord.corr(cantidad_si) >= 0 else -coord
 
 
+def observado(df):
+    """Qué categorías declara cada aviso: en las Sí/No el vacío es "no lo declara"; en las solo Sí se toma como "No"."""
+    return pd.DataFrame({c: (df[c].notna() if c in COLUMNAS_SI_NO else pd.Series(True, index=df.index))
+                         for c in COLUMNAS_MCA})
+
+
+def indice_mca_pasivo(mca, X, obs, eje=0, X_ajuste=None):
+    """Índice con el vacío de las Sí/No como categoría pasiva.
+
+    `mca` se ajusta solo con los avisos completos (los que declaran todas las
+    Sí/No), así "sin dato" no arma el eje. Después cada aviso se proyecta con la
+    fórmula de transición del MCA usando únicamente las categorías que declara
+    (`obs`): coordenada = promedio de las coordenadas de sus categorías,
+    dividido por la raíz del autovalor. Para un aviso completo da exactamente la
+    coordenada de prince; para uno incompleto, "no lo declara" no suma ni resta.
+    El signo se fija como en `indice_mca`: más alto = más "Sí". `X_ajuste`: las
+    filas con las que se ajustó `mca`, si no son todos los avisos completos de `X`.
+    """
+    G = mca.column_coordinates(X[obs.all(axis=1)] if X_ajuste is None else X_ajuste)[eje]
+    suma = np.zeros(len(X))
+    cantidad = np.zeros(len(X))
+    for c in X.columns:
+        g = (c + "__" + X[c].astype(str)).map(G).to_numpy(dtype=float)
+        presente = obs[c].to_numpy()
+        suma += np.where(presente, g, 0.0)
+        cantidad += presente
+    coord = pd.Series(suma / cantidad / np.sqrt(mca.eigenvalues_[eje]), index=X.index)
+    cantidad_si = (X == "Sí").sum(axis=1)
+    return coord if coord.corr(cantidad_si) >= 0 else -coord
+
+
 def contribuciones_eje(mca, eje=0):
     """Contribución (%) de cada categoría a un eje, de mayor a menor."""
     return (100 * mca.column_contributions_[eje]).sort_values(ascending=False)
@@ -226,9 +257,10 @@ def precio_esperado_con_equipamiento(df, y, k=5, semilla=42, minimo_grupo=10, iq
     - amenities_oficiales: el modelo oficial (las amenities sueltas que usa hoy);
     - sueltas_17: las 17 características activas del MCA, sueltas;
     - conteo: cuántas de esas 17 declara el aviso (alternativa simple);
-    - indice_mca: el índice de equipamiento, con el MCA ajustado SOLO con los
-      avisos de entrenamiento de cada vuelta (si se ajustara con todos, los de
-      prueba influirían en el índice que los evalúa).
+    - indice_mca: el índice de equipamiento (vacío de las Sí/No como categoría
+      pasiva), con el MCA ajustado SOLO con los avisos completos de entrenamiento
+      de cada vuelta (si se ajustara con todos, los de prueba influirían en el
+      índice que los evalúa).
     El resto de las variables es el del lineal ampliado. Devuelve el log del
     precio esperado por m² de cada variante.
     """
@@ -238,6 +270,8 @@ def precio_esperado_con_equipamiento(df, y, k=5, semilla=42, minimo_grupo=10, iq
     equipo_oficial = [c for c in modelo.AMENITIES_Y_EXTRAS if c != "apto_profesional"]
     base = Xa.drop(columns=equipo_oficial)
     X_mca = tabla_mca(df, "no")
+    obs = observado(df)
+    completos = obs.all(axis=1)
     sueltas = (X_mca == "Sí").astype(float).add_prefix("eq_")
     conteo = sueltas.sum(axis=1)
     pred = pd.DataFrame(np.nan, index=df.index,
@@ -246,9 +280,9 @@ def precio_esperado_con_equipamiento(df, y, k=5, semilla=42, minimo_grupo=10, iq
                                                          barrios_excluidos=barrios_excluidos):
         exp_rel, exp_nan = validacion._expensas_relativas(df, zona, ajusta)
         b = base.assign(expensas_rel_zona=exp_rel, expensas_sin_dato=exp_nan)
-        mca = ajustar_mca(X_mca[ajusta], semilla=semilla)
-        coord = mca.row_coordinates(X_mca)[0]
-        indice = coord if coord[ajusta].corr(conteo[ajusta]) >= 0 else -coord
+        X_ajuste = X_mca[ajusta & completos]
+        mca = ajustar_mca(X_ajuste, semilla=semilla)
+        indice = indice_mca_pasivo(mca, X_mca, obs, X_ajuste=X_ajuste)
         variantes = {
             "amenities_oficiales": pd.concat([b, Xa[equipo_oficial]], axis=1),
             "sueltas_17": pd.concat([b, sueltas], axis=1),

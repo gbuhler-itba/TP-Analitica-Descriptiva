@@ -6,10 +6,10 @@
  "firmes_con_comparables": 33,
  "firmes_debajo_del_umbral": 33,
  "esperado_vs_comparables_por_segmento_pct": {
-  "Nuevos con amenities": 11.8,
-  "Familiares amplios y antiguos": 5.4,
-  "Compactos de edificio antiguo": -0.3,
-  "Chicos y recientes": -0.8
+  "Nuevos con amenities": 11.4,
+  "Familiares amplios y antiguos": 5.8,
+  "Compactos de edificio antiguo": -0.5,
+  "Chicos y recientes": -1.2
  },
  "criterio": {
   "ambientes": 1,

@@ -92,3 +92,23 @@ def test_probabilidad_fuera_de_muestra_aprende_y_sin_variables_da_la_tasa():
     assert prob.notna().all() and np.corrcoef(prob, x["x"])[0, 1] > 0.9
     assert abs(base.mean() - y.mean()) < 0.01
     assert segmentos.log_loss_por_aviso(y, prob).mean() < segmentos.log_loss_por_aviso(y, base).mean()
+
+
+def test_indice_pasivo_coincide_con_prince_en_completos_e_ignora_el_vacio():
+    """En los avisos completos la proyección pasiva reproduce la coordenada de prince; en los incompletos,
+    lo que no se declara no cuenta: el índice es el del mismo aviso con esas columnas completas, en promedio."""
+    pytest.importorskip("prince")
+    rng = np.random.default_rng(0)
+    n = 400
+    base = rng.random(n)   # "nivel de equipamiento" latente
+    df = pd.DataFrame({c: np.where(rng.random(n) < base, "Sí", "No") for c in segmentos.COLUMNAS_MCA})
+    df.loc[:49, segmentos.COLUMNAS_SI_NO[0]] = np.nan      # 50 avisos sin dato en una Sí/No
+    X = segmentos.tabla_mca(df, "no")
+    obs = segmentos.observado(df)
+    completos = obs.all(axis=1)
+    mca = segmentos.ajustar_mca(X[completos], semilla=0)
+    indice = segmentos.indice_mca_pasivo(mca, X, obs)
+    esperado = segmentos.indice_mca(mca, X[completos])
+    assert np.allclose(indice[completos].values, esperado.values, atol=1e-9)
+    # el índice sigue midiendo equipamiento también en los incompletos
+    assert indice[~completos].corr(pd.Series(base[~completos.values], index=indice[~completos].index)) > 0.5
