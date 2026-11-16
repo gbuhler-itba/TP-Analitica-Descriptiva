@@ -70,3 +70,20 @@ def test_estabilidad_subzonas_alta_con_grupos_bien_separados():
     estab = validacion.estabilidad_subzonas(pd.DataFrame(filas), repeticiones=5)
     assert estab.loc["x", "subzonas"] == 2
     assert estab.loc["x", "ari_mediano"] > 0.95
+
+
+def test_lineal_ampliado_con_extras_reproduce_el_oficial_sin_extras():
+    """Sin columnas extra, la variante da exactamente el lineal ampliado de comparar_modelos (mismas vueltas)."""
+    from src import validacion
+    from src.configuracion import cargar_config
+    from src.rutas import resolver
+    cfg = cargar_config()
+    ruta = resolver(cfg["rutas"]["limpio"])
+    if not ruta.exists():
+        pytest.skip("falta el dataset limpio")
+    df = pd.read_csv(ruta, sep="\t", low_memory=False).sample(4000, random_state=3).reset_index(drop=True)
+    y = np.log(df["precio_m2_usd"])
+    pred, _ = validacion.comparar_modelos(df, y, k=3, semilla=1, modelos=["lineal_ampliado"])
+    pred_extras, ajustes = validacion.lineal_ampliado_con_extras(df, y, {"oficial": None}, k=3, semilla=1)
+    assert np.allclose(pred["lineal_ampliado"].values, pred_extras["oficial"].values, atol=1e-8)
+    assert set(ajustes) == {0, 1, 2} and "coef_oficial" in ajustes[0]
