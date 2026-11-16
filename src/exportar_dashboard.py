@@ -32,7 +32,7 @@ No existe una marca de "brecha extrema" en el pipeline: los casos extremos se
 filtran antes como errores de carga (`senal_error_carga`).
 
 Segmento de departamento: cada aviso lleva su segmento del notebook 06 (MCA
-más K-means, misma semilla; `segmento_por_aviso`). En "Familiares amplios y
+con el vacío como categoría pasiva, más K-means, misma semilla; `segmento_por_aviso`). En "Familiares amplios y
 antiguos" el modelo tiene más error y el precio esperado tiende a quedar alto:
 el dashboard muestra una alerta de revisión en la tabla y en la ficha. Es
 descriptiva: no excluye de la lista destacada ni cambia ningún conteo.
@@ -203,11 +203,13 @@ def exclusiones_del_destacado(lista, oficiales):
 
 def segmento_por_aviso(limpio, semilla):
     """Segmento de departamento de cada aviso, como en el notebook 06 (sección 3): índice de equipamiento
-    con MCA (el vacío como "No") y K-means con K = 4 sobre ambientes, m² por ambiente, antigüedad,
+    con MCA (el vacío de las Sí/No como categoría pasiva: el eje se ajusta con los avisos completos y cada
+    aviso se proyecta con lo que declara) y K-means con K = 4 sobre ambientes, m² por ambiente, antigüedad,
     expensas por m² e índice, con la misma semilla. Es descriptivo: no entra a la lista ni a la regla."""
     X = segmentos.tabla_mca(limpio, "no")
-    mca = segmentos.ajustar_mca(X, semilla=semilla)
-    V, _ = segmentos.variables_kmeans(limpio, segmentos.indice_mca(mca, X))
+    obs = segmentos.observado(limpio)
+    mca = segmentos.ajustar_mca(X[obs.all(axis=1)], semilla=semilla)
+    V, _ = segmentos.variables_kmeans(limpio, segmentos.indice_mca_pasivo(mca, X, obs))
     Z, parametros = segmentos.escalar(V)
     km = segmentos.ajustar_kmeans(Z, 4, semilla=semilla)
     centroides = segmentos.a_escala_original(pd.DataFrame(km.cluster_centers_, columns=V.columns), parametros)

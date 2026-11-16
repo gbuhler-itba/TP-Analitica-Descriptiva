@@ -13,7 +13,7 @@ MLA1946332967,villa-lugano,True,Compactos de edificio antiguo,43,882.3529,0.2583
 MLA3746552786,san-nicolas,True,Familiares amplios y antiguos,6,1139.8586,0.3749,-0.3471
 MLA3160888542,monserrat,True,Familiares amplios y antiguos,5,1282.4427,0.2533,-0.4013
 MLA2783114400,almagro,True,Compactos de edificio antiguo,25,2684.2105,-0.2309,-0.6306
-MLA3721588732,palermo,True,Chicos y recientes,72,3942.4342,-0.0646,-0.5493
+MLA3721588732,palermo,True,Nuevos con amenities,72,3942.4342,-0.0646,-0.5493
 MLA2636048246,flores,True,Familiares amplios y antiguos,13,1533.6538,0.303,-0.3596
 MLA1833545527,monserrat,True,Familiares amplios y antiguos,3,1150.0,0.1899,-0.413
 MLA3720667968,monserrat,True,Chicos y recientes,86,1756.0488,0.2406,-0.3861
@@ -25,7 +25,7 @@ MLA3381699452,flores,True,Familiares amplios y antiguos,5,1466.1654,0.4229,-0.28
 MLA3720666770,recoleta,True,Familiares amplios y antiguos,206,2567.6548,-0.1347,-0.5591
 MLA1945717317,villa-soldati,False,Compactos de edificio antiguo,7,564.5161,0.4995,-0.2324
 MLA1771070433,nueva-pompeya,False,Familiares amplios y antiguos,0,,,
-MLA1876058799,monserrat,False,Compactos de edificio antiguo,62,1878.9813,0.0071,-0.4826
+MLA1876058799,monserrat,False,Chicos y recientes,62,1878.9813,0.0071,-0.4826
 MLA3324824962,saavedra,True,Compactos de edificio antiguo,62,2325.4068,-0.0728,-0.5222
 MLA2861715146,retiro,True,Compactos de edificio antiguo,22,2296.4223,-0.0188,-0.492
 MLA2837371172,villa-general-mitre,True,Compactos de edificio antiguo,39,1810.3448,-0.0213,-0.4927
@@ -54,7 +54,7 @@ MLA1830010493,liniers,False,Compactos de edificio antiguo,86,1418.0108,-0.0355,-
 MLA3791376602,san-telmo,False,Compactos de edificio antiguo,45,1666.6667,0.1019,-0.4
 MLA2832174946,villa-general-mitre,True,Compactos de edificio antiguo,0,,,
 MLA3720096418,balvanera,False,Familiares amplios y antiguos,16,1385.1012,-0.1795,-0.5514
-MLA1807498245,retiro,False,Familiares amplios y antiguos,7,1759.2593,0.1073,-0.3945
+MLA1807498245,retiro,False,Compactos de edificio antiguo,7,1759.2593,0.1073,-0.3945
 MLA1972585117,recoleta,False,Compactos de edificio antiguo,240,2651.3072,-0.0734,-0.4892
 MLA1673351313,san-telmo,True,Chicos y recientes,44,2668.75,-0.226,-0.5731
 MLA3617596230,almagro,False,Compactos de edificio antiguo,384,1937.0447,-0.1217,-0.5132
@@ -62,7 +62,7 @@ MLA1886681163,barrio-norte,False,Compactos de edificio antiguo,116,2387.5,0.0976
 MLA3286847852,balvanera,False,Familiares amplios y antiguos,32,1351.4706,0.0584,-0.4107
 MLA2722417032,villa-del-parque,True,Nuevos con amenities,144,2667.994,0.2278,-0.3152
 MLA3113348386,la-boca,False,Compactos de edificio antiguo,71,1267.8571,-0.0578,-0.4742
-MLA3746538228,almagro,False,Familiares amplios y antiguos,327,1950.0,0.0661,-0.4043
+MLA3746538228,almagro,False,Compactos de edificio antiguo,327,1950.0,0.0661,-0.4043
 MLA3720668438,balvanera,False,Familiares amplios y antiguos,15,1295.2381,0.2196,-0.3178
 MLA1952563599,barrio-norte,False,Compactos de edificio antiguo,129,2450.0,0.3514,-0.2432
 MLA3606980358,barrio-norte,False,Compactos de edificio antiguo,115,2317.0732,-0.1032,-0.4975
@@ -91,7 +91,7 @@ MLA3670041972,barrio-norte,False,Familiares amplios y antiguos,113,2700.0,-0.091
 MLA1818128323,flores,False,Familiares amplios y antiguos,14,1451.4742,0.3444,-0.2165
 MLA2957655848,balvanera,False,Familiares amplios y antiguos,7,1345.0292,0.0747,-0.3737
 MLA3727524862,almagro,False,Compactos de edificio antiguo,171,1838.2353,0.0902,-0.3642
-MLA1907849371,belgrano,False,Nuevos con amenities,195,3656.7164,0.1203,-0.3465
+MLA1907849371,belgrano,False,Chicos y recientes,195,3656.7164,0.1203,-0.3465
 MLA1833944243,monte-castro,False,Familiares amplios y antiguos,0,,,
 MLA1831451215,monserrat,False,Compactos de edificio antiguo,0,,,
 MLA1905867541,recoleta,False,Chicos y recientes,20,3553.1401,-0.0646,-0.4519
@@ -131,7 +131,7 @@ MLA3421812480,retiro,False,Familiares amplios y antiguos,8,2687.6906,0.2139,-0.2
 MLA3458508024,barrio-norte,False,Chicos y recientes,0,,,
 MLA2862177640,balvanera,False,Compactos de edificio antiguo,0,,,
 MLA3404457532,recoleta,False,Familiares amplios y antiguos,313,2624.1135,0.2155,-0.2606
-MLA1696142909,constitucion,False,Compactos de edificio antiguo,30,1132.3192,0.1003,-0.3292
+MLA1696142909,constitucion,False,Familiares amplios y antiguos,30,1132.3192,0.1003,-0.3292
 MLA3724729088,belgrano,False,Familiares amplios y antiguos,195,2986.6667,0.1625,-0.291
 MLA3046068462,recoleta,False,Chicos y recientes,137,2705.8824,-0.0385,-0.4133
 MLA1946230589,floresta,False,Familiares amplios y antiguos,4,1937.8119,-0.1159,-0.4605
@@ -152,7 +152,7 @@ MLA1945711245,parque-chacabuco,False,Chicos y recientes,81,2543.8596,-0.185,-0.4
 MLA3506835936,puerto-madero,False,Nuevos con amenities,122,6319.6594,0.2292,-0.2432
 MLA1732518891,recoleta,False,Familiares amplios y antiguos,193,2660.0,-0.0609,-0.4216
 MLA3578116774,palermo,False,Familiares amplios y antiguos,215,2766.9903,0.0946,-0.3252
-MLA1856036323,belgrano,False,Chicos y recientes,187,3676.4706,0.0715,-0.3381
+MLA1856036323,belgrano,False,Nuevos con amenities,187,3676.4706,0.0715,-0.3381
 MLA1852305343,recoleta,False,Familiares amplios y antiguos,233,2638.2979,0.1957,-0.2604
 MLA3185780250,barracas,False,Nuevos con amenities,33,2466.6667,0.17,-0.2761
 MLA3726708496,san-nicolas,False,Compactos de edificio antiguo,119,1619.7183,0.2334,-0.2368
@@ -193,14 +193,14 @@ MLA1666876411,floresta,False,Compactos de edificio antiguo,49,1527.7778,0.0487,-
 MLA1658658383,liniers,False,Compactos de edificio antiguo,61,1421.0526,-0.0255,-0.3843
 MLA1758858621,balvanera,False,Familiares amplios y antiguos,45,1450.0,0.1248,-0.2888
 MLA1945491135,balvanera,False,Familiares amplios y antiguos,47,1473.6842,0.08,-0.3157
-MLA1945704819,barrio-norte,False,Chicos y recientes,136,2455.8224,0.5994,0.0136
-MLA3503400134,flores,False,Nuevos con amenities,78,2799.6378,-0.1994,-0.4924
+MLA1945704819,barrio-norte,False,Familiares amplios y antiguos,136,2455.8224,0.5994,0.0136
+MLA3503400134,flores,False,Chicos y recientes,78,2799.6378,-0.1994,-0.4924
 MLA3492963506,recoleta,False,Compactos de edificio antiguo,31,2361.1111,0.0889,-0.3095
-MLA2827797764,monserrat,False,Familiares amplios y antiguos,42,1560.5662,0.0101,-0.3592
+MLA2827797764,monserrat,False,Compactos de edificio antiguo,42,1560.5662,0.0101,-0.3592
 MLA1703640565,san-telmo,False,Chicos y recientes,64,2668.75,-0.2186,-0.5041
-MLA1854642285,villa-urquiza,False,Nuevos con amenities,375,3152.1739,0.1241,-0.2862
+MLA1854642285,villa-urquiza,False,Chicos y recientes,375,3152.1739,0.1241,-0.2862
 MLA3540268604,palermo,False,Nuevos con amenities,332,3704.1667,-0.0166,-0.3751
-MLA2903530406,barrio-norte,False,Familiares amplios y antiguos,191,2340.4255,-0.0711,-0.4095
+MLA2903530406,barrio-norte,False,Compactos de edificio antiguo,191,2340.4255,-0.0711,-0.4095
 MLA1895308739,belgrano,False,Nuevos con amenities,297,3714.2857,-0.0026,-0.3654
 MLA3770580330,belgrano,False,Nuevos con amenities,304,3784.6883,0.2074,-0.2314
 MLA3778083776,villa-luro,False,Compactos de edificio antiguo,54,1832.7805,0.2227,-0.2214
@@ -213,12 +213,12 @@ MLA3720665304,nunez,False,Compactos de edificio antiguo,134,2584.4402,0.3578,-0.
 MLA1945486405,recoleta,False,Familiares amplios y antiguos,209,2666.6667,-0.1851,-0.4803
 MLA3685105610,floresta,False,Compactos de edificio antiguo,56,1479.3794,0.0288,-0.3438
 MLA3720095000,constitucion,False,Compactos de edificio antiguo,9,1250.0,-0.0283,-0.38
-MLA3778457948,recoleta,False,Familiares amplios y antiguos,229,2628.5714,0.168,-0.2541
+MLA3778457948,recoleta,False,Chicos y recientes,229,2628.5714,0.168,-0.2541
 MLA3250923222,belgrano,False,Familiares amplios y antiguos,159,3000.0,0.0228,-0.3468
 MLA3637401362,belgrano,False,Familiares amplios y antiguos,67,3270.6767,0.0659,-0.3191
 MLA3320377474,velez-sarsfield,False,Familiares amplios y antiguos,0,,,
 MLA3415105568,san-nicolas,False,Familiares amplios y antiguos,39,1565.2174,-0.0006,-0.3611
-MLA3194546022,liniers,False,Compactos de edificio antiguo,88,1623.8208,-0.0372,-0.3842
+MLA3194546022,liniers,False,Chicos y recientes,88,1623.8208,-0.0372,-0.3842
 MLA3501691728,parque-chacabuco,False,Chicos y recientes,4,2135.4167,0.2812,-0.1805
 MLA3031848206,almagro,False,Compactos de edificio antiguo,51,1824.3243,-0.0235,-0.3749
 MLA3535848874,san-nicolas,False,Chicos y recientes,21,1775.5556,0.0553,-0.3242
@@ -239,7 +239,7 @@ MLA1948883223,recoleta,False,Compactos de edificio antiguo,223,2672.4138,-0.073,
 MLA3620113158,puerto-madero,False,Nuevos con amenities,145,6209.6774,0.1445,-0.2623
 MLA3789784356,san-nicolas,False,Familiares amplios y antiguos,48,1480.5861,0.3968,-0.0995
 MLA3707282052,mataderos,False,Compactos de edificio antiguo,39,1814.8148,-0.1172,-0.4306
-MLA1893228387,villa-devoto,False,Familiares amplios y antiguos,81,2483.3333,-0.1806,-0.4715
+MLA1893228387,villa-devoto,False,Chicos y recientes,81,2483.3333,-0.1806,-0.4715
 MLA3671270890,retiro,False,Familiares amplios y antiguos,8,3127.8281,-0.1978,-0.4825
 MLA1841630887,boedo,False,Chicos y recientes,88,1949.881,0.0836,-0.3007
 MLA1856035573,la-boca,False,Compactos de edificio antiguo,0,,,
@@ -248,7 +248,7 @@ MLA1804061605,monserrat,False,Familiares amplios y antiguos,26,1396.8056,0.0034,
 MLA1947770685,san-telmo,False,Compactos de edificio antiguo,53,1846.1538,0.1279,-0.2708
 MLA3721584744,recoleta,False,Chicos y recientes,36,3725.0,0.0356,-0.3289
 MLA3629226032,palermo,False,Familiares amplios y antiguos,340,2668.1548,0.1443,-0.2583
-MLA2769445034,versalles,False,Chicos y recientes,0,,,
+MLA2769445034,versalles,False,Familiares amplios y antiguos,0,,,
 MLA1929690409,belgrano,False,Nuevos con amenities,303,3666.6667,0.3816,-0.1039
 MLA3740166270,retiro,False,Familiares amplios y antiguos,41,2305.4187,0.1853,-0.2312
 MLA3478929468,liniers,False,Compactos de edificio antiguo,84,1608.3384,-0.012,-0.3585
@@ -271,7 +271,7 @@ MLA1852300953,flores,False,Chicos y recientes,153,2379.3103,-0.035,-0.3706
 MLA2907746562,barracas,False,Compactos de edificio antiguo,3,1965.625,-0.1268,-0.4302
 MLA3747031202,villa-crespo,False,Compactos de edificio antiguo,218,2178.4533,-0.0657,-0.3902
 MLA1679805893,villa-devoto,False,Familiares amplios y antiguos,4,2714.7458,0.0333,-0.3247
-MLA1795359867,monserrat,False,Compactos de edificio antiguo,112,1603.7736,0.3264,-0.1329
+MLA1795359867,monserrat,False,Nuevos con amenities,112,1603.7736,0.3264,-0.1329
 MLA3624343688,san-nicolas,False,Familiares amplios y antiguos,22,1341.8319,0.1687,-0.2353
 MLA3030778442,recoleta,False,Compactos de edificio antiguo,277,2671.2329,0.001,-0.3449
 MLA1775570847,flores,False,Compactos de edificio antiguo,305,1714.2857,-0.0483,-0.3771
@@ -302,10 +302,10 @@ MLA1738044373,retiro,False,Nuevos con amenities,14,3259.0869,0.0788,-0.2875
 MLA3516869928,caballito,False,Familiares amplios y antiguos,346,2066.1984,0.0621,-0.2982
 MLA1760609735,flores,False,Compactos de edificio antiguo,130,1838.5417,0.0884,-0.2807
 MLA3201494882,retiro,False,Chicos y recientes,0,,,
-MLA1945067131,caballito,False,Chicos y recientes,348,2940.0935,0.1008,-0.2718
+MLA1945067131,caballito,False,Nuevos con amenities,348,2940.0935,0.1008,-0.2718
 MLA3726717140,monserrat,False,Nuevos con amenities,120,2500.0,0.0536,-0.3026
 MLA3742344522,boedo,False,Compactos de edificio antiguo,92,1875.0,-0.1056,-0.4074
-MLA3739533282,saavedra,False,Compactos de edificio antiguo,38,2624.545,0.0521,-0.3027
+MLA3739533282,saavedra,False,Familiares amplios y antiguos,38,2624.545,0.0521,-0.3027
 MLA3492807588,colegiales,False,Familiares amplios y antiguos,1,2400.0,0.3998,-0.072
 MLA3008757010,villa-del-parque,False,Familiares amplios y antiguos,51,2755.102,0.0126,-0.3285
 MLA3501362668,colegiales,False,Compactos de edificio antiguo,105,2613.6136,0.0244,-0.3207
@@ -351,14 +351,14 @@ MLA3219560338,palermo,False,Familiares amplios y antiguos,157,2650.6024,0.0658,-
 MLA1850627901,caballito,False,Chicos y recientes,280,3084.5238,-0.185,-0.4514
 MLA1741278399,barracas,False,Compactos de edificio antiguo,42,1545.4545,0.2233,-0.1765
 MLA2696213014,retiro,False,Familiares amplios y antiguos,34,2067.8597,-0.0139,-0.3358
-MLA3403823228,palermo,False,Nuevos con amenities,256,3775.4097,0.1923,-0.1967
+MLA3403823228,palermo,False,Chicos y recientes,256,3775.4097,0.1923,-0.1967
 MLA1960836799,boedo,False,Compactos de edificio antiguo,78,1857.1429,0.0352,-0.3024
 MLA1841593573,balvanera,False,Compactos de edificio antiguo,343,1677.9661,-0.0847,-0.3831
 MLA1945067393,retiro,False,Compactos de edificio antiguo,140,2250.0,0.1397,-0.2314
 MLA3786548916,villa-pueyrredon,False,Chicos y recientes,75,2583.3333,0.0801,-0.2713
-MLA1986529123,balvanera,False,Familiares amplios y antiguos,336,1532.2917,0.0499,-0.2917
+MLA1986529123,balvanera,False,Compactos de edificio antiguo,336,1532.2917,0.0499,-0.2917
 MLA3260091078,flores,False,Compactos de edificio antiguo,211,1733.3333,0.002,-0.3239
-MLA1945495027,palermo,False,Chicos y recientes,27,3708.3333,0.1694,-0.2103
+MLA1945495027,palermo,False,Nuevos con amenities,27,3708.3333,0.1694,-0.2103
 MLA2847783948,palermo,False,Familiares amplios y antiguos,164,2752.2936,0.1718,-0.2086
 MLA3721806720,palermo,False,Familiares amplios y antiguos,315,2731.3433,-0.0358,-0.3487
 MLA3727525044,balvanera,False,Familiares amplios y antiguos,66,1383.7473,0.0692,-0.2773
@@ -392,7 +392,7 @@ MLA3479122844,mataderos,False,Chicos y recientes,29,2125.0,-0.2095,-0.4595
 MLA3123787776,parque-chacabuco,False,Compactos de edificio antiguo,48,1873.9316,-0.1221,-0.3997
 MLA3218677220,recoleta,False,Compactos de edificio antiguo,92,2728.7356,0.0163,-0.305
 MLA1981332341,recoleta,False,Familiares amplios y antiguos,54,2254.7974,-0.0084,-0.3214
-MLA3620113118,caballito,False,Familiares amplios y antiguos,356,2185.2874,-0.1436,-0.4139
+MLA3620113118,caballito,False,Compactos de edificio antiguo,356,2185.2874,-0.1436,-0.4139
 MLA3261879324,palermo,False,Familiares amplios y antiguos,16,2713.5827,0.3537,-0.0734
 MLA1887669401,belgrano,False,Nuevos con amenities,94,4049.2406,0.312,-0.102
 MLA3607005682,barrio-norte,False,Chicos y recientes,0,,,
@@ -409,7 +409,7 @@ MLA3784259710,san-nicolas,False,Compactos de edificio antiguo,135,1666.6667,-0.0
 MLA1610477029,belgrano,False,Chicos y recientes,333,3760.0,-0.1393,-0.4076
 MLA3719601368,balvanera,False,Familiares amplios y antiguos,199,1476.1364,0.219,-0.161
 MLA1800531355,retiro,False,Familiares amplios y antiguos,14,3333.3254,-0.3421,-0.5472
-MLA3030527376,liniers,False,Chicos y recientes,0,,,
+MLA3030527376,liniers,False,Nuevos con amenities,0,,,
 MLA3410289778,recoleta,False,Familiares amplios y antiguos,131,2816.092,-0.1581,-0.4204
 MLA3786571820,san-telmo,False,Compactos de edificio antiguo,21,2115.3846,-0.1116,-0.3882
 MLA3553384852,palermo,False,Compactos de edificio antiguo,192,2981.2281,0.048,-0.2781
@@ -462,14 +462,14 @@ MLA1945066251,palermo,False,Chicos y recientes,160,3627.3148,-0.1726,-0.4201
 MLA3327484506,palermo,False,Compactos de edificio antiguo,323,2659.5745,0.0807,-0.241
 MLA3099007048,flores,False,Compactos de edificio antiguo,10,1558.3922,0.0977,-0.229
 MLA3720467336,villa-crespo,False,Chicos y recientes,48,3162.617,-0.2074,-0.443
-MLA1964334659,saavedra,False,Compactos de edificio antiguo,0,,,
+MLA1964334659,saavedra,False,Familiares amplios y antiguos,0,,,
 MLA3540409834,belgrano,False,Compactos de edificio antiguo,312,2558.6397,0.0439,-0.2659
 MLA1946334043,colegiales,False,Chicos y recientes,104,3183.5017,-0.0959,-0.3633
 MLA3732703440,balvanera,False,Compactos de edificio antiguo,0,,,
 MLA3763833272,caballito,False,Familiares amplios y antiguos,0,,,
 MLA1929699477,nunez,False,Compactos de edificio antiguo,0,,,
 MLA2746462602,villa-urquiza,False,Chicos y recientes,334,3155.0343,-0.191,-0.4295
-MLA3284690574,floresta,False,Chicos y recientes,49,2159.0909,0.1616,-0.1795
+MLA3284690574,floresta,False,Nuevos con amenities,49,2159.0909,0.1616,-0.1795
 MLA3624450336,balvanera,False,Nuevos con amenities,115,2269.697,0.1054,-0.2183
 MLA1809182589,villa-devoto,False,Compactos de edificio antiguo,61,2236.8421,0.2098,-0.1442
 MLA3527445198,caballito,False,Nuevos con amenities,292,2962.9252,0.1125,-0.2125
