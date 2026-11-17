@@ -56,11 +56,14 @@ y el hash del dataset final van a cambiar.
 `corrida_de_cero_2026-11-16.log` es el registro de una corrida completa de las etapas 5 y 6 (con fuentes externas,
 permisos de obra y seguimiento), el exportador del dashboard, los notebooks 01 a 07 y la suite de tests, hecha en un
 worktree limpio del commit `c1f2162` (macOS, Python 3.9, `.venv`), 20 minutos. Resultado: todos los archivos de
-`data/processed/`, `data/interim/` y `docs/dashboard/data/` quedaron byte a byte iguales a los versionados (el
-`resumen.json` versionado es el de esta corrida, con ese commit en sus metadatos), los siete notebooks reproducen sus
-salidas (solo cambian rutas absolutas y el pid del kernel en dos advertencias) y los 195 tests pasan. Es la evidencia
+`data/processed/`, `data/interim/` y `docs/dashboard/data/` quedaron byte a byte iguales a los versionados en ese
+momento, los siete notebooks reproducen sus salidas (solo cambian rutas absolutas y el pid del kernel en dos
+advertencias) y los 195 tests de entonces pasan (hoy son 205). Es la evidencia
 de ejecución que respalda los números del README. Después de la corrida se reejecutó solo el notebook 04, por un
-cambio de nombres en la tabla de cobertura del intervalo (celda 27) y por textos; ese notebook no escribe datos.
+cambio de nombres en la tabla de cobertura del intervalo (celda 27) y por textos; ese notebook no escribe datos. El
+17/11 la capa del dashboard (`docs/dashboard/data/`) y el chequeo de comparables se regeneraron con la revisión manual
+de la lista destacada (`config/revision_manual.yaml`: dos oficinas apartadas), sin cambios en la etapa 6; el
+`resumen.json` versionado anota el commit del que se exportó.
 
 ## Hashes de los datasets versionados
 

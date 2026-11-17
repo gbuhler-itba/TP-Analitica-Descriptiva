@@ -304,7 +304,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── exportar_dashboard.py        Capa de datos del dashboard
 │   ├── eda.py                       Funciones del análisis exploratorio
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           201 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           205 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -327,7 +327,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 201 tests, menos de un minuto, sin red
+python3 -m pytest -q                                   # 205 tests, menos de un minuto, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
@@ -372,7 +372,7 @@ y abrir http://localhost:8000/dashboard/.
 | Cómo leer este tablero | La advertencia completa, qué es cada nivel, qué se excluye de la lista destacada, los límites en palabras simples y los links a los notebooks |
 | Ficha del aviso | Publicado contra esperado con el rango del 80%, qué suma y qué resta, la cascada de costos hasta la brecha neta, alertas, consenso, liquidez por ambientes y el link al aviso, que avisa si ya no estaba publicado o fue republicado al 28/10 |
 
-**Capturas de las vistas principales** (`docs/capturas/`, 1440 × 900 a escala 2; tomadas del tablero publicado con
+**Capturas de las vistas principales** (`docs/capturas/`, 1440 px de ancho a escala 2, tres de ellas de página completa; tomadas del tablero publicado con
 los datos de esta versión):
 
 | Vista | Captura |
@@ -398,17 +398,17 @@ el mapa y en el buscador con su alerta, y nada de esto cambia las 1.375 señales
 
 **Revisión manual de la lista** (17/11/2026). Se abrieron en MercadoLibre, uno por uno, los 20 primeros destacados
 del Resumen (firmes primero, después por brecha neta) y se compararon título, barrio, m², precio, alertas y estado al
-28/10 con la ficha del tablero. Ocho seguían publicados y doce ya no estaban. Dos no corresponden y se apartaron con
+28/10 con la ficha del tablero. Seis seguían publicados y catorce ya no estaban. Dos no corresponden y se apartaron con
 una lista de revisión manual (`config/revision_manual.yaml`: id, motivo y fecha) que el exportador aplica como una
 exclusión más, "revisión manual: oficina": el semipiso de Monserrat (MLA1812612179), cuya descripción dice "excelente
 oficina lista para ocupar, apto vivienda", y el dúplex de Tribunales (MLA3498095614), que se vende como "ideal para uso
 comercial, oficinas o inversores". Los dos eran candidatos firmes: por eso la lista destacada pasa de 486 a 484 y los
 firmes destacados de 38 a 36; la lista oficial no cambia y los dos siguen en el mapa y el buscador con su alerta.
-Quedan documentados sin excluir, porque no se pudieron verificar (ya no están publicados) o la duda no alcanza: cinco
+Quedan documentados sin excluir, porque no se pudieron verificar (ya no están publicados) o la duda no alcanza: cuatro
 avisos de 6 a 9 ambientes en San Nicolás, Monserrat y Balvanera a USD 570 a 770 por m², que pueden ser oficinas,
-pensiones o unidades familiares de época (el título nuevo de uno dice "apto vivienda/profesional"; otro, "Apart Lima",
-puede ser un apart hotel; otro subió de USD 139.000 a 180.000 y sigue siendo señal), y tres con el título en
-desacuerdo con la ficha (274 m² contra 218; 100 m² y 3 ambientes contra 120 y 4; 5 ambientes contra 4). Dos
+pensiones o unidades familiares de época (el título nuevo de uno dice "apto vivienda/profesional"; otro subió de
+USD 139.000 a 180.000 y sigue siendo señal); un monoambiente de 32 m² en Monserrat, "Apart Lima", que puede ser un
+apart hotel; y tres con el título en desacuerdo con la ficha (274 m² contra 218; 100 m² y 3 ambientes contra 120 y 4; 5 ambientes contra 4). Dos
 observaciones más que no son errores: un 4 ambientes "a remodelar" en un conjunto habitacional de Nueva Pompeya, donde
 el comparable del modelo puede no aplicar, y un dúplex de Recoleta "para reciclar" cuyo título no lo dice, así que la
 refacción liviana que asume la regla lo subestima.
@@ -435,7 +435,7 @@ la sección a la que pertenecen.
 
 | Observación | Estado | Qué cambiaron | Dónde se verifica |
 |---|---|---|---|
-| El rango del intervalo del 80% estaba mal calculado (el "±32%" salía de dividir el límite superior por el inferior y partirlo a la mitad) | Resuelta | Se mide contra el precio esperado: de −21% a +29%, semiancho mediano 25%; corregido en README, notebooks 04 y 07, diccionario y "Cómo leer"; la tabla de cobertura del 04 ahora calcula esos tres números en lugar del ancho sup/inf | Notebook 04, `In [18]` (sección 5) y la interpretación que le sigue; notebook 04, sección 8; notebook 07, sección 3; dashboard, "Cómo leer"; commits `efd3d96` y `e742251` |
+| El rango del intervalo del 80% estaba mal calculado (el "±32%" salía de dividir el límite superior por el inferior y partirlo a la mitad) | Resuelta | Se mide contra el precio esperado: de −21% a +29%, semiancho mediano 25%; corregido en README, notebooks 04 y 07, diccionario y "Cómo leer"; la tabla de cobertura del 04 ahora calcula esos tres números en lugar del ancho sup/inf | Notebook 04, `In [18]` (sección 5) y la interpretación que le sigue; notebook 04, sección 8; notebook 07, sección 4; dashboard, "Cómo leer"; commits `efd3d96` y `e742251` |
 | MCA: el faltante se trataba como "No"; distinguir "no tiene" de "no lo declara" | Resuelta | "Sin dato" como categoría pasiva: el eje se ajusta con los 14.909 avisos que declaran todas las Sí/No y cada aviso se proyecta con lo que declara (`segmentos.indice_mca_pasivo`, con test); el exportador del dashboard usa el mismo índice. La correlación del índice con la completitud de la carga baja de 0,33 a 0,16; 63 señales cambian de tipo, destacados y firmes no | Notebook 06, `In [9]` (sección 2.4) y su interpretación; `tests/test_segmentos.py`; commit `671cac5` |
 | Sesgo en departamentos grandes y antiguos: proponer una corrección, no solo alertarlo | Resuelta | Dos correcciones evaluadas fuera de muestra con el embudo completo: interacción tamaño × antigüedad (dos variantes) y umbral según el error del segmento, como ya se hace por barrio. Ninguna se adoptó: cambian la lista en el margen y no corrigen el precio esperado; la recomendada a futuro es el umbral por segmento (sección 13) | Notebook 04, `In [34]` a `In [39]` (secciones 10 y 10.1) y sus cierres; README secciones 11 y 13; commits `732203e` y `b267b2c` |
 | Moderar "es consistente con que estaban baratos" y alinear la lectura de H3 (subte) con el README | Resuelta | En el dashboard: "parecen venderse más rápido, aunque salir del portal también puede ser una pausa, una republicación o una venta por otro canal". En H3, el subte queda como no concluyente (no sobrevive a Holm) y la avenida como explicación posible no medida, igual que en el README | Dashboard, "Cómo leer"; notebook 05, interpretaciones de la sección 4 (`In [23]` en adelante) y conclusión; README sección 1; commit `efd3d96` |

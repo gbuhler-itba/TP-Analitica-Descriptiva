@@ -83,3 +83,70 @@ def test_el_rango_del_80_del_readme_sale_del_precio_esperado(readme, resumen):
     dentro = (pe["precio_m2_usd"] >= pe["precio_m2_esperado_inf"]) & (pe["precio_m2_usd"] <= pe["precio_m2_esperado_sup"])
     assert round(100 * dentro.mean(), 1) == resumen["indicadores"]["cobertura_intervalo_pct"]
     assert np.isfinite([inf, sup, semiancho]).all()
+
+
+@pytest.fixture(scope="module")
+def como_leer():
+    html = (RAIZ / "docs" / "dashboard" / "index.html").read_text(encoding="utf-8")
+    inicio = html.index('id="pagina-leer"')
+    return re.sub(r"\s+", " ", html[inicio:])
+
+
+@pytest.fixture(scope="module")
+def avisos():
+    return json.load(open(RAIZ / "docs" / "dashboard" / "data" / "avisos.json", encoding="utf-8"))
+
+
+def test_las_cifras_de_como_leer_salen_del_resumen_y_de_los_avisos(como_leer, resumen, avisos):
+    ind = resumen["indicadores"]
+    assert f"Se equivoca {_pct(ind['error_mediano_pct'])}% en la mediana" in como_leer
+    assert f"cubre el precio publicado el {_pct(ind['cobertura_intervalo_pct'])}% de las veces" in como_leer
+    assert f"({_pct(ind['error_mediano_segmento_alerta_pct'])}% contra {_pct(ind['error_mediano_pct'])}%)" in como_leer
+    negociacion = 100 * resumen["parametros_costos"]["base"]["negociacion"]
+    assert f"descuenta {_pct(negociacion, 2)}% al vender" in como_leer
+    salieron = np.mean([a["estado_r2"] == "salio" for a in avisos])
+    republicados = np.mean([a["estado_r2"] == "republicado" for a in avisos])
+    assert 0.45 < salieron < 0.55 and "la mitad de las señales había salido del portal" in como_leer
+    assert f"(y un {round(100 * republicados):.0f}% estaba republicada" in como_leer
+    assert f"se muestran 10 de" not in como_leer   # la lista destacada vive en el Resumen, no acá
+
+
+def test_el_rango_de_como_leer_es_el_del_precio_esperado(como_leer):
+    ruta = RAIZ / "data" / "processed" / "precio_esperado.tsv"
+    if not ruta.exists():
+        pytest.skip("faltan las salidas de la etapa 6")
+    pe = pd.read_csv(ruta, sep="\t", usecols=["precio_m2_esperado", "precio_m2_esperado_inf", "precio_m2_esperado_sup"], low_memory=False)
+    inf = 100 * (pe["precio_m2_esperado_inf"] / pe["precio_m2_esperado"] - 1).median()
+    sup = 100 * (pe["precio_m2_esperado_sup"] / pe["precio_m2_esperado"] - 1).median()
+    semiancho = 100 * ((pe["precio_m2_esperado_sup"] - pe["precio_m2_esperado_inf"]) / (2 * pe["precio_m2_esperado"])).median()
+    frase = f"de −{abs(round(inf)):.0f}% a +{round(sup):.0f}% alrededor del esperado (semiancho mediano {round(semiancho):.0f}%)"
+    assert como_leer.count(frase) == 2, frase
+
+
+def test_los_geo_dudosos_de_como_leer_son_los_del_dataset(como_leer):
+    acc = RAIZ / "data" / "processed" / "accesibilidad.tsv"
+    limpio = RAIZ / "data" / "processed" / "propiedades_limpias.tsv"
+    if not (acc.exists() and limpio.exists()):
+        pytest.skip("faltan accesibilidad.tsv o el dataset limpio")
+    a = pd.read_csv(acc, sep="\t", usecols=["link", "geo_dudoso", "barrio_coincide"], low_memory=False)
+    links = set(pd.read_csv(limpio, sep="\t", usecols=["link"])["link"])
+    en_limpio = a[a["link"].isin(links)]
+    dudosos = int(en_limpio["geo_dudoso"].fillna(0).astype(int).sum())
+    assert f"Los {dudosos} avisos a más de 1 km de su barrio" in como_leer
+    con_barrio = a["barrio_coincide"].dropna()
+    otro_poligono = round(100 * (1 - con_barrio.astype(float).mean()))
+    assert f"{otro_poligono:.0f}% de los avisos con coordenadas caen en otro polígono oficial" in como_leer
+
+
+def test_los_tipos_de_departamento_de_app_js_salen_del_resumen(resumen):
+    js = (RAIZ / "docs" / "dashboard" / "js" / "app.js").read_text(encoding="utf-8")
+    bloque = js[js.index("const SEGMENTOS = ["):js.index("];", js.index("const SEGMENTOS = ["))]
+    descripciones = dict(re.findall(r'nombre: "([^"]+)", descripcion: "([^"]+)"', bloque))
+    tipos = {t["nombre"]: t for t in resumen["tipos"]}
+    assert set(descripciones) == set(tipos)
+    for nombre, texto in descripciones.items():
+        pct = round(tipos[nombre]["avisos_pct"])
+        assert f"({pct}%)" in texto or f"{pct}% de la oferta" in texto, (nombre, texto, pct)
+        if "mediana de" in texto:
+            assert f"mediana de {tipos[nombre]['amenities_mediana']:.0f}" in texto, (nombre, texto)
+    assert resumen["indicadores"]["avisos_segmento_alerta_pct"] == tipos[resumen["indicadores"]["segmento_alerta"]]["avisos_pct"]
