@@ -358,7 +358,8 @@ que el resultado no dependa de una celda). Orden de lectura sugerido:
 
 ### El dashboard: "Radar de avisos · CABA"
 
-Publicado en [https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/](https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/). Código y datos en [`docs/dashboard/`](docs/dashboard/). Está pensado para el analista
+Publicado en [https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/](https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/dashboard/). La presentación ejecutiva de la entrega final, un solo archivo HTML con las imágenes
+embebidas, está en [https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/presentacion/](https://gbuhler-itba.github.io/TP-Analitica-Descriptiva/presentacion/) (código en [`docs/presentacion/`](docs/presentacion/)). Código y datos en [`docs/dashboard/`](docs/dashboard/). Está pensado para el analista
 del fondo, no para quien corrige: no repite los notebooks, los resume en una decisión. Tiene cinco pestañas y una ficha.
 Si el link no responde, el dashboard también corre en local: desde la raíz del repo, `python3 -m http.server -d docs 8000`
 y abrir http://localhost:8000/dashboard/.
