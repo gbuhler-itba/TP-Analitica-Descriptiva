@@ -148,9 +148,10 @@ def test_la_alerta_de_segmento_no_cambia_la_lista_destacada(exportado):
     assert i["error_mediano_segmento_alerta_pct"] > i["error_mediano_pct"]
     assert 0 < i["avisos_segmento_alerta_pct"] < 50
     destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
-    # Conteos del 04/11 con todas las exclusiones: la alerta no saca a nadie de la lista destacada ni de los firmes
-    assert len(destacados) == 486
-    assert sum(a["firme"] for a in destacados) == 38
+    # Conteos del 17/11 con todas las exclusiones (486/38 del 04/11 menos las dos oficinas de la revisión manual):
+    # la alerta de segmento no saca a nadie de la lista destacada ni de los firmes
+    assert len(destacados) == 484
+    assert sum(a["firme"] for a in destacados) == 36
     con_alerta = [a for a in destacados if a["segmento"] == i["segmento_alerta"]]
     assert con_alerta and any(a["firme"] for a in con_alerta)
     assert not any("segmento" in e or "tipo" in e for a in avisos for e in a["exclusiones"])
@@ -212,7 +213,7 @@ def test_el_estado_del_segundo_relevamiento_no_cambia_ninguna_lista(exportado):
     salieron = np.mean([a["estado_r2"] == "salio" for a in avisos])
     assert 0.45 < salieron < 0.6   # "la mitad ya no estaba publicada al 28/10", en la línea del resumen
     destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
-    assert len(destacados) == 486 and sum(a["firme"] for a in destacados) == 38
+    assert len(destacados) == 484 and sum(a["firme"] for a in destacados) == 36
 
 
 def test_el_filtro_por_tipo_de_departamento_particiona_la_lista(exportado):
@@ -231,3 +232,22 @@ def test_el_filtro_por_tipo_de_departamento_particiona_la_lista(exportado):
     assert sum(sum(1 for a in v if a in destacados) for v in por_tipo.values()) == len(destacados) == resumen["indicadores"]["destacados_unidades"]
     assert sum(sum(a["firme"] for a in v) for v in por_tipo.values()) == resumen["sensibilidad"]["conservador"]
     assert sum(sum(a["firme"] for a in v if a in destacados) for v in por_tipo.values()) == resumen["indicadores"]["destacados_firmes_unidades"]
+
+
+def test_la_revision_manual_aparta_de_la_lista_destacada_sin_tocar_la_oficial(exportado):
+    """Los avisos de config/revision_manual.yaml llevan la exclusión "revisión manual: <motivo>", no son destacados y
+    siguen en la lista oficial con su nivel; la lista oficial y los firmes no cambian."""
+    cfg, avisos, resumen, salida = exportado
+    manual = exportar_dashboard.revision_manual(cfg)
+    assert manual, "la lista de revisión manual tiene que existir y tener al menos un aviso"
+    por_id = {a["id"]: a for a in avisos}
+    for id_aviso, motivo in manual.items():
+        assert id_aviso in por_id, f"{id_aviso} no está en la lista oficial: la revisión manual solo aparta señales"
+        a = por_id[id_aviso]
+        assert f"{exportar_dashboard.EXCLUSION_REVISION_MANUAL}: {motivo}" in a["exclusiones"]
+        assert a["nivel"] in (regla.SENAL, regla.CANDIDATO)
+    destacados = {a["id"] for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]}
+    assert not destacados & set(manual)
+    embudo = {e["paso"]: e["unidades"] for e in resumen["embudo"]}
+    assert len(avisos) == embudo["cumple_regla"]
+    assert sum(a["firme"] for a in avisos) == resumen["sensibilidad"]["conservador"]

@@ -1,0 +1,16 @@
+# Revisión manual de la lista destacada del dashboard.
+#
+# Los 20 primeros destacados del Resumen (firmes primero, después por brecha neta) se abrieron uno por uno en
+# MercadoLibre el 17/11/2026. Los que no corresponden quedan acá y el exportador (src/exportar_dashboard.py) los
+# aparta de la lista destacada con la exclusión "revisión manual: <motivo>". No cambian la lista oficial de la
+# etapa 6 (señales, candidatos, firmes): siguen en el mapa y en el buscador, con su alerta.
+revisados_el: 2026-11-17
+excluidos:
+  - id: MLA1812612179
+    motivo: oficina
+    detalle: "Publicado como departamento semipiso en Monserrat; la descripción dice 'excelente oficina lista para ocupar, apto vivienda'."
+    fecha: 2026-11-17
+  - id: MLA3498095614
+    motivo: oficina
+    detalle: "Dúplex en los pisos 11 y 12 en Tribunales que se vende como 'ideal para uso comercial, oficinas o inversores'."
+    fecha: 2026-11-17

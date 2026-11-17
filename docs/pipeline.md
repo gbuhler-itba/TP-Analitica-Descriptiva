@@ -54,7 +54,7 @@ Los números son los de la regeneración del 02/11/2026 en la Mac de referencia 
 | `src/permisos_obra.py` | Enriquecido más `data/external/obras-registradas.csv` | Permisos de obra nueva a menos de 500 m en los 3 años previos al scraping, una vez por obra (deduplicado por parcela y por punto) | 27.922 filas; mediana 9 obras; `tests/test_permisos_obra.py` reproduce el archivo versionado desde el snapshot | `data/processed/permisos_obra.tsv` (27.922 × 2) |
 | `src/seguimiento.py` | Cuotas del segundo relevamiento (`data/raw/relevamiento_2/`, 27 y 28/10/2026) y el dataset limpio | Une las cuotas, deduplica por ID y cruza cada aviso del primer relevamiento: sigue, republicado (misma dirección, m² y ambientes con otro ID) o salió; marca los barrios truncados por el tope de paginación | 27.516 avisos en el segundo relevamiento; una fila por aviso del primero (27.578). Se corre **después** de la etapa 5 y **antes** de la 6, que lo usa para la liquidez por ambientes y corta si las filas no coinciden | `data/processed/relevamiento_2.tsv`, `seguimiento_avisos.csv` |
 | `src/chequeo_comparables.py` | `propiedades_limpias.tsv`, `precio_esperado.tsv`, `docs/dashboard/data/avisos.json` | Para cada destacado del dashboard, comparables del mismo barrio (±1 ambiente, ±30% de m², ±15 años, otra unidad, sin atípicos) y el precio esperado y el publicado contra su mediana (README, sección 10) | `tests/test_chequeo_comparables.py` | `data/processed/chequeo_comparables.csv` (una fila por destacado) y `chequeo_comparables.json` (el resumen que cita el README) |
-| `src/exportar_dashboard.py` | Salidas de la etapa 6, `accesibilidad.tsv`, estaciones y `config/costos.yaml` | Una fila por unidad de la lista oficial con lo que muestra la ficha y lo que necesita el simulador; embudo, indicadores, resumen por barrio, sensibilidad de la regla y parámetros de costos por escenario; capas de estaciones | `tests/test_exportar_dashboard.py` compara los JSON con el embudo y el ranking | `docs/dashboard/data/avisos.json`, `resumen.json`, `estaciones.json`, `fondo.json` (todos los avisos con coordenadas, para el fondo del mapa). Además calcula el tercer nivel del dashboard, **candidato firme** (candidato aun vendiendo al límite inferior del rango del 80%: 83 unidades), las `exclusiones` de la lista destacada del resumen (barrio popular o a menos de 500 m de uno, casa o PH, uso comercial, oficina u hotel, barrio dudoso en el título sin coordenadas, posible venta de varias unidades, precio posiblemente con financiación, en pozo; no cambian la lista oficial), el `segmento` de departamento del notebook 06 (MCA con el vacío como categoría pasiva, más K-means con la misma semilla; descriptivo, con alerta de revisión en "Familiares amplios y antiguos"), el `estado_r2` de cada aviso en el segundo relevamiento (sigue, republicado o salió; solo para avisarlo en la ficha y en las tablas) y la tasa de salida por decil de brecha del notebook 05 |
+| `src/exportar_dashboard.py` | Salidas de la etapa 6, `accesibilidad.tsv`, estaciones y `config/costos.yaml` | Una fila por unidad de la lista oficial con lo que muestra la ficha y lo que necesita el simulador; embudo, indicadores, resumen por barrio, sensibilidad de la regla y parámetros de costos por escenario; capas de estaciones | `tests/test_exportar_dashboard.py` compara los JSON con el embudo y el ranking | `docs/dashboard/data/avisos.json`, `resumen.json`, `estaciones.json`, `fondo.json` (todos los avisos con coordenadas, para el fondo del mapa). Además calcula el tercer nivel del dashboard, **candidato firme** (candidato aun vendiendo al límite inferior del rango del 80%: 83 unidades), las `exclusiones` de la lista destacada del resumen (barrio popular o a menos de 500 m de uno, casa o PH, uso comercial, oficina u hotel, barrio dudoso en el título sin coordenadas, posible venta de varias unidades, precio posiblemente con financiación, en pozo, y la revisión manual de los primeros puestos de `config/revision_manual.yaml`; no cambian la lista oficial), el `segmento` de departamento del notebook 06 (MCA con el vacío como categoría pasiva, más K-means con la misma semilla; descriptivo, con alerta de revisión en "Familiares amplios y antiguos"), el `estado_r2` de cada aviso en el segundo relevamiento (sigue, republicado o salió; solo para avisarlo en la ficha y en las tablas) y la tasa de salida por decil de brecha del notebook 05 |
 
 El detalle de los desafíos técnicos (bloqueo por CloudFront, IP de datacenter vs.
 residencial, contenido corrupto por compresión Brotli, distinción entre
@@ -85,7 +85,7 @@ reproducible por un tercero.
 | `data/interim/shap_gbm.tsv` | Sí | 1,2 MB | Notebook 04, sección 9: se recalcula solo si no coincide con las predicciones (varios minutos) |
 | `docs/dashboard/data/*.json` | Sí | 2,7 MB | `python3 src/exportar_dashboard.py`, segundos, después de la etapa 6 |
 | `outputs/logs/pipeline.log`, `outputs/logs/qc_*.json` | No | no aplica | Los escribe cada corrida |
-| `docs/corrida-documentada/*` | Sí | 40 KB | No se regenera: es una instantánea curada. Incluye `corrida_de_cero_2026-11-16.log` (y la anterior, del 05/11), la corrida completa de las etapas 5 y 6, el exportador, los notebooks y los tests |
+| `docs/corrida-documentada/*` | Sí | 40 KB | No se regenera: es una instantánea curada. Incluye `corrida_de_cero_2026-11-16.log`, la corrida completa de las etapas 5 y 6, el exportador, los notebooks y los tests |
 | `*_parcial.tsv` | No | no aplica | Los escribe y borra el propio pipeline |
 
 Total versionado: unos 225 MB (19 MB son las cuotas crudas del primer relevamiento).
@@ -366,7 +366,7 @@ Hay dos cosas distintas y conviene no confundirlas.
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
 ```bash
-pytest            # toda la suite, 196 tests, menos de un minuto, sin red
+pytest            # toda la suite, 201 tests, menos de un minuto, sin red
 pytest -v         # con el nombre de cada test
 pytest tests/test_limpieza.py   # un solo archivo
 ```
@@ -445,8 +445,7 @@ la evidencia es `docs/corrida-documentada/corrida_de_cero_2026-11-16.log`: una
 corrida de cero en un worktree limpio del commit `c1f2162` que reprodujo byte a
 byte todos los archivos versionados de `data/processed/`, `data/interim/` y
 `docs/dashboard/data/` (el `resumen.json` versionado es el de esa corrida, con
-ese commit en sus metadatos) y los siete notebooks, con 195 tests. La corrida
-anterior (`corrida_de_cero_2026-11-05.log`, commit `756c139`) se conserva.
+ese commit en sus metadatos) y los siete notebooks, con 195 tests.
 
 ---
 

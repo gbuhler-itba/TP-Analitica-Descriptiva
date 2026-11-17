@@ -62,10 +62,6 @@ salidas (solo cambian rutas absolutas y el pid del kernel en dos advertencias) y
 de ejecución que respalda los números del README. Después de la corrida se reejecutó solo el notebook 04, por un
 cambio de nombres en la tabla de cobertura del intervalo (celda 27) y por textos; ese notebook no escribe datos.
 
-`corrida_de_cero_2026-11-05.log` es la corrida anterior, sobre el commit `756c139` (193 tests), previa a los cambios
-del 16/11 (MCA con "sin dato" como categoría pasiva, que regeneró `avisos.json`, `resumen.json` y el chequeo de
-comparables; evaluación de dos correcciones del sesgo en el notebook 04). Se conserva como registro.
-
 ## Hashes de los datasets versionados
 
 ```

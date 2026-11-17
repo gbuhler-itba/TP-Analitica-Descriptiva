@@ -221,7 +221,7 @@ y distancias. El detalle de cada columna está en el
 | `data/raw/relevamiento_2/`, `data/processed/relevamiento_2.tsv` | 27.516 | Segundo relevamiento (27 y 28/10/2026) |
 | `data/processed/seguimiento_avisos.csv` | 27.578 | Estado de cada aviso del primer relevamiento en el segundo: sigue, republicado o salió |
 | `docs/dashboard/data/*.json` | 1.375 unidades | Capa de datos del dashboard, exportada de la etapa 6 (sección 9) |
-| `data/processed/chequeo_comparables.csv`, `.json` | 486 destacados | Chequeo del precio esperado contra comparables simples (sección 10) |
+| `data/processed/chequeo_comparables.csv`, `.json` | 484 destacados | Chequeo del precio esperado contra comparables simples (sección 10) |
 
 **Del crudo al limpio.** Se excluyen 344 avisos: 68 duplicados por ID de aviso (entre dos filas del mismo ID queda
 la que coincide con el polígono oficial del barrio; en 17 de los 68 la regla anterior, primera aparición, se quedaba
@@ -303,9 +303,8 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── seguimiento.py               Segundo relevamiento y seguimiento de avisos
 │   ├── exportar_dashboard.py        Capa de datos del dashboard
 │   ├── eda.py                       Funciones del análisis exploratorio
-│   ├── indice_confort.py            Índice de confort de la primera versión (pesos fijos), conservado como referencia
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           196 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           201 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -329,7 +328,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 196 tests, menos de un minuto, sin red
+python3 -m pytest -q                                   # 201 tests, menos de un minuto, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
@@ -392,11 +391,28 @@ rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`.
 **La lista destacada es un filtro de presentación sobre la lista oficial, no un resultado del análisis.** Parte de los
 664 candidatos que marcan los dos modelos y aparta los casos donde el comparable del modelo (un departamento común de
 su zona) puede no aplicar: barrio popular o a menos de 500 m de uno, casa o PH, uso comercial, oficina u hotel, barrio
-dudoso en el título, posible venta de varias unidades, precio posiblemente con financiación y en pozo. Son 178 de los
-664; quedan 486 destacados (38 firmes). Los 500 m son un criterio de prudencia, no un resultado: el modelo no ve el
+dudoso en el título, posible venta de varias unidades, precio posiblemente con financiación, en pozo, y los avisos
+apartados en la revisión manual de los primeros puestos (abajo). Son 180 de los 664; quedan 484 destacados (36 firmes). Los 500 m son un criterio de prudencia, no un resultado: el modelo no ve el
 entorno inmediato y el precio de un departamento pegado a un barrio popular responde a cosas que el modelo no mide.
 Es la exclusión que más saca (106 candidatos, 99 solo por eso) y pega sobre todo en el sur. Los apartados siguen en
 el mapa y en el buscador con su alerta, y nada de esto cambia las 1.375 señales ni los 840 candidatos.
+
+**Revisión manual de la lista** (17/11/2026). Se abrieron en MercadoLibre, uno por uno, los 20 primeros destacados
+del Resumen (firmes primero, después por brecha neta) y se compararon título, barrio, m², precio, alertas y estado al
+28/10 con la ficha del tablero. Ocho seguían publicados y doce ya no estaban. Dos no corresponden y se apartaron con
+una lista de revisión manual (`config/revision_manual.yaml`: id, motivo y fecha) que el exportador aplica como una
+exclusión más, "revisión manual: oficina": el semipiso de Monserrat (MLA1812612179), cuya descripción dice "excelente
+oficina lista para ocupar, apto vivienda", y el dúplex de Tribunales (MLA3498095614), que se vende como "ideal para uso
+comercial, oficinas o inversores". Los dos eran candidatos firmes: por eso la lista destacada pasa de 486 a 484 y los
+firmes destacados de 38 a 36; la lista oficial no cambia y los dos siguen en el mapa y el buscador con su alerta.
+Quedan documentados sin excluir, porque no se pudieron verificar (ya no están publicados) o la duda no alcanza: cinco
+avisos de 6 a 9 ambientes en San Nicolás, Monserrat y Balvanera a USD 570 a 770 por m², que pueden ser oficinas,
+pensiones o unidades familiares de época (el título nuevo de uno dice "apto vivienda/profesional"; otro, "Apart Lima",
+puede ser un apart hotel; otro subió de USD 139.000 a 180.000 y sigue siendo señal), y tres con el título en
+desacuerdo con la ficha (274 m² contra 218; 100 m² y 3 ambientes contra 120 y 4; 5 ambientes contra 4). Dos
+observaciones más que no son errores: un 4 ambientes "a remodelar" en un conjunto habitacional de Nueva Pompeya, donde
+el comparable del modelo puede no aplicar, y un dúplex de Recoleta "para reciclar" cuyo título no lo dice, así que la
+refacción liviana que asume la regla lo subestima.
 
 **Por qué una página estática y no una herramienta de BI.** El criterio fue elegir lo más fácil de armar,
 mantener y desplegar con nuestro modelo de datos y nuestro volumen. El dashboard es HTML, CSS y JavaScript sin
@@ -455,8 +471,8 @@ observaciones y lo que se hizo con cada una.
 **Chequeo con comparables** (`src/chequeo_comparables.py`; salida en `data/processed/chequeo_comparables.csv` y
 `.json`): para cada destacado se buscaron en la base departamentos
 del mismo barrio con ±1 ambiente, ±30% de superficie y ±15 años de antigüedad, excluida la propia unidad y los
-atípicos. En los 425 destacados con al menos 5 comparables, el precio esperado queda en la mediana 1,9% por encima
-de la mediana de los comparables, y el 83% sigue estando 25% o más por debajo de ellos (los 33 firmes con
+atípicos. En los 423 destacados con al menos 5 comparables, el precio esperado queda en la mediana 1,9% por encima
+de la mediana de los comparables, y el 83% sigue estando 25% o más por debajo de ellos (los 31 firmes con
 comparables, todos). Por segmento, el esperado queda más alto en "Nuevos con amenities" (+11,4%, en parte porque los
 comparables no distinguen amenities y el modelo sí) y en "Familiares amplios y antiguos" (+5,8%), consistente con el
 mayor error del modelo en esos dos segmentos.

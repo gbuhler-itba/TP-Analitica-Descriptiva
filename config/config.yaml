@@ -38,6 +38,8 @@ rutas:
   explicacion: data/processed/explicacion_avisos.tsv
   # SHAP del gradient boosting del notebook 04 (sección 9), guardado porque tarda varios minutos.
   shap_gbm: data/interim/shap_gbm.tsv
+  # Avisos apartados de la lista destacada del dashboard después de abrirlos a mano (id, motivo, fecha).
+  revision_manual: config/revision_manual.yaml
   accesibilidad: data/processed/accesibilidad.tsv
   # Permisos de obra (src/permisos_obra.py).
   permisos_obra_snapshot: data/external/obras-registradas.csv

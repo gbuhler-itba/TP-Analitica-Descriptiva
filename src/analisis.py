@@ -52,7 +52,7 @@ if str(RAIZ) not in sys.path:
 
 from src import modelo  # noqa: E402
 from src.configuracion import agregar_argumento_config, cargar_config  # noqa: E402
-from src.indice_confort import tipo_de_columna  # noqa: E402
+from src.limpieza import tipo_de_columna  # noqa: E402
 from src import regla, validacion  # noqa: E402
 from src.limpieza import estado_y_riesgo_del_titulo  # noqa: E402
 from src.qc import ControlCalidad  # noqa: E402

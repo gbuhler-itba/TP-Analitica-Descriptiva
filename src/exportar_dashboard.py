@@ -25,8 +25,9 @@ que el análisis mostró como especiales (barrio popular o a menos de 500 m de u
 o PH), usos que no son vivienda (oficina, comercial, local, hotel), avisos sin
 coordenadas cuyo título nombra otro barrio oficial ("barrio dudoso"), posibles
 ventas de varias unidades (en block, departamentos en plural), precio posiblemente
-con financiación (anticipo, cuotas) y en pozo. Cada aviso lleva sus
-`exclusiones` (vacías si entra); el dashboard las muestra en la tabla y en la
+con financiación (anticipo, cuotas), en pozo, y los avisos apartados en la revisión
+manual de los primeros puestos (`config/revision_manual.yaml`: id, motivo y fecha; hoy,
+dos oficinas publicadas como departamento). Cada aviso lleva sus `exclusiones` (vacías si entra); el dashboard las muestra en la tabla y en la
 ficha. Las exclusiones no tocan la lista oficial ni los candidatos de la etapa 6.
 No existe una marca de "brecha extrema" en el pipeline: los casos extremos se
 filtran antes como errores de carga (`senal_error_carga`).
@@ -56,6 +57,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import yaml
 
 RAIZ = Path(__file__).resolve().parents[1]
 if str(RAIZ) not in sys.path:
@@ -96,6 +98,7 @@ EQUIVALENCIAS_BARRIO = {"barrio norte": "recoleta"}
 REGEX_CALLE_ANTES = re.compile(r"(?:\bav\.?|\bavenida|\bcalle|\bpasaje|\bpje\.?)\s*$")
 EXCLUSION_BARRIO_DUDOSO = "barrio dudoso"
 EXCLUSION_VARIAS_UNIDADES = "posible venta de varias unidades"
+EXCLUSION_REVISION_MANUAL = "revisión manual"
 
 
 def normalizar(texto):
@@ -179,9 +182,20 @@ def distancia_a_barrio_popular(lista, cfg_fe):
     return distancia
 
 
-def exclusiones_del_destacado(lista, oficiales):
+def revision_manual(cfg):
+    """Avisos apartados de la lista destacada después de abrirlos a mano (`config/revision_manual.yaml`): id -> motivo."""
+    ruta = cfg["rutas"].get("revision_manual")
+    if not ruta or not resolver(ruta).exists():
+        return {}
+    with open(resolver(ruta), encoding="utf-8") as fh:
+        datos = yaml.safe_load(fh) or {}
+    return {e["id"]: e["motivo"] for e in datos.get("excluidos", [])}
+
+
+def exclusiones_del_destacado(lista, oficiales, manual=None):
     """Por aviso, la lista de motivos por los que no entra a la lista destacada (vacía si entra).
-    `oficiales`: nombres normalizados de los barrios oficiales, para la regla de barrio dudoso."""
+    `oficiales`: nombres normalizados de los barrios oficiales, para la regla de barrio dudoso.
+    `manual`: id -> motivo de la revisión manual (`revision_manual`); se agrega como "revisión manual: <motivo>"."""
     titulo = lista["titulo"].fillna("").astype(str)
     en_popular = lista["titulo_barrio_popular"].astype(bool) | (lista["en_barrio_popular"].fillna(0) == 1)
     cerca_popular = ~en_popular & (lista["dist_barrio_popular_m"] < RADIO_BARRIO_POPULAR_M)
@@ -198,7 +212,11 @@ def exclusiones_del_destacado(lista, oficiales):
                ("casa", casa), ("PH", ph), ("uso comercial u oficina", uso),
                (EXCLUSION_BARRIO_DUDOSO, dudoso), (EXCLUSION_VARIAS_UNIDADES, varias),
                (EXCLUSION_FINANCIACION, financiacion), (EXCLUSION_EN_POZO, en_pozo)]
-    return [[nombre for nombre, marca in motivos if bool(marca.iloc[i])] for i in range(len(lista))]
+    salida = [[nombre for nombre, marca in motivos if bool(marca.iloc[i])] for i in range(len(lista))]
+    for i, id_aviso in enumerate(lista["id_aviso"]):
+        if manual and id_aviso in manual:
+            salida[i].append(f"{EXCLUSION_REVISION_MANUAL}: {manual[id_aviso]}")
+    return salida
 
 
 def segmento_por_aviso(limpio, semilla):
@@ -217,10 +235,11 @@ def segmento_por_aviso(limpio, semilla):
 
 
 def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset(), segmento=None,
-                 estado_r2=None):
+                 estado_r2=None, manual=None):
     """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador.
     `firmes`: unidades que son candidato firme. `segmento`: segmento de departamento por id_aviso.
-    `estado_r2`: estado en el segundo relevamiento por id_aviso (sigue, republicado, salio)."""
+    `estado_r2`: estado en el segundo relevamiento por id_aviso (sigue, republicado, salio).
+    `manual`: id -> motivo de la revisión manual de la lista destacada."""
     # De la lista: la posición y lo que solo está ahí; el resto, sin redondear, de precio_esperado.tsv
     propias = ["id_aviso", "posicion", "ambientes", "antiguedad", "avisos_de_la_unidad", "avisos_discordantes",
                "brecha_otro_modelo_%", "link"]
@@ -234,7 +253,7 @@ def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=fr
     lista = lista.merge(explicacion.drop(columns=["precio_m2_esperado"]), on="id_aviso", how="left")
     niveles = {v: regla.nivel_de_refaccion(lista["estado_titulo"], costos, v) for v in ["central", "baja", "alta"]}
     lista["dist_barrio_popular_m"] = distancia_a_barrio_popular(lista, cfg_fe)
-    exclusiones = exclusiones_del_destacado(lista, barrios_oficiales(cfg_fe))
+    exclusiones = exclusiones_del_destacado(lista, barrios_oficiales(cfg_fe), manual)
     filas = []
     for i, f in lista.iterrows():
         factores = [{"factor": f[f"{s}_{k}"], "efecto_pct": _limpio(f[f"{s}_{k}_%"])}
@@ -401,7 +420,7 @@ def exportar(cfg, salida=SALIDA):
     seg = pd.read_csv(ruta_seg) if ruta_seg.exists() else None
     estado_r2 = seg.set_index("id_aviso")["estado"] if seg is not None else None
     avisos = tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg["fuentes_externas"], firmes, segmento,
-                          estado_r2)
+                          estado_r2, revision_manual(cfg))
     en_segmento_alerta = precio["id_aviso"].map(segmento) == SEGMENTO_ALERTA
     destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
     error = precio["brecha"].abs().median()

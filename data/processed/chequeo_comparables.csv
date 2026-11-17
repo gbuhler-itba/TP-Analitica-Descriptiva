@@ -1,5 +1,4 @@
 id_aviso,barrio,firme,segmento,comparables,precio_m2_comparables,esperado_vs_comparables,publicado_vs_comparables
-MLA1812612179,monserrat,True,Familiares amplios y antiguos,15,1552.795,0.037,-0.569
 MLA1948695509,nueva-pompeya,True,Compactos de edificio antiguo,16,932.2034,0.3326,-0.404
 MLA1935339895,villa-urquiza,True,Chicos y recientes,49,3426.0274,-0.2669,-0.6692
 MLA1845613651,san-nicolas,True,Familiares amplios y antiguos,1,1570.6806,0.06,-0.5217
@@ -7,7 +6,6 @@ MLA3721463016,puerto-madero,True,Familiares amplios y antiguos,11,8618.1818,-0.4
 MLA3200530564,nunez,True,Nuevos con amenities,30,4432.0276,-0.2724,-0.6695
 MLA1646901811,villa-lugano,False,Compactos de edificio antiguo,35,867.6471,-0.0381,-0.5615
 MLA3060441522,recoleta,False,Familiares amplios y antiguos,28,2602.0734,0.0985,-0.4827
-MLA3498095614,san-nicolas,True,Familiares amplios y antiguos,22,1202.0398,0.449,-0.3137
 MLA1895310443,balvanera,True,Familiares amplios y antiguos,5,888.3929,0.3634,-0.3535
 MLA1946332967,villa-lugano,True,Compactos de edificio antiguo,43,882.3529,0.2583,-0.4029
 MLA3746552786,san-nicolas,True,Familiares amplios y antiguos,6,1139.8586,0.3749,-0.3471
