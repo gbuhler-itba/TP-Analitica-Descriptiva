@@ -64,7 +64,7 @@ analista.
   marcados salen más del portal** en los 74 días hasta el segundo relevamiento: 46,7% contra 39,7%, y dentro del
   barrio, a igual valor esperado, +9,4 puntos (IC 6,5 a 12,2), con un gradiente (cada 10 puntos más por debajo,
   +2,2 puntos de salida) y un placebo a favor (los avisos caros salen menos). Salir del portal no prueba una venta,
-  pero muestra que la brecha ordena algo real.
+  pero sugiere que la brecha capta algo más que el error del modelo.
 - **Relación estadística · H2 (sub-zonas): apoyo parcial.** La sub-zona baja el error de la referencia 0,6 puntos en total (IC 0,4 a 0,85),
   con mejora significativa en 4 de 41 barrios y grande en uno (Villa Lugano). Por eso el modelo la usa barrio por
   barrio, donde mejora y es estable.
@@ -374,6 +374,18 @@ y abrir http://localhost:8000/dashboard/.
 | Cómo leer este tablero | La advertencia completa, qué es cada nivel, qué se excluye de la lista destacada, los límites en palabras simples y los links a los notebooks |
 | Ficha del aviso | Publicado contra esperado con el rango del 80%, qué suma y qué resta, la cascada de costos hasta la brecha neta, alertas, consenso, liquidez por ambientes y el link al aviso, que avisa si ya no estaba publicado o fue republicado al 28/10 |
 
+**Capturas de las vistas principales** (`docs/capturas/`, 1440 × 900 a escala 2; tomadas del tablero publicado con
+los datos de esta versión):
+
+| Vista | Captura |
+|---|---|
+| Resumen: indicadores, embudo y lista destacada | [`01_resumen.png`](docs/capturas/01_resumen.png) |
+| Mapa: señales, candidatos y firmes sobre el fondo de la oferta, con capas y filtros | [`02_mapa.png`](docs/capturas/02_mapa.png) |
+| Buscador con filtros aplicados (4 ambientes, "Familiares amplios y antiguos", candidatos) | [`03_buscador_filtros.png`](docs/capturas/03_buscador_filtros.png) |
+| Ficha de un aviso: publicado contra esperado con el rango, factores, cascada de costos | [`04_ficha.png`](docs/capturas/04_ficha.png) |
+| Tendencias: salida por decil, error por barrio, señales por barrio, sensibilidad y simulador | [`05_tendencias.png`](docs/capturas/05_tendencias.png) |
+| Cómo leer este tablero | [`06_como_leer.png`](docs/capturas/06_como_leer.png) |
+
 El tercer nivel, **candidato firme**, es el escenario conservador del notebook 07 (candidato aun vendiendo al piso del
 rango del 80%: 83 unidades) calculado por unidad en `src/exportar_dashboard.py`.
 
@@ -400,6 +412,27 @@ pagar para 27.578 filas que entran en 26 MB, y el tablero no es público sin acc
 mejoraba la experiencia del analista para este volumen y las dos rompían la reproducibilidad del repo.
 
 ## 10. Qué se corrigió respecto de la versión anterior y por qué
+
+### Seguimiento de la devolución de la versión del 5/11
+
+Las celdas se citan por su número de ejecución (`In [n]`), que es el que se ve en el notebook; las de texto, por
+la sección a la que pertenecen.
+
+| Observación | Estado | Qué cambiaron | Dónde se verifica |
+|---|---|---|---|
+| El rango del intervalo del 80% estaba mal calculado (el "±32%" salía de dividir el límite superior por el inferior y partirlo a la mitad) | Resuelta | Se mide contra el precio esperado: de −21% a +29%, semiancho mediano 25%; corregido en README, notebooks 04 y 07, diccionario y "Cómo leer"; la tabla de cobertura del 04 ahora calcula esos tres números en lugar del ancho sup/inf | Notebook 04, `In [18]` (sección 5) y la interpretación que le sigue; notebook 04, sección 8; notebook 07, sección 3; dashboard, "Cómo leer"; commits `efd3d96` y `e742251` |
+| MCA: el faltante se trataba como "No"; distinguir "no tiene" de "no lo declara" | Resuelta | "Sin dato" como categoría pasiva: el eje se ajusta con los 14.909 avisos que declaran todas las Sí/No y cada aviso se proyecta con lo que declara (`segmentos.indice_mca_pasivo`, con test); el exportador del dashboard usa el mismo índice. La correlación del índice con la completitud de la carga baja de 0,33 a 0,16; 63 señales cambian de tipo, destacados y firmes no | Notebook 06, `In [9]` (sección 2.4) y su interpretación; `tests/test_segmentos.py`; commit `671cac5` |
+| Sesgo en departamentos grandes y antiguos: proponer una corrección, no solo alertarlo | Resuelta | Dos correcciones evaluadas fuera de muestra con el embudo completo: interacción tamaño × antigüedad (dos variantes) y umbral según el error del segmento, como ya se hace por barrio. Ninguna se adoptó: cambian la lista en el margen y no corrigen el precio esperado; la recomendada a futuro es el umbral por segmento (sección 13) | Notebook 04, `In [34]` a `In [39]` (secciones 10 y 10.1) y sus cierres; README secciones 11 y 13; commits `732203e` y `b267b2c` |
+| Moderar "es consistente con que estaban baratos" y alinear la lectura de H3 (subte) con el README | Resuelta | En el dashboard: "parecen venderse más rápido, aunque salir del portal también puede ser una pausa, una republicación o una venta por otro canal". En H3, el subte queda como no concluyente (no sobrevive a Holm) y la avenida como explicación posible no medida, igual que en el README | Dashboard, "Cómo leer"; notebook 05, interpretaciones de la sección 4 (`In [23]` en adelante) y conclusión; README sección 1; commit `efd3d96` |
+| Material interno versionado: notas de trabajo, PDF de tareas, carpetas de correcciones y entregas | Resuelta | Fuera del HEAD (siguen en el historial, que no se reescribió); lo que servía se integró en `docs/` (diccionario, fuentes externas, control de fuentes, costos, contexto); `.gitignore` excluye las notas locales | `git ls-files`; `docs/`; commit `0c38bd6` |
+| Cerrar o justificar lo que quedó abierto desde la primera versión | Resuelta | Los marcados bajan de precio menos que el resto (23,7% contra 29,8%, −6,1 pp, IC −9,4 a −2,7) y la brecha no se achica; tabla barrio × característica; construcción reciente por barrio (21,8%; de 52% en Villa Ortúzar a 4% en San Nicolás) | Notebook 05, `In [11]` (sección 2.2.1); notebook 02, `In [26]` e `In [27]` (sección 7.1); "Tres preguntas" más abajo; commit `8f7930c` |
+| Un solo proyecto, sin menciones a preentregas ni a la consigna | Resuelta | Banners y referencias reescritos como "primera versión"; `.gitignore`, documentación y notebooks sin esas menciones; revisión independiente final sobre consigna y devolución | `rg -i -e preentrega -e consigna` sin resultados fuera de esta tabla; commits `0c38bd6` y `e742251` |
+| Sugerencia: estabilidad de las sub-zonas dentro de cada vuelta | No resuelta | Se mantiene el cálculo único sobre todo el dataset: la estabilidad usa solo coordenadas, así que no filtra la variable objetivo. Cómo afecta: nada medible en las conclusiones; si los barrios con ARI menor a 0,8 se comparan enteros, el error pasa de 12,68% a 12,67% y la lista cambia en un aviso | Notebook 04, sección 3 (interpretación final); tabla siguiente, fila "Estabilidad de las sub-zonas" |
+| Sugerencia: manejo de errores en el cargador del tablero | Resuelta | Si los datos no cargan, el tablero muestra el error en pantalla en lugar de quedar en blanco | `docs/dashboard/js/app.js`, `cargar().catch(...)` |
+| Sugerencia: sensibilidad de la regla con costo de tenencia | No resuelta | No hay medida del tiempo hasta la venta (solo la salida del portal a los 74 días), así que un costo de tenencia sería un supuesto sin dato propio. Cómo afecta: la brecha neta de los avisos que tardan en venderse está sobreestimada; por eso la liquidez acompaña cada candidato como información y el filtro conservador es vender al piso del rango (candidato firme) | README secciones 12 y 13; notebook 07, introducción y sección de límites |
+| Seguimiento anterior: la liquidez en la regla es informativa | Parcial | La tasa de salida por ambientes acompaña cada candidato (tabla, ficha y simulador), pero no filtra: salir del portal no equivale a una venta y no permite estimar tiempos. Cómo afecta: la regla no penaliza a los departamentos que tardan más en venderse; el analista lo ve en la ficha | Notebook 07; dashboard, ficha; README sección 12 |
+
+### Seguimiento de la primera revisión
 
 La primera versión del análisis (modelo lineal simple, notebook 03) fue revisada externamente; estas son las
 observaciones y lo que se hizo con cada una.
