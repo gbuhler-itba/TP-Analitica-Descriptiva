@@ -74,7 +74,7 @@ analista.
   (−24%) también sobrevive a la corrección de Holm, pero es la zona y no el premetro: sin los avisos a menos de 500 m
   de un barrio popular pasa a −4%, con un intervalo que incluye el 0. El subte a menos de 300 m da −4,8% pero no
   sobrevive a Holm (p ajustado 0,27); que la avenida pese más que la estación es una conjetura, no algo medido. Con
-  solo subte y centralidad, como en la versión anterior, no se detectaba nada.
+  solo subte y centralidad, como en la versión anterior, no se detectaba una asociación significativa.
 - **Relación estadística · El estado del inmueble pesa más de lo que parecía.** Un aviso "a reciclar" se publica 18% más barato que uno
   igual sin esa marca, y uno "a refaccionar" 16%. Entra al modelo y a la regla: una parte de la brecha es el estado,
   no una subvaluación.
@@ -252,7 +252,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 |---|---|---|---|
 | Normalizador de direcciones USIG (GCBA) | Punto | `lat`, `lon` | Ubica cada aviso |
 | Estaciones de subte (BA Data) | Punto | `dist_transporte_m` | H3, modelo con ubicación |
-| Polos de centralidad (definición propia) | Punto | `dist_centralidad_m` | H3; sin efecto |
+| Polos de centralidad (definición propia) | Punto | `dist_centralidad_m` | H3; sin asociación significativa |
 | Dólar MEP del 14/08/2026 | Un valor | `expensas_usd` | KPI de expensas |
 | Estaciones de ferrocarril (BA Data) | Punto | `dist_tren_m` | H3 |
 | Metrobus (BA Data) | Punto | `dist_metrobus_m` | H3 |
