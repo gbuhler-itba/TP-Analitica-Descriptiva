@@ -1,7 +1,5 @@
-/Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
 === ETAPA 4: ENRIQUECIMIENTO ===
-Cargando /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/data/interim/propiedades_geocodificadas.tsv...
+Cargando <repo>/data/interim/propiedades_geocodificadas.tsv...
   27922 propiedades.
   Con coordenadas: 22912
 [subte] Descargando estaciones de subte de BA Data...
@@ -44,7 +42,7 @@ nulos_columnas_clave:
     barrio     0
 archivo_salida: /tmp/enriquecido_nuevo.tsv
 ==============================================================
-[qc] Log:  /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/outputs/logs/pipeline.log
-[qc] JSON: /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/outputs/logs/qc_04_enriquecimiento.json
+[qc] Log:  <repo>/outputs/logs/pipeline.log
+[qc] JSON: <repo>/outputs/logs/qc_04_enriquecimiento.json
 498328bdefbcbb8e2f7c1552688a4639de8dd32e4ede91f962653894a3e0d9d9  /tmp/enriquecido_nuevo.tsv
 498328bdefbcbb8e2f7c1552688a4639de8dd32e4ede91f962653894a3e0d9d9  data/processed/propiedades_enriquecidas.tsv
