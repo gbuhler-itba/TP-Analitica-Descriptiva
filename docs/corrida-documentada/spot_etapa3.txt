@@ -1,7 +1,5 @@
-/Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
 === ETAPA 3: GEOCODIFICACIÓN ===
-Cargando /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/data/interim/mercadolibre_CABA_completo.tsv...
+Cargando <repo>/data/interim/mercadolibre_CABA_completo.tsv...
   27922 propiedades cargadas.
 
 Limpiando direcciones...
@@ -37,5 +35,5 @@ nulos_columnas_clave:
     barrio     0
 archivo_salida: /tmp/geo_prueba.tsv
 ==============================================================
-[qc] Log:  /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/outputs/logs/pipeline.log
-[qc] JSON: /Users/gonzalobuhler/Documents/Facultad (ITBA)/2026 - 2C/Descriptiva/tp1-fondo-inmobiliario/outputs/logs/qc_03_geocoding.json
+[qc] Log:  <repo>/outputs/logs/pipeline.log
+[qc] JSON: <repo>/outputs/logs/qc_03_geocoding.json
