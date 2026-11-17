@@ -166,7 +166,7 @@ details[open] summary{margin-bottom:12px}
 <!-- 5 HALLAZGO 1 -->
 <section class="stop" id="h1" data-titulo="Hallazgo 1" data-foco="1375" data-notas="Arrancar con la hipótesis y su veredicto. Primero: si hubiera muchos departamentos regalados, la cola de abajo sería más pesada que la de arriba; son parecidas, así que buena parte de las brechas grandes es error. Pero el gráfico muestra el gradiente: cuanto más barato respecto del esperado, más salen del portal. Pasar el mouse por los puntos. Salir del portal no es venderse. Consecuencia: la lista hay que revisarla rápido. 2 minutos y medio.">
   <p class="kicker rev">Hallazgo 1</p>
-  <p class="rev d1" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="pill fuerte">Hipótesis validada en parte</span><span class="muted" style="font-size:.9em">"Un aviso muy por debajo del esperado es una oportunidad"</span></p>
+  <p class="rev d1" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="pill fuerte">Hipótesis con apoyo parcial</span><span class="muted" style="font-size:.9em">"Un aviso muy por debajo del esperado es una oportunidad"</span></p>
   <h2 class="rev d1">Un precio bajo no prueba nada por sí solo, pero <b>los más baratos salen más rápido del portal</b>: la mitad de los marcados ya no estaba a los 74 días</h2>
   <div class="grid g32">
     <div class="card rev d2">
@@ -182,16 +182,16 @@ details[open] summary{margin-bottom:12px}
 </section>
 
 <!-- 6 HALLAZGO 2 AMENITIES -->
-<section class="stop" id="h2" data-titulo="Hallazgo 2" data-foco="1375" data-notas="Uno supondría que un departamento con pileta, gimnasio y parrilla al mismo precio que uno sin nada es una ganga. Comparando a simple vista, la pileta parece valer 33% más. Pero esos edificios además son nuevos y están en barrios caros. Comparando departamentos iguales, la pileta suma 4,2%. Tocar el botón. Consecuencia para el fondo: un aviso lleno de amenities no es barato por eso; mirarlo con cuidado. 2 minutos.">
+<section class="stop" id="h2" data-titulo="Hallazgo 2" data-foco="1375" data-notas="Uno supondría que un departamento con pileta, gimnasio y parrilla al mismo precio que uno sin nada es una ganga. Comparando a simple vista, la pileta parece valer 56% más. Pero esos edificios además son nuevos y están en barrios caros. Comparando departamentos iguales, la pileta suma 4,2%. Tocar el botón. Consecuencia para el fondo: un aviso lleno de amenities no es barato por eso; mirarlo con cuidado. 2 minutos.">
   <p class="kicker rev">Hallazgo 2</p>
   <p class="rev d1" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="pill">Hipótesis descartada</span><span class="muted" style="font-size:.9em">"Hay departamentos con más amenities al mismo precio"</span></p>
-  <h2 class="rev d1">Se podría suponer que las amenities esconden gangas, pero <b>el mercado ya las paga</b>: a simple vista la pileta parece valer 8 veces más de lo que vale</h2>
+  <h2 class="rev d1">Se podría suponer que las amenities esconden gangas, pero <b>el mercado ya las paga</b>: a simple vista la pileta parece valer más de 13 veces lo que vale</h2>
   <div class="grid g2">
     <div class="card rev d2">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h3>Cuánto más se publica un departamento con pileta</h3>
         <div class="tabs"><button class="tog on" data-pil="parece">Lo que parece</button><button class="tog" data-pil="paga">Lo que paga</button></div></div>
-      <svg id="pileta" viewBox="0 0 700 300" width="100%" aria-label="Prima de la pileta: 33,5% a simple vista, 4,2% comparando iguales"></svg>
-      <p id="pilTxt" class="muted">Comparación simple: con pileta contra sin pileta. Pero los edificios con pileta además son nuevos y están en barrios caros.</p>
+      <svg id="pileta" viewBox="0 0 700 300" width="100%" aria-label="Prima de la pileta: 56,4% a simple vista, 4,2% comparando iguales"></svg>
+      <p id="pilTxt" class="muted">Comparación simple por unidad: el m² con pileta se publica 56% más caro que sin pileta (medianas). Pero los edificios con pileta además son nuevos y están en barrios caros.</p>
     </div>
     <div class="card rev d3">
       <h3>Lo que suma cada amenity, comparando departamentos iguales (%)</h3>
@@ -217,7 +217,7 @@ details[open] summary{margin-bottom:12px}
       <div class="card rev d4" style="flex:1;justify-content:center"><span class="pill">Qué significa para el fondo</span><p style="font-size:1.1em">La visita y la tasación siguen siendo insustituibles antes de ofertar.</p></div>
     </div>
   </div>
-  <p class="fuente">Regresión con efectos fijos de barrio. Verde: por hectárea a 500 m. Obras: por cada 10 obras nuevas cerca. Solo 2 de 16 variables de entorno resultaron significativas. Fuente: notebooks 04 y 05.</p>
+  <p class="fuente">Regresión con efectos fijos de barrio. Verde: por hectárea a 500 m. Obras: por cada 10 obras nuevas cerca. Solo 2 de 16 variables de transporte y entorno tienen un efecto interpretable (una tercera, el premetro, refleja la zona). Fuente: notebooks 04 y 05.</p>
 </section>
 
 <!-- 8 EMBUDO (scrolly) -->
@@ -258,7 +258,7 @@ details[open] summary{margin-bottom:12px}
       <p class="chico">El Radar los marca con "más error del modelo". Recomendamos exigirles más brecha.</p>
     </div>
   </div>
-  <p class="fuente">Lista destacada: candidatos que marcan el modelo oficial y el gradient boosting. Revisión manual del 16/11/2026. Fuente: dashboard y notebooks 04 y 06.</p>
+  <p class="fuente">Lista destacada: candidatos que marcan el modelo oficial y el gradient boosting. Revisión manual del 17/11/2026. Fuente: dashboard y notebooks 04 y 06.</p>
 </section>
 
 <!-- 11 PRODUCTO -->
@@ -400,18 +400,18 @@ function dibSalida(){const s=document.getElementById('salida');s.innerHTML='';
 /* pileta */
 let pilModo='parece';
 function dibPileta(){const s=document.getElementById('pileta');if(!s.dataset.ok){s.dataset.ok=1;
- const X=v=>60+v/40*600;
- [0,10,20,30,40].forEach(v=>{el('line',{x1:X(v),y1:40,x2:X(v),y2:230,stroke:C.linea},s);el('text',{x:X(v),y:258,'text-anchor':'middle','font-size':15,fill:'#A39FA6'},s).textContent='+'+v+'%';});
+ const X=v=>60+v/60*600;
+ [0,20,40,60].forEach(v=>{el('line',{x1:X(v),y1:40,x2:X(v),y2:230,stroke:C.linea},s);el('text',{x:X(v),y:258,'text-anchor':'middle','font-size':15,fill:'#A39FA6'},s).textContent='+'+v+'%';});
  el('rect',{id:'pilBar',x:X(0),y:95,width:0,height:70,rx:12,fill:C.magenta},s);
- el('line',{id:'pilFant',x1:X(33.5),y1:80,x2:X(33.5),y2:180,stroke:C.claro,'stroke-width':3,'stroke-dasharray':'6 6',opacity:0},s);
- el('text',{id:'pilFantT',x:X(33.5),y:68,'text-anchor':'middle','font-size':15,fill:C.gris,opacity:0},s).textContent='lo que parecía';
+ el('line',{id:'pilFant',x1:X(56.4),y1:80,x2:X(56.4),y2:180,stroke:C.claro,'stroke-width':3,'stroke-dasharray':'6 6',opacity:0},s);
+ el('text',{id:'pilFantT',x:X(56.4),y:68,'text-anchor':'middle','font-size':15,fill:C.gris,opacity:0},s).textContent='lo que parecía';
  el('text',{id:'pilNum',x:X(0)+16,y:142,'font-size':34,'font-weight':600,fill:'#fff'},s).textContent='';}
- const X=v=>60+v/40*600;const bar=s.querySelector('#pilBar'),num=s.querySelector('#pilNum');
- const desde=+(bar.dataset.v||0),hasta=pilModo==='parece'?33.5:4.2;bar.dataset.v=hasta;
+ const X=v=>60+v/60*600;const bar=s.querySelector('#pilBar'),num=s.querySelector('#pilNum');
+ const desde=+(bar.dataset.v||0),hasta=pilModo==='parece'?56.4:4.2;bar.dataset.v=hasta;
  anim(1000,k=>{const v=desde+(hasta-desde)*k;bar.setAttribute('width',X(v)-X(0));num.textContent='+'+fmt(v,1)+'%';
   if(v<12){num.setAttribute('x',X(v)+14);num.setAttribute('fill',C.magenta);}else{num.setAttribute('x',X(0)+16);num.setAttribute('fill','#fff');}});
  s.querySelector('#pilFant').setAttribute('opacity',pilModo==='paga'?1:0);s.querySelector('#pilFantT').setAttribute('opacity',pilModo==='paga'?1:0);
- document.getElementById('pilTxt').innerHTML=pilModo==='parece'?'Comparación simple: con pileta contra sin pileta. Pero los edificios con pileta además son nuevos y están en barrios caros.':'Comparando departamentos iguales en la misma zona, la pileta suma <b style="color:#3D0C2E">4,2%</b>: el resto lo explican la antigüedad y la ubicación.';}
+ document.getElementById('pilTxt').innerHTML=pilModo==='parece'?'Comparación simple por unidad: el m² con pileta se publica 56% más caro que sin pileta (medianas). Pero los edificios con pileta además son nuevos y están en barrios caros.':'Comparando departamentos iguales en la misma zona, la pileta suma <b style="color:#3D0C2E">4,2%</b>: el resto lo explican la antigüedad y la ubicación.';}
 document.querySelectorAll('[data-pil]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-pil]').forEach(x=>x.classList.toggle('on',x===b));pilModo=b.dataset.pil;dibPileta();});
 function dibPrimas(){const c=document.getElementById('primas');c.innerHTML='';
  [['Gimnasio',6.4],['Dormitorio en suite',6.1],['Pileta',4.2],['Balcón',3.7],['Parrilla',3.6],['SUM',2.6],['Terraza',2.2],['Aire acondicionado',1.9]].forEach(([n,v],i)=>{
