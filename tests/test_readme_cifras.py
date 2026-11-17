@@ -150,3 +150,22 @@ def test_los_tipos_de_departamento_de_app_js_salen_del_resumen(resumen):
         if "mediana de" in texto:
             assert f"mediana de {tipos[nombre]['amenities_mediana']:.0f}" in texto, (nombre, texto)
     assert resumen["indicadores"]["avisos_segmento_alerta_pct"] == tipos[resumen["indicadores"]["segmento_alerta"]]["avisos_pct"]
+
+
+def test_la_diferencia_simple_de_la_pileta_sale_del_dataset_limpio():
+    """La comparación del hallazgo 2 (pileta a simple vista contra la prima del modelo) sale del código."""
+    ruta = RAIZ / "data" / "processed" / "propiedades_limpias.tsv"
+    if not ruta.exists():
+        pytest.skip("falta el dataset limpio")
+    from src import analisis, eda
+    df = pd.read_csv(ruta, sep="\t", low_memory=False)
+    dif = eda.diferencia_simple_por_unidad(df, "pileta", analisis.unidad_ranking(df))["diferencia_pct"]
+    prima_modelo = 4.2   # notebook 04, sección 6 (lineal ampliado); la tabla del diccionario cita la misma
+    diccionario = re.sub(r"\s+", " ", (RAIZ / "docs" / "diccionario_datos.md").read_text(encoding="utf-8"))
+    presentacion = (RAIZ / "docs" / "presentacion" / "index.html").read_text(encoding="utf-8")
+    assert f"+{_pct(dif)}% en la diferencia simple contra +{_pct(prima_modelo)}% en el modelo" in diccionario
+    assert f"Prima del modelo: +{_pct(prima_modelo)}% (diferencia simple por unidad: +{_pct(dif)}%" in diccionario
+    assert f"Prima de la pileta: {_pct(dif)}% a simple vista" in presentacion
+    assert f"hasta=pilModo==='parece'?{dif:.1f}:{prima_modelo}" in presentacion
+    assert f"se publica {round(dif):.0f}% más caro" in presentacion
+    assert f"parece valer más de {int(dif // prima_modelo)} veces lo que vale" in presentacion

@@ -82,9 +82,21 @@ unifican dos etiquetas mal cargadas. Las transformaciones generan las columnas n
 **Primas.** Para las variables que entran al modelo se cita la **prima del modelo** oficial, el lineal ampliado (notebook 04, sección 6): la
 diferencia de precio por m² asociada a la característica comparando dentro de la misma zona y con las demás
 características fijas (antigüedad, superficie, amenities, etc.). Son asociación, no efecto causal. Las diferencias
-simples de la primera versión (índice de confort) eran mucho más grandes (por
-ejemplo, +33,5% para la pileta contra +4,0% en el modelo) porque mezclaban el efecto de la antigüedad: los amenities son
-casi exclusivos de los edificios nuevos.
+simples son mucho más grandes porque mezclan el efecto de la antigüedad y de la ubicación: los amenities son casi
+exclusivos de los edificios nuevos. Por ejemplo, la pileta: +56,4% en la diferencia simple contra +4,2% en el modelo
+(unas 13 veces más), que es la comparación del hallazgo 2 de la presentación.
+
+**Diferencia simple de la pileta (+56,4%).** Sobre el dataset limpio (27.578 avisos), cada unidad del ranking
+(`analisis.unidad_ranking`: misma dirección, superficie y piso) vale la mediana del USD/m² de sus avisos con dato en
+`pileta`. Se dejan afuera los avisos sin dato y las 54 unidades cuyos avisos se contradicen (unos dicen Sí y otros No).
+Quedan 3.412 unidades con pileta (mediana USD 3.559/m²) y 13.083 sin pileta (USD 2.275/m²); la diferencia es el
+cociente de las dos medianas menos 1. La calcula `eda.diferencia_simple_por_unidad`, y
+`tests/test_readme_cifras.py` verifica que la cifra de este archivo y de la presentación sea la que da el código.
+Para reproducirla desde la raíz del repo:
+
+```bash
+python3 -c 'import pandas as pd; from src import analisis, eda; df = pd.read_csv("data/processed/propiedades_limpias.tsv", sep="\t", low_memory=False); print(eda.diferencia_simple_por_unidad(df, "pileta", analisis.unidad_ranking(df)))'
+```
 
 ## Diccionario
 
@@ -199,7 +211,7 @@ En las diferencias simples de la primera versión era el bloque que más se asoc
 
 | Variable | Significado | Tipo | Unidad | Fuente | Transformación | Con dato | Observaciones |
 |---|---|---|---|---|---|---|---|
-| `pileta` | El edificio tiene pileta | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 14,4% · No 52,2% | Prima del modelo: +4,2% (la diferencia simple de la primera versión era +33,5%) |
+| `pileta` | El edificio tiene pileta | Dicotómica (Sí / No / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 14,4% · No 52,2% | Prima del modelo: +4,2% (diferencia simple por unidad: +56,4%; ver **Primas** al inicio) |
 | `gimnasio` | El edificio tiene gimnasio | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 9,1% (2.530) | Prima del modelo: +6,4% |
 | `sauna` | El edificio tiene sauna | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 3,5% (970) | No entra al modelo: se superpone con gimnasio y pileta, y la diferencia simple de la primera versión salía de solo 16 sub-zonas comparables |
 | `jacuzzi` | Tiene jacuzzi | Dicotómica (solo Sí / vacío) | No aplica | MercadoLibre, ficha de detalle | Ninguna | Sí 2,7% (767) | No aclara si es de la unidad o del edificio |

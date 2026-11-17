@@ -67,13 +67,14 @@
     Object.assign(D, { avisos, resumen, estaciones, fondo });
     D.porId = new Map(avisos.map(a => [a.id, a]));
     D.barrios = resumen.barrios.slice().sort((x, y) => x.nombre.localeCompare(y.nombre, "es"));
-    document.getElementById("cargando").hidden = true;
     armarResumen();
     armarBuscador();
     armarTendencias();
     armarLeer();
     window.addEventListener("hashchange", enrutar);
     enrutar();
+    // el cartel se oculta recién cuando todo quedó armado: si algo falla antes, el catch de abajo muestra el error
+    document.getElementById("cargando").hidden = true;
   }
 
   function enrutar() {
@@ -447,5 +448,5 @@
   document.getElementById("ficha").addEventListener("click", (ev) => { if (ev.target.id === "ficha") ev.target.close(); });
   document.addEventListener("click", (ev) => { const b = ev.target.closest("[data-ficha]"); if (b) { ev.stopPropagation(); abrirFicha(b.dataset.ficha); } }, true);
 
-  cargar().catch(err => { document.getElementById("cargando").textContent = "No se pudieron cargar los datos: " + err; console.error(err); });
+  cargar().catch(err => { document.getElementById("cargando").textContent = "No se pudo cargar o armar el tablero: " + err; console.error(err); });
 })();

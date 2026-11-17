@@ -3,7 +3,7 @@
 # =============================================================================
 # Los datasets del pipeline SÍ se versionan a propósito, para que cualquiera
 # pueda clonar el repo y correr la cadena sin rehacer 8-15 h de scraping.
-# Ver la sección "Qué viene versionado" del README.
+# Ver la sección 9 del README ("Cómo reproducir el análisis").
 #
 # Lo que se ignora es todo lo que una corrida nueva regenera: parciales,
 # logs, caches y artefactos de entorno.
@@ -26,7 +26,7 @@ outputs/logs/*
 # de estaciones de la corrida documentada. Si BA Data publica una versión
 # distinta, dist_transporte_m cambiaría sin que nadie toque una línea de
 # código y el hash dejaría de reproducirse por un motivo invisible.
-# Ver la sección 10 del README.
+# Ver la sección 7 del README (fuentes externas) y docs/fuentes_externas.md.
 data/external/*
 !data/external/.gitkeep
 !data/external/estaciones-de-subte.geojson

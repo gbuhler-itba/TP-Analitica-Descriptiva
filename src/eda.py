@@ -125,3 +125,24 @@ def diferencia_intra_grupo(valores, marca, grupo, minimo=10):
         if len(a) >= minimo and len(b) >= minimo:
             difs.append(a.median() / b.median() - 1)
     return (100 * np.median(difs) if difs else np.nan), len(difs)
+
+
+def diferencia_simple_por_unidad(df, columna, unidad, valor="precio_m2_usd"):
+    """Diferencia simple (sin controles) del precio por m² entre unidades con y sin una característica Sí / No.
+
+    Cada unidad (`unidad`, por ejemplo analisis.unidad_ranking) vale la mediana de `valor` de sus avisos con dato
+    en `columna`. Las unidades cuyos avisos se contradicen (unos dicen Sí y otros No) quedan afuera. Devuelve la
+    mediana de cada grupo y la diferencia porcentual entre ambas medianas."""
+    datos = df.loc[df[columna].notna(), [columna, valor]].assign(unidad=unidad)
+    por_unidad = datos.groupby("unidad").agg(precio=(valor, "median"), valores=(columna, "nunique"),
+                                             marca=(columna, "first"))
+    coherentes = por_unidad[por_unidad["valores"] == 1]
+    medianas = coherentes.groupby("marca")["precio"].median()
+    return {
+        "mediana_con": float(medianas["Sí"]),
+        "mediana_sin": float(medianas["No"]),
+        "diferencia_pct": float(100 * (medianas["Sí"] / medianas["No"] - 1)),
+        "unidades_con": int((coherentes["marca"] == "Sí").sum()),
+        "unidades_sin": int((coherentes["marca"] == "No").sum()),
+        "unidades_contradictorias": int((por_unidad["valores"] > 1).sum()),
+    }
