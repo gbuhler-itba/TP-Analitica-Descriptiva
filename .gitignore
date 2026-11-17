@@ -63,7 +63,7 @@ env/
 # macOS
 .DS_Store
 
-# Material de trabajo del grupo (zips, PDFs y borradores). Lo que sirve ya está
+# Material de trabajo del grupo (zips, PDFs y notas). Lo que sirve ya está
 # integrado al repo donde corresponde.
 _material_grupo/
 .pytest_cache/

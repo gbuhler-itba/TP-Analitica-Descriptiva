@@ -234,6 +234,15 @@ def segmento_por_aviso(limpio, semilla):
     return pd.Series(km.labels_, index=limpio["id_aviso"].values).map(segmentos.nombrar_segmentos(centroides))
 
 
+def tipos_de_departamento(limpio, segmento):
+    """Por tipo del notebook 06: proporción de la oferta y mediana de características "Sí" (las 17 del MCA).
+    Son los números que describen cada tipo en el dashboard (app.js)."""
+    cantidad_si = (segmentos.tabla_mca(limpio, "no") == "Sí").sum(axis=1)
+    seg = limpio["id_aviso"].map(segmento)
+    return [{"nombre": n, "avisos_pct": round(100 * float((seg == n).mean()), 1),
+             "amenities_mediana": float(cantidad_si[seg == n].median())} for n in sorted(seg.dropna().unique())]
+
+
 def tabla_avisos(ranking, precio, limpio, explicacion, costos, cfg_fe, firmes=frozenset(), segmento=None,
                  estado_r2=None, manual=None):
     """Una fila por unidad de la lista oficial: la ficha más lo que necesita el simulador.
@@ -469,6 +478,7 @@ def exportar(cfg, salida=SALIDA):
         resumen["salida_por_brecha"] = salida_por_brecha(precio, seg, cfg_an["umbral"], cfg_an["semilla"])
 
     salida = asegurar_directorio(Path(salida) / "avisos.json").parent
+    resumen["tipos"] = tipos_de_departamento(limpio, segmento)
     for nombre, contenido in [("avisos.json", avisos), ("resumen.json", resumen), ("fondo.json", fondo(precio)),
                               ("estaciones.json", estaciones(cfg["fuentes_externas"], cfg["enriquecimiento"]))]:
         with open(salida / nombre, "w", encoding="utf-8") as fh:
