@@ -17,12 +17,13 @@ cambio el 02/10/2026, pero el archivo publicado es idéntico a nuestro snapshot.
 
 Unidad de análisis del proyecto: **el aviso de departamento usado en venta**,
 comparado dentro de su **zona de referencia**. La zona es la sub-zona (cluster espacial
-dentro del barrio, hasta 5 por barrio) en los 28 barrios donde mejora la referencia de
-precio fuera de muestra, y el barrio completo en el resto (notebook 02, sección 4, y
-notebook 03, sección 2). Las sub-zonas no tienen un tamaño mínimo garantizado: k se fija
-en min(5, n // 30), pero KMeans no controla el tamaño de cada cluster, y 42 de las 198
-tienen menos de 30 avisos. Por eso el modelo vuelve al barrio cuando una zona tiene menos
-de 10 avisos y para los avisos sin coordenadas.
+dentro del barrio, hasta 5 por barrio) en los barrios donde mejora la referencia de precio
+fuera de muestra, elegidos dentro de cada vuelta de la validación (notebook 04, sección 2),
+y el barrio completo en el resto; un barrio con sub-zonas inestables (ARI < 0,7, hoy Villa
+Santa Rita) también se compara entero. Las sub-zonas no tienen un tamaño mínimo
+garantizado: k se fija en min(5, n // 30), pero KMeans no controla el tamaño de cada
+cluster. Por eso el modelo vuelve al barrio cuando una zona tiene menos de 10 avisos y para
+los avisos sin coordenadas.
 Cualquier fuente tiene que poder resolverse a nivel de punto (lat/lon), de parcela
 o, como mínimo, de sub-zona. Una fuente agregada por comuna o por barrio no sirve
 para explicar diferencias dentro de una sub-zona, porque toma el mismo valor para
@@ -41,7 +42,7 @@ todos los avisos que se comparan.
 | Mecanismo de unión | Consulta 1 a 1 por dirección limpia (`dir_limpia`) del aviso. Se toma la primera dirección normalizada que devuelve el servicio |
 | Variable derivada | `lat`, `lon`, `geo_status` |
 | Aporta a | Todo el análisis espacial: sub-zonas, distancias, H2, H3 y la zona de referencia del modelo de precio esperado |
-| Limitaciones | 17,9% de los avisos (5.010) sin coordenadas. **La pérdida no es aleatoria por barrio**: varía de 59,5% de éxito en Puerto Madero a 92,5% en Boedo (chi², p < 1e-100). Dentro de cada barrio, en cambio, los avisos perdidos casi no difieren en precio por m² ni en superficie. Las alturas redondeadas ("Esmeralda Al 900") ubican el punto en esa altura y no en el edificio: error de hasta una cuadra. La primera coincidencia no se coteja con el barrio del aviso. En el modelo, los avisos sin coordenadas se comparan contra su barrio. Detalle en `docs/correcciones_pe1/diagnostico.md` |
+| Limitaciones | 17,9% de los avisos (5.010) sin coordenadas. **La pérdida no es aleatoria por barrio**: varía de 59,5% de éxito en Puerto Madero a 92,5% en Boedo (chi², p < 1e-100). Dentro de cada barrio, en cambio, los avisos perdidos casi no difieren en precio por m² ni en superficie. Las alturas redondeadas ("Esmeralda Al 900") ubican el punto en esa altura y no en el edificio: error de hasta una cuadra. La primera coincidencia no se coteja con el barrio del aviso. En el modelo, los avisos sin coordenadas se comparan contra su barrio |
 
 ## 2. Estaciones de subte, BA Data (integrada)
 
@@ -92,7 +93,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto: cada registro es una parada **por sentido**, en WGS84, con barrio, comuna y las líneas de colectivo que paran. Hay 139 nombres de parada distintos y 38 paradas sin nombre. Compatible con la sub-zona |
 | Mecanismo de unión | Haversine a la parada más cercana. Las paradas repetidas por sentido no afectan la mínima |
 | Variable derivada | `dist_metrobus_m`; entra en `dist_transporte_pesado_m` pero **no** en `dist_riel_m` |
-| Aporta a | H3. Se dejó como variable propia además de sumarla al transporte pesado, porque la ficha original advertía que su efecto no es comparable con el del subte. Los datos lo confirman: es el transporte más cercano para el 29,7% de los avisos y su distancia casi no se correlaciona con la del riel (Spearman −0,08). El sábado se puede probar H3 con cada definición |
+| Aporta a | H3. Se dejó como variable propia además de sumarla al transporte pesado, porque la ficha original advertía que su efecto no es comparable con el del subte. Los datos lo confirman: es el transporte más cercano para el 29,7% de los avisos y su distancia casi no se correlaciona con la del riel (Spearman −0,08). H3 se evaluó con las dos definiciones (notebook 05, sección 4) |
 | Limitaciones | Es transporte de superficie. Estar sobre un corredor también puede significar estar sobre una avenida ruidosa. El campo `BARRIO` trae errores de tipeo ("VELEZ SARFIELD"), pero no se usa |
 
 ## 6. Espacios verdes, BA Data
@@ -127,7 +128,7 @@ todos los avisos que se comparan.
 
 | Campo | Detalle |
 |---|---|
-| Fuente concreta | Dólar MEP, cierre del 14/08/2026: ARS 1.518,05 por USD (Ámbito, "Dólar hoy: a cuánto cerró este viernes 14 de agosto"). Como referencia se registra el tipo de cambio de referencia Com. "A" 3500 del BCRA del mismo día: ARS 1.488,70. Fuentes completas en `docs/entregas_grupo/contexto_argentino.md` |
+| Fuente concreta | Dólar MEP, cierre del 14/08/2026: ARS 1.518,05 por USD (Ámbito, "Dólar hoy: a cuánto cerró este viernes 14 de agosto"). Como referencia se registra el tipo de cambio de referencia Com. "A" 3500 del BCRA del mismo día: ARS 1.488,70. Fuentes completas en `docs/contexto.md` |
 | Cobertura geográfica | Nacional |
 | Período | Un valor: 14/08/2026, fecha de extracción del scraping |
 | Granularidad | Un único valor para todos los avisos. No necesita variar entre avisos: es una conversión de unidades, no una variable explicativa |
@@ -137,7 +138,7 @@ todos los avisos que se comparan.
 | Criterio | Se eligió el MEP porque el comprador paga el departamento con dólares propios y las expensas en pesos: el MEP es el tipo de cambio al que una persona convierte legalmente dólares a pesos. El A 3500 es mayorista y un comprador no accede a él |
 | Limitaciones | La elección pesa poco: la brecha entre los dos era de 2%, y la mediana de expensas pasa de USD 131,7 (MEP) a USD 134,3 (A 3500). Como se aplica un solo valor a todos, **no cambia el orden de los avisos dentro de una zona**. Los 5 avisos con precio en pesos no se convierten: se excluyen en la limpieza (`precio_en_pesos`), porque sus montos no cierran como pesos |
 
-## 9. Permisos de obra: Obras Registradas, BA Data (calculada, a unir al dataset de trabajo)
+## 9. Permisos de obra: Obras Registradas, BA Data (integrada)
 
 | Campo | Detalle |
 |---|---|
@@ -149,7 +150,7 @@ todos los avisos que se comparan.
 | Filtro de tipos | Solo trámites de obra nueva o ampliación mayor: "Permiso de ejecución de obra civil" (3.371 en la ventana), "Permiso temprano de ejecución de obra civil" (325) y, con muy pocos casos en la ventana, "Demolición total y obra", "Permiso de obra mayor", "Registro-permiso obra" y "Obra nueva". Quedan afuera instalaciones (ventilación, incendio, ascensores, eléctricas), demoliciones sueltas, regularizaciones, planos de propiedad horizontal y "P. obra e. proy. / conforme / r. obras en contra", que mezcla trámites distintos |
 | Mecanismo de unión | **Se cuenta cada obra una sola vez.** Una obra suele tener varios trámites (el permiso temprano y después el de ejecución) y algunas ocupan varias parcelas con el mismo punto y el mismo expediente: se deduplica primero por parcela (`smp`) y después por punto (`wkt_2`). Los 3.719 trámites de la ventana son 1.869 parcelas y 1.795 obras. Para cada aviso geocodificado, distancia haversine (`haversine_np` de `src/enriquecimiento.py`) a cada obra y conteo de las que están a menos de 500 m. Parámetros en `config/config.yaml` (sección `permisos_obra`). Módulo: `src/permisos_obra.py`, corre sin red en ~4 segundos |
 | Variable derivada | `permisos_obra_500m`, en `data/processed/permisos_obra.tsv` (clave `link`, 27.922 filas, una por aviso del dataset enriquecido; vacía en los 5.010 avisos sin coordenadas). **`m2_obra_500m` no se calcula: el dataset no trae superficie autorizada** (sus columnas son `wkt_1`, `wkt_2`, `id_registr`, `expediente`, `fecha`, `smp`, `ubicacion`, `acronimo`, `descripcio`, `barrio`, `comuna`) |
-| Aporta a | Línea de "dinamismo de zona": control del modelo de precio esperado y lectura de liquidez en la regla de decisión |
+| Aporta a | H3, como indicador de dinamismo de la zona: +4,4% de precio por cada 10 obras a 500 m, significativo con Holm (notebook 05, sección 4). Se une al dataset en la etapa 6; no entra al modelo oficial ni a la regla de decisión |
 | Limitaciones | Mide permisos, no obra ejecutada ni valorización. Cuenta obras, no unidades: un edificio de 40 departamentos pesa igual que una casa ampliada. El radio de 500 m es en línea recta y no respeta barreras (vías, autopistas, el Riachuelo). La duda de la versión anterior de esta ficha queda resuelta: "Demolición" y "Regularización de obra en contravención Ley 6478" tienen los dos 2.705 registros en el archivo completo. Es una coincidencia real, no un error de copia. El campo `expediente` está vacío en 4.753 registros, por eso se deduplica por parcela y no por expediente |
 
 **Distribución de `permisos_obra_500m` por barrio** (obras con permiso a menos de 500 m del aviso; barrios ordenados por mediana):
@@ -220,7 +221,7 @@ Puerto Madero y La Boca también dan bajo, probablemente porque el primero ya es
 | Granularidad | Polígono. Más chico que un barrio oficial: puede separar una zona de precios muy distintos dentro de un barrio |
 | Mecanismo de unión | Punto en polígono en UTM 21S. Si un punto cae en dos polígonos superpuestos, se informa el tipo más informal (orden de prioridad en `config.yaml`); en este dataset no pasó con ningún aviso |
 | Variable derivada | `en_barrio_popular` (1 o 0, con todos los tipos), `tipo_barrio_popular` |
-| Aporta a | Modelo de precio esperado, como control de ubicación. De los 96 avisos que caen en un barrio popular, 76 son barrios municipales, sobre todo Lugano I y II (38) y Piedrabuena (20), que son conjuntos de vivienda social. Villas propiamente dichas hay 11 (Padre Mugica, en Retiro). Por eso el tipo va en una columna aparte: el modelo probablemente use solo villas y asentamientos |
+| Aporta a | Modelo de precio esperado, como control de ubicación. De los 96 avisos que caen en un barrio popular, 76 son barrios municipales, sobre todo Lugano I y II (38) y Piedrabuena (20), que son conjuntos de vivienda social. Villas propiamente dichas hay 11 (Padre Mugica, en Retiro). Por eso el tipo va en una columna aparte, para distinguir villas de conjuntos de vivienda social. No entra al modelo oficial: se usa en la robustez de H3 (el efecto del premetro sin los avisos a menos de 500 m de un barrio popular, notebook 05) y como exclusión de prudencia de la lista destacada del dashboard (README, sección 9) |
 | Limitaciones | Solo sirve para los geocodificados (82,1%). **No detecta el caso que motivó la fuente**: el aviso de Rodrigo Bueno del ranking (Simone de Beauvoir 1100) no tiene coordenadas, igual que el otro aviso que lo menciona. Esos avisos se marcan por el título en la limpieza, junto con las otras marcas |
 
 ## 11. Estaciones de premetro, BA Data
@@ -234,7 +235,7 @@ Puerto Madero y La Boca también dan bajo, probablemente porque el primero ya es
 | Mecanismo de unión | **A diferencia de las otras fuentes, el archivo viene en POSGAR 2007 / CABA 2019 (EPSG:9498), en metros, no en longitud y latitud.** El módulo lee el sistema de coordenadas que declara cada GeoJSON y lo reproyecta a WGS84; si un archivo de puntos no lo declarara y trajera metros, corta con un error en lugar de calcular distancias absurdas. Después, haversine a la estación más cercana, igual que subte y tren. El subte no lo incluye: `dist_transporte_m` usa solo las líneas A a H |
 | Variable derivada | `dist_premetro_m`; entra en `dist_riel_m` y en `dist_transporte_pesado_m` |
 | Aporta a | H3. Cubre justo Soldati y Lugano: es el riel más cercano para 206 avisos (86 en Villa Lugano, 35 en Villa Riachuelo, 31 en Villa Soldati). En Villa Lugano baja la mediana de distancia a riel de 1.290 m a 631 m, y en Villa Riachuelo de 1.271 m a 962 m |
-| Limitaciones | Es un tranvía de baja capacidad: según Wikipedia, 1.593 pasajeros diarios en 2024. En 2026 tiene obras en curso. Pesa igual que una estación de subte en `dist_riel_m`, y el sábado conviene revisar si eso se sostiene |
+| Limitaciones | Es un tranvía de baja capacidad: según Wikipedia, 1.593 pasajeros diarios en 2024. En 2026 tiene obras en curso. Pesa igual que una estación de subte en `dist_riel_m`; por eso en H3 se evalúa también como variable propia |
 
 ## Descartadas o a descartar
 

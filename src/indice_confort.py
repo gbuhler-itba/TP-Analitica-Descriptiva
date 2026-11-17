@@ -10,8 +10,7 @@ contrastar alternativas sin tocar la lógica.
 import numpy as np
 import pandas as pd
 
-# Borrador de mapeo. Sale de la descripción del README (sección 1).
-# Pendiente de validación por el grupo.
+# Mapeo de características a bloques, según la descripción del README (sección 1).
 MAPEO_BLOQUES = {
     "infraestructura": [
         "gas_natural",
