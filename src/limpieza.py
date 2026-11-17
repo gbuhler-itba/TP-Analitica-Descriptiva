@@ -10,6 +10,16 @@ import re
 import numpy as np
 import pandas as pd
 
+
+def tipo_de_columna(serie_original):
+    """Clasifica una columna según cómo la publica la plataforma."""
+    valores = set(serie_original.dropna().unique())
+    if valores == {"Sí"}:
+        return "solo_si"  # el nulo no distingue "no tiene" de "no lo cargó"
+    if {"Sí", "No"} <= valores:
+        return "si_no"  # el nulo es falta de dato
+    return "otro"
+
 _PATRON_MONTO = re.compile(r"(US\$|\$)\s?([\d\.]+)")
 _PATRON_MILES_AMBIGUO = re.compile(r"^\d{1,3}(\.\d{3})+$")
 

@@ -1,10 +1,10 @@
 {
- "destacados": 486,
- "con_comparables": 425,
+ "destacados": 484,
+ "con_comparables": 423,
  "esperado_vs_comparables_mediana_pct": 1.9,
- "debajo_del_umbral_pct": 83.3,
- "firmes_con_comparables": 33,
- "firmes_debajo_del_umbral": 33,
+ "debajo_del_umbral_pct": 83.2,
+ "firmes_con_comparables": 31,
+ "firmes_debajo_del_umbral": 31,
  "esperado_vs_comparables_por_segmento_pct": {
   "Nuevos con amenities": 11.4,
   "Familiares amplios y antiguos": 5.8,
