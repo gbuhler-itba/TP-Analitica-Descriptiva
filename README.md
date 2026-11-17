@@ -315,8 +315,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
     ├── scripts/                     Scripts que reproducen los números de contexto.md y control_fuentes.md
     ├── pipeline.md                  Pipeline: instalación, ejecución, controles, tests y limitaciones técnicas
     ├── proceso_tecnico.md           Desafíos técnicos del scraping
-    ├── corrida-documentada/         Evidencia de la corrida del pipeline
-    └── caso_de_negocio.pdf          Documento de negocio inicial
+    └── corrida-documentada/         Evidencia de la corrida del pipeline
 ```
 
 ## 9. Cómo reproducir el análisis
