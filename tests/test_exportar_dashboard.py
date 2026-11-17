@@ -213,3 +213,21 @@ def test_el_estado_del_segundo_relevamiento_no_cambia_ninguna_lista(exportado):
     assert 0.45 < salieron < 0.6   # "la mitad ya no estaba publicada al 28/10", en la línea del resumen
     destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
     assert len(destacados) == 486 and sum(a["firme"] for a in destacados) == 38
+
+
+def test_el_filtro_por_tipo_de_departamento_particiona_la_lista(exportado):
+    """Los cuatro tipos del filtro del dashboard (app.js) cubren todos los avisos: filtrar por tipo reparte la lista,
+    nunca saca ni agrega señales, destacados ni firmes."""
+    import re
+
+    cfg, avisos, resumen, salida = exportado
+    js = (resolver("docs") / "dashboard" / "js" / "app.js").read_text(encoding="utf-8")
+    bloque = js[js.index("const SEGMENTOS = ["):js.index("];", js.index("const SEGMENTOS = ["))]
+    tipos = re.findall(r'nombre: "([^"]+)"', bloque)
+    assert len(tipos) == 4 and set(tipos) == set(a["segmento"] for a in avisos)
+    destacados = [a for a in avisos if a["nivel"] == regla.CANDIDATO and a["consenso"] and not a["exclusiones"]]
+    por_tipo = {t: [a for a in avisos if a["segmento"] == t] for t in tipos}
+    assert sum(len(v) for v in por_tipo.values()) == len(avisos) == resumen["indicadores"]["senales_unidades"]
+    assert sum(sum(1 for a in v if a in destacados) for v in por_tipo.values()) == len(destacados) == resumen["indicadores"]["destacados_unidades"]
+    assert sum(sum(a["firme"] for a in v) for v in por_tipo.values()) == resumen["sensibilidad"]["conservador"]
+    assert sum(sum(a["firme"] for a in v if a in destacados) for v in por_tipo.values()) == resumen["indicadores"]["destacados_firmes_unidades"]

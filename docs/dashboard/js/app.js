@@ -7,6 +7,18 @@
   // Paleta del informe: verde oscuro, oro y ocre (separables por luminancia y por forma), grises cálidos
   const COLOR = { senal: "#1f3a2e", candidato: "#c9a227", firme: "#b5651d", gris: "#b8afa0", fondo: "#9e968a" };
   const NOMBRE_NIVEL = { senal: "Señal a investigar", candidato: "Candidato después de costos", firme: "Candidato firme" };
+  // Tipos de departamento del notebook 06 (K-means sobre ambientes, m² por ambiente, antigüedad, expensas y equipamiento)
+  const SEGMENTOS = [
+    { nombre: "Compactos de edificio antiguo", descripcion: "Casi la mitad de la oferta (44%): 2,8 ambientes chicos, unos 48 años y las expensas más bajas." },
+    { nombre: "Chicos y recientes", descripcion: "Un cuarto de la oferta (26%): 1,8 ambientes y unos 15 años de antigüedad." },
+    { nombre: "Familiares amplios y antiguos", descripcion: "17% de la oferta: 4,3 ambientes y unos 52 años. El tipo donde el modelo erra más; sus avisos llevan la alerta de revisión." },
+    { nombre: "Nuevos con amenities", descripcion: "13% de la oferta: los únicos con muchos amenities (mediana de 9), expensas y precio por m² altos; más de la mitad con cochera." },
+  ];
+  const poblarTipos = (sel) => {
+    const base = sel.title;
+    SEGMENTOS.forEach(s => { const o = new Option(s.nombre, s.nombre); o.title = s.descripcion; sel.add(o); });
+    sel.addEventListener("change", () => { const s = SEGMENTOS.find(x => x.nombre === sel.value); sel.title = s ? s.descripcion : base; });
+  };
   const D = {};            // datos cargados
   let mapa = null;         // estado del mapa (se arma la primera vez que se abre)
   let pendienteVolar = null;
@@ -142,6 +154,7 @@
     const estados = [...new Set(D.avisos.map(a => a.estado))];
     const selE = document.getElementById("f-estado");
     estados.forEach(e => selE.add(new Option(D.avisos.find(a => a.estado === e).estado_nombre, e)));
+    poblarTipos(document.getElementById("f-tipo"));
     const form = document.getElementById("filtros");
     form.addEventListener("input", buscar);
     form.addEventListener("reset", () => setTimeout(buscar, 0));
@@ -152,9 +165,10 @@
     const v = (id) => document.getElementById(id).value;
     const chk = (id) => document.getElementById(id).checked;
     const barrio = v("f-barrio"), amb = v("f-ambientes"), precio = +v("f-precio"), m2min = +v("f-m2min"), m2max = +v("f-m2max");
-    const estado = v("f-estado"), nivel = v("f-nivel");
+    const estado = v("f-estado"), nivel = v("f-nivel"), tipo = v("f-tipo");
     const lista = D.avisos.filter(a =>
       (!barrio || a.barrio === barrio) &&
+      (!tipo || a.segmento === tipo) &&
       (!amb || (amb === "5" ? a.ambientes >= 5 : a.ambientes === +amb)) &&
       (!precio || a.precio_usd <= precio) &&
       (!m2min || a.m2 >= m2min) && (!m2max || a.m2 <= m2max) &&
@@ -228,24 +242,32 @@
 
     const sel = document.getElementById("mapa-barrio");
     D.barrios.forEach(b => sel.add(new Option(b.nombre, b.barrio)));
+    const selTipo = document.getElementById("mapa-tipo");
+    poblarTipos(selTipo);
+    const idPorMarcador = new Map([...marcadores].map(([id, mk]) => [mk, id]));
+    const filtrarMapa = () => {
+      const slug = sel.value, tipo = selTipo.value;
+      for (const n in capas) {
+        capas[n].eachLayer(mk => { const a = D.porId.get(idPorMarcador.get(mk)); mk.setOpacity((!slug || a.barrio === slug) && (!tipo || a.segmento === tipo) ? 1 : 0.15); });
+      }
+      conteoMapa(slug, tipo);
+    };
     sel.addEventListener("change", () => {
       const slug = sel.value;
-      for (const n in capas) {
-        capas[n].eachLayer(mk => { const a = D.porId.get([...marcadores].find(([, v]) => v === mk)[0]); mk.setOpacity(!slug || a.barrio === slug ? 1 : 0.15); });
-      }
       if (slug && puntosPorBarrio.has(slug)) m.fitBounds(L.latLngBounds(puntosPorBarrio.get(slug)).pad(0.05));
       else m.setView([-34.615, -58.445], 12);
-      conteoMapa(slug);
+      filtrarMapa();
     });
-    conteoMapa("");
+    selTipo.addEventListener("change", filtrarMapa);
+    conteoMapa("", "");
     mapa = { mapa: m, marcadores };
   }
 
-  function conteoMapa(slug) {
-    const lista = D.avisos.filter(a => !slug || a.barrio === slug);
+  function conteoMapa(slug, tipo) {
+    const lista = D.avisos.filter(a => (!slug || a.barrio === slug) && (!tipo || a.segmento === tipo));
     const conCoord = lista.filter(a => a.lat !== null).length;
     const b = slug ? D.resumen.barrios.find(x => x.barrio === slug) : null;
-    document.getElementById("mapa-conteo").textContent = (b ? `${b.nombre}: ` : "Toda la ciudad: ") +
+    document.getElementById("mapa-conteo").textContent = (b ? `${b.nombre}` : "Toda la ciudad") + (tipo ? `, ${tipo.toLowerCase()}: ` : ": ") +
       `${plural(lista.length, "señal", "señales")} (${num(conCoord)} en el mapa), ${plural(lista.filter(esCandidato).length, "candidato", "candidatos")}, ${plural(lista.filter(a => a.firme).length, "firme", "firmes")}.`;
   }
 
