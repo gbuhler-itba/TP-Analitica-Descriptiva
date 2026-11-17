@@ -108,7 +108,7 @@ premetro 7.181 m, Metrobus 962 m, riel 423 m, transporte pesado 337 m, espacio
 verde 284 m y verde a 500 m 0,87 ha.
 
 Mataderos sigue lejos de todo, incluso con las cuatro fuentes: 1.390 m de
-mediana. Es un resultado real y no un error: no hay estaciones de tren ni de
+mediana. No es un error del cruce: no hay estaciones de tren ni de
 premetro dentro del barrio. La estación más cercana para 141 de sus 210 avisos
 es Villa Luro, del Sarmiento; para el resto, Villa Madero (en la provincia),
 Liniers o Villa Lugano.
