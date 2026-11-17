@@ -54,7 +54,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto (estación), en WGS84. Compatible con la sub-zona: la distancia varía entre avisos de la misma sub-zona |
 | Mecanismo de unión | Distancia haversine de cada aviso geocodificado a la estación más cercana. Las estaciones repetidas por combinación no afectan la mínima |
 | Variable derivada | `dist_transporte_m` |
-| Aporta a | H3 (efecto de la ubicación) e distancias de accesibilidad. **No entra al modelo de precio esperado:** en el notebook 02, dentro del barrio y a igual antigüedad, la cercanía al subte casi no se relaciona con el precio (H3 no se detectó con este indicador) |
+| Aporta a | H3 (efecto de la ubicación) e distancias de accesibilidad. **No entra al modelo de precio esperado:** en el notebook 02, dentro del barrio y a igual antigüedad, la cercanía al subte casi no se relaciona con el precio (con este indicador no se detectó una asociación significativa) |
 | Limitaciones | Solo subte. Deja afuera tren y Metrobus, que son el transporte pesado en buena parte del sur y el oeste. Distancia en línea recta al punto de la estación, no a pie ni a la boca de acceso. No distingue líneas ni frecuencia |
 
 ## 3. Polos de centralidad (integrada, definición propia)
@@ -67,7 +67,7 @@ todos los avisos que se comparan.
 | Granularidad | Punto. Compatible con la sub-zona, aunque dentro de una sub-zona la distancia al centro casi no varía: los avisos que se comparan están a pocas cuadras entre sí |
 | Mecanismo de unión | Distancia haversine mínima a cualquiera de los tres polos |
 | Variable derivada | `dist_centralidad_m` |
-| Aporta a | H3, que no se detectó con este indicador: dentro del barrio la distancia a los polos no se relaciona con el precio (ρ ≈ 0, notebook 02). No entra al modelo de precio esperado |
+| Aporta a | H3: con este indicador no se detectó una asociación significativa; dentro del barrio la correlación de la distancia a los polos con el precio es ρ ≈ 0 (notebook 02). No entra al modelo de precio esperado |
 | Limitaciones | Es una elección del grupo, no un dato externo, y hay que presentarla como tal. Hallazgo de la primera versión: correlación casi nula con el precio por m², porque el valor está en el corredor norte y no en el centro geográfico |
 
 ## 4. Estaciones de ferrocarril, BA Data
