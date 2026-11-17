@@ -85,7 +85,7 @@ reproducible por un tercero.
 | `data/interim/shap_gbm.tsv` | Sí | 1,2 MB | Notebook 04, sección 9: se recalcula solo si no coincide con las predicciones (varios minutos) |
 | `docs/dashboard/data/*.json` | Sí | 2,7 MB | `python3 src/exportar_dashboard.py`, segundos, después de la etapa 6 |
 | `outputs/logs/pipeline.log`, `outputs/logs/qc_*.json` | No | no aplica | Los escribe cada corrida |
-| `docs/corrida-documentada/*` | Sí | 40 KB | No se regenera: es una instantánea curada. Incluye `corrida_de_cero_2026-11-05.log`, la corrida completa de las etapas 5 y 6, el exportador, los notebooks y los tests |
+| `docs/corrida-documentada/*` | Sí | 40 KB | No se regenera: es una instantánea curada. Incluye `corrida_de_cero_2026-11-16.log` (y la anterior, del 05/11), la corrida completa de las etapas 5 y 6, el exportador, los notebooks y los tests |
 | `*_parcial.tsv` | No | no aplica | Los escribe y borra el propio pipeline |
 
 Total versionado: unos 225 MB (19 MB son las cuotas crudas del primer relevamiento).
@@ -366,7 +366,7 @@ Hay dos cosas distintas y conviene no confundirlas.
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
 ```bash
-pytest            # toda la suite, 193 tests, menos de un minuto, sin red
+pytest            # toda la suite, 195 tests, menos de un minuto, sin red
 pytest -v         # con el nombre de cada test
 pytest tests/test_limpieza.py   # un solo archivo
 ```
@@ -441,11 +441,12 @@ MercadoLibre, USIG y BA Data respectivamente. La corrida completa contra los
 servicios reales está documentada en la sección siguiente.
 
 Para las etapas 5 y 6, el exportador del dashboard, los notebooks y los tests,
-la evidencia es `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`: una
-corrida de cero en un worktree limpio del commit `756c139` que reprodujo byte a
+la evidencia es `docs/corrida-documentada/corrida_de_cero_2026-11-16.log`: una
+corrida de cero en un worktree limpio del commit `c1f2162` que reprodujo byte a
 byte todos los archivos versionados de `data/processed/`, `data/interim/` y
 `docs/dashboard/data/` (el `resumen.json` versionado es el de esa corrida, con
-ese commit en sus metadatos).
+ese commit en sus metadatos) y los siete notebooks, con 195 tests. La corrida
+anterior (`corrida_de_cero_2026-11-05.log`, commit `756c139`) se conserva.
 
 ---
 
@@ -668,7 +669,7 @@ confirma el smoke test offline.
   dependan del orden de las filas.
 - **El gradient boosting puede variar entre plataformas.** Con los mismos datos, la
   misma semilla y el mismo resultado del modelo lineal, la etapa 6 corrida en el
-  entorno de claude.ai (Linux, Python 3.11) y en la Mac de referencia (Python 3.9.6,
+  otro entorno (Linux, Python 3.11) y en la Mac de referencia (Python 3.9.6,
   scikit-learn 1.6.1) dio el mismo gradient boosting en 3 de las 5 vueltas y uno
   distinto en las otras 2: diferencia del precio esperado con mediana 0% y p95 3,2%;
   1.442 contra 1.456 avisos marcados por ese modelo y 1.109 contra 1.112 de consenso.

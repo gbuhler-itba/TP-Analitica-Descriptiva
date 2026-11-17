@@ -51,13 +51,20 @@ b001f82960c34cedd5489e149498e7a32d978ada1537df7eab69a5a6b935226f  data/external/
 BA Data y se pisa el snapshot; si el portal publicó cambios, `dist_transporte_m`
 y el hash del dataset final van a cambiar.
 
-## Corrida de cero (05/11/2026)
+## Corrida de cero (16/11/2026)
 
-`corrida_de_cero_2026-11-05.log` es el registro de una corrida completa de las etapas 5 y 6, el exportador del
-dashboard, los notebooks 01 a 07 y la suite de tests, hecha en un worktree limpio del commit `756c139` (macOS,
-Python 3.9, `.venv`). Resultado: todos los archivos de `data/processed/`, `data/interim/` y `docs/dashboard/data/`
-quedaron byte a byte iguales a los versionados (el `resumen.json` versionado es el de esta corrida, con ese commit en
-sus metadatos), los notebooks 02 a 07 reproducen sus salidas y los 193 tests pasan. Es la evidencia de ejecución que respalda los números del README.
+`corrida_de_cero_2026-11-16.log` es el registro de una corrida completa de las etapas 5 y 6 (con fuentes externas,
+permisos de obra y seguimiento), el exportador del dashboard, los notebooks 01 a 07 y la suite de tests, hecha en un
+worktree limpio del commit `c1f2162` (macOS, Python 3.9, `.venv`), 20 minutos. Resultado: todos los archivos de
+`data/processed/`, `data/interim/` y `docs/dashboard/data/` quedaron byte a byte iguales a los versionados (el
+`resumen.json` versionado es el de esta corrida, con ese commit en sus metadatos), los siete notebooks reproducen sus
+salidas (solo cambian rutas absolutas y el pid del kernel en dos advertencias) y los 195 tests pasan. Es la evidencia
+de ejecución que respalda los números del README. Después de la corrida se reejecutó solo el notebook 04, por un
+cambio de nombres en la tabla de cobertura del intervalo (celda 27) y por textos; ese notebook no escribe datos.
+
+`corrida_de_cero_2026-11-05.log` es la corrida anterior, sobre el commit `756c139` (193 tests), previa a los cambios
+del 16/11 (MCA con "sin dato" como categoría pasiva, que regeneró `avisos.json`, `resumen.json` y el chequeo de
+comparables; evaluación de dos correcciones del sesgo en el notebook 04). Se conserva como registro.
 
 ## Hashes de los datasets versionados
 

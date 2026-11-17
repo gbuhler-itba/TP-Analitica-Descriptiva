@@ -46,7 +46,7 @@ de transporte y entorno con cobertura de toda la ciudad, una regla de decisión 
 analista.
 
 **Resultados** (números de `data/processed/`, regenerados el 02/11/2026 y reproducidos de cero, byte a byte, el
-05/11/2026: `docs/corrida-documentada/corrida_de_cero_2026-11-05.log`)
+16/11/2026: `docs/corrida-documentada/corrida_de_cero_2026-11-16.log`)
 
 - **Recomendación · El embudo, con sus universos reconciliados:** 27.578 avisos (25.169 unidades) analizados → 1.819 avisos
   (1.714 unidades) piden más de 25% menos que su precio esperado → 1.556 (1.470) siguen marcados con el umbral de su
@@ -102,12 +102,12 @@ El fondo compra departamentos usados en CABA. Busca avisos publicados por debajo
 departamentos comparables, para después verificarlos y decidir la compra.
 
 El mercado argentino condiciona cómo se lee un precio publicado. Resumen (detalle, fuentes y números propios en
-[`contexto_argentino.md`](docs/contexto.md) y
+[`contexto.md`](docs/contexto.md) y
 [`costos.md`](docs/costos.md)):
 
 | Rasgo | Qué implica para el análisis |
 |---|---|
-| **Dolarización**: 27.917 de 27.922 avisos están en USD | Los precios se comparan sin ajustar por inflación; las expensas están en pesos y se convierten con un tipo de cambio declarado |
+| **Dolarización**: 27.917 de los 27.922 avisos del dataset crudo están en USD (el dataset limpio, con el que trabaja todo el resto del README, tiene 27.578; sección 4) | Los precios se comparan sin ajustar por inflación; las expensas están en pesos y se convierten con un tipo de cambio declarado |
 | **Crédito hipotecario limitado** (~1% del PBI) y cíclico | El precio lo fija quien tiene dólares ahorrados. El precio esperado vale para agosto de 2026 |
 | **Operaciones al contado** (85% de las escrituras de 2026) | `apto_credito` indica requisitos legales, no forma de pago. Entra al modelo como control |
 | **Iliquidez**: vender lleva meses | Un precio bajo puede ser un vendedor apurado. El segundo relevamiento mide la salida del portal, que no es lo mismo que una venta |
@@ -154,7 +154,7 @@ cambia el orden de los avisos dentro de una zona.
 | Descriptivo | D1 | ¿Cómo se distribuye el precio por m² entre barrios y entre sub-zonas de un barrio? | Respondida (notebook 02); la sub-zona se evalúa formalmente en H2 (notebook 05) |
 | | D2 | ¿Qué proporción de avisos declara cada característica y qué tan completo está cada aviso? | Respondida: por columna (diccionario y notebook 01) y por aviso, con la tasa de completitud (notebook 03) |
 | | D3 | ¿Con qué frecuencia aparece cada característica en cada zona? | Respondida: tabla barrio × característica (16 columnas Sí/No) y construcción reciente por barrio en el notebook 02, sección 7.1; por segmento de departamento en el notebook 06 |
-| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5%, y los marcados bajaron menos que el resto (23,7% contra 29,8%; notebook 05, sección 2.2.1) |
+| | D4 | ¿Cuántos avisos bajaron de precio, cuánto y dónde? | Respondida: 626 avisos (2,3%), baja mediana de 6,8% (notebooks 01, 02 y 03); entre relevamientos, 4.998 avisos bajaron más de 0,5% (`seguimiento_avisos.csv`, columna `bajo_en_r2`; diccionario), y fuera de los barrios truncados los marcados bajaron menos que el resto (23,7% contra 29,8%; notebook 05, sección 2.2.1) |
 | Diagnóstico | G1 | Dentro de la zona, ¿cuánto se asocia cada característica con el precio por m²? | Respondida, ahora con intervalos por bootstrap de unidades (notebook 04, sección 6) |
 | | G2 | ¿La prima de cada característica cambia según la zona o el segmento de precio? | Respondida: cambian poco por tercil de barrio y por segmento de departamento; no justifica un modelo por segmento (notebook 04, sección 7; notebook 06, sección 4.3) |
 | | G3 | ¿Cuánto de la diferencia de precio se explica por accesibilidad y entorno? | Respondida (H3, notebook 05): una parte chica pero significativa, con efectos fijos de barrio |
@@ -305,7 +305,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── eda.py                       Funciones del análisis exploratorio
 │   ├── indice_confort.py            Índice de confort de la primera versión (pesos fijos), conservado como referencia
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           193 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           195 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -329,7 +329,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 193 tests, menos de un minuto, sin red
+python3 -m pytest -q                                   # 195 tests, menos de un minuto, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
@@ -406,7 +406,7 @@ observaciones y lo que se hizo con cada una.
 
 | Observación sobre la versión anterior | Qué se hizo | Dónde |
 |---|---|---|
-| Universos del ranking sin reconciliar (1.704, 1.434, 1.225, 1.590, 1.150) | Un embudo único por avisos y por unidades, generado por la etapa 6, que todos los documentos citan: 27.578 / 25.169 → 1.819 / 1.714 → 1.556 / 1.470 → 1.455 / 1.375 → 884 / 840 | `embudo_ranking.csv`; notebooks 03 (aviso inicial) y 07; dashboard |
+| Universos del ranking sin reconciliar (1.704, 1.434, 1.225, 1.590, 1.150) | Un embudo único por avisos y por unidades, generado por la etapa 6, que todos los documentos citan (sección 1, "Resultados", y sección 12) | `embudo_ranking.csv`; notebooks 03 (aviso inicial) y 07; dashboard |
 | H3 incompleta: faltaban tren, Metrobus y espacios verdes | Integradas con premetro, barrios populares y permisos de obra, como snapshots versionados con controles; H3 reevaluada con efectos fijos de barrio y errores agrupados por sub-zona | `src/fuentes_externas.py`, `control_fuentes.md`, notebook 05 |
 | Estabilidad de las sub-zonas | ARI con 100 remuestreos por barrio (submuestras del 80% de los avisos con coordenadas), calculado una sola vez sobre todo el dataset y no dentro de cada vuelta, porque solo usa coordenadas; un barrio inestable (ARI < 0,7) se compara entero. Hoy, Villa Santa Rita | Notebook 04, sección 3 |
 | Fuga indirecta (atípicos y elección de zona con todos los datos) | Todas las decisiones se toman dentro de cada vuelta, con atípicos sobre el log; el error casi no cambia, la lista cambia en el borde | Notebook 04, sección 2 |
@@ -453,9 +453,9 @@ límite principal. Los números son los de los notebooks indicados.
 
 | Técnica | Qué problema resuelve | Supuestos o transformaciones | Cómo se valida | Qué aporta frente a la alternativa simple (y cuál es) | Limitación principal | Dónde |
 |---|---|---|---|---|---|---|
-| Modelo hedónico lineal ampliado (oficial) | El precio por m² esperado de cada aviso según sus características, su zona y el estado del título | Log del precio por m²; primas aditivas en log; atípicos marcados sobre el log dentro de la zona y solo con el entrenamiento | 5 vueltas agrupadas por unidad, sin fuga: error mediano fuera de muestra 12,5% | Contra la mediana de la zona (17,5%): 5 puntos menos de error, y cada prima se explica, con una explicación por aviso exacta | Erra más en "Familiares amplios y antiguos" (14,4%), donde el esperado tiende a quedar alto: se evaluaron dos correcciones sin adoptarlas (sección 10; la recomendada a futuro es el umbral por segmento); por aviso, el rango del 80% va de −21% a +29% alrededor del esperado (semiancho mediano 25%) | Notebook 04 (secciones 4, 6 y 10), `src/modelo.py` |
+| Modelo hedónico lineal ampliado (oficial) | El precio por m² esperado de cada aviso según sus características, su zona y el estado del título | Log del precio por m²; primas aditivas en log; atípicos marcados sobre el log dentro de la zona y solo con el entrenamiento | 5 vueltas agrupadas por unidad, sin fuga: error mediano fuera de muestra 12,5% | Contra la mediana de la zona (17,5%): 5 puntos menos de error, y cada prima se explica, con una explicación por aviso exacta | Erra más en "Familiares amplios y antiguos" (14,4%), donde el esperado tiende a quedar alto: se evaluaron dos correcciones sin adoptarlas (sección 10; la recomendada a futuro es el umbral por segmento); por aviso, el rango del 80% va de −21% a +29% | Notebook 04 (secciones 4, 6 y 10), `src/modelo.py` |
 | Gradient boosting con SHAP | Una segunda opinión no lineal sobre el precio esperado, y qué mira ese modelo | Sin forma funcional; barrio como categórica nativa; SHAP por permutación (el TreeExplainer da valores errados con esa categórica) | Mismas vueltas: 11,3%; el orden de los bloques de importancia es estable entre vueltas (Spearman mínimo 0,98) | 1,2 puntos menos de error que el lineal ampliado; el consenso de los dos modelos (1.124 avisos; Jaccard 0,52) es la marca de robustez del dashboard | No se explica aviso por aviso, por eso no es el oficial; SHAP explica al modelo, no causas | Notebook 04 (secciones 4 y 9), `src/validacion.py` |
-| Intervalo conformal del 80% | Cuánto puede equivocarse el precio esperado en un aviso concreto, en su barrio | Cuantiles de los residuos fuera de muestra de las otras vueltas, dentro del barrio (50 avisos o más; si no, toda la ciudad); no supone normalidad | Cobertura fuera de muestra 79,5% para un nivel nominal de 80%; por barrio es menos pareja (74,5% en el 10% de barrios peor cubiertos) | Frente a un único número o a un ±25% fijo: un rango por aviso (de −21% a +29% alrededor del esperado (semiancho mediano 25%)) que define el candidato firme (83 unidades) | El rango es ancho: ordena avisos, no tasa uno | Notebook 04 (sección 5), `src/validacion.py`, columnas `precio_m2_esperado_inf` y `_sup` |
+| Intervalo conformal del 80% | Cuánto puede equivocarse el precio esperado en un aviso concreto, en su barrio | Cuantiles de los residuos fuera de muestra de las otras vueltas, dentro del barrio (50 avisos o más; si no, toda la ciudad); no supone normalidad | Cobertura fuera de muestra 79,5% para un nivel nominal de 80%; por barrio es menos pareja (74,5% en el 10% de barrios peor cubiertos) | Frente a un único número o a un ±25% fijo: un rango por aviso (de −21% a +29%, sección 1) que define el candidato firme (83 unidades) | El rango es ancho: ordena avisos, no tasa uno | Notebook 04 (sección 5), `src/validacion.py`, columnas `precio_m2_esperado_inf` y `_sup` |
 | H1b: modelo lineal de probabilidad y logit con efectos fijos de barrio | Si los avisos marcados salen más del portal que sus comparables, a igual valor esperado | Controla el log del valor esperado, el log de m² y la baja de precio previa (no el precio publicado, que es un mal control); errores agrupados por unidad; sin los 4 barrios truncados | Robustez sin republicaciones, con la brecha del gradient boosting y por terciles de barrio; placebo con brecha mayor a +33%: −8,6 pp | Frente a la diferencia bruta (46,7% contra 39,7%): +9,4 pp dentro del barrio (IC 6,5 a 12,2; OR 1,48) y un gradiente de +2,2 pp por cada 10 pp más de brecha | Salir del portal no es venderse (venta, retiro o republicación no detectada); en el tercil de barrios medios el IC incluye el 0 | Notebook 05 (H1), `src/inferencia.py`, `src/seguimiento.py` |
 | H3: regresión con efectos fijos de barrio y errores agrupados, Wald y Holm | Cuánto de la diferencia de precio dentro de un barrio se explica por transporte, espacios verdes y obras | Log del precio por m²; distancias y entorno a 500 m; errores agrupados por sub-zona; avisos con geocodificación dudosa excluidos | Wald por bloque (transporte p = 3,7e-5, entorno p = 2,4e-7); Holm por variable; fuera de muestra, la ubicación baja el error 0,19 pp | Frente a la versión anterior (subte y centralidad, sin detectar nada): 2 de 16 efectos interpretables, +1,5% por ha de espacio verde y +4,4% por cada 10 obras | Efectos chicos; el premetro (−24%) es un artefacto de zona (barrios populares), no una causa | Notebook 05 (H3), `src/fuentes_externas.py`, `src/inferencia.py` |
 | MCA (índice de equipamiento) | Resumir 17 características Sí/No en un índice de equipamiento | El vacío de las Sí/No es una categoría pasiva: el eje se ajusta con los 14.909 avisos completos y cada aviso se proyecta con lo que declara (como "No" confunde "no tiene" con "no lo declara"; como categoría activa, el eje mide la completitud: −0,94); se usa el primer eje | En los avisos completos coincide con el índice ajustado con todos (0,99); la correlación con la completitud de la carga baja de 0,33 a 0,16; 0,87 con el conteo de amenities | Frente a contar amenities: hace aparecer el segmento "Nuevos con amenities", que con el conteo se diluye, y en el modelo le gana al conteo por 0,22 pp | No mejora el precio esperado: sube el error 0,12 pp (IC 0,03 a 0,20) frente a las amenities sueltas, así que no entra al modelo | Notebook 06 (secciones 2 y 5), `src/segmentos.py` |
@@ -512,7 +512,7 @@ Ganancias, margen mínimo y valor de salida, y reproduce exactamente estos conte
 
 - **Precio publicado, no de cierre.** La brecha se mide contra precios publicados; la regla descuenta 4,79% al vender,
   pero compra al publicado (supuesto conservador).
-- **Error del modelo.** Un error mediano de 12,5% y un rango del 80% de −21% a +29% alrededor del esperado (semiancho mediano 25%) sirven para ordenar avisos,
+- **Error del modelo.** Un error mediano de 12,5% y un rango del 80% de −21% a +29% (sección 1) sirven para ordenar avisos,
   no para tasar uno ni para separar un precio atípico de un error de estimación (H1a). En los departamentos familiares
   antiguos y en los nuevos con amenities el error es mayor (notebook 06). Además, en los familiares amplios y antiguos el
   modelo marca el doble de avisos (11,0% contra 5,1% a 6,9%) con una brecha mediana de −3,0%: el precio esperado tiende
