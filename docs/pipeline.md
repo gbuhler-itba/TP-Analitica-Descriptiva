@@ -366,7 +366,7 @@ Hay dos cosas distintas y conviene no confundirlas.
 Desde la raíz del repositorio, con el entorno de `requirements.txt` instalado:
 
 ```bash
-pytest            # toda la suite, 195 tests, menos de un minuto, sin red
+pytest            # toda la suite, 196 tests, menos de un minuto, sin red
 pytest -v         # con el nombre de cada test
 pytest tests/test_limpieza.py   # un solo archivo
 ```

@@ -305,7 +305,7 @@ snapshots versionados en `data/external/`, con SHA-256: el pipeline corre sin re
 │   ├── eda.py                       Funciones del análisis exploratorio
 │   ├── indice_confort.py            Índice de confort de la primera versión (pesos fijos), conservado como referencia
 │   └── rutas.py, configuracion.py, entorno.py, qc.py
-├── tests/                           195 tests (pytest), corren en GitHub Actions con Python 3.9
+├── tests/                           196 tests (pytest), corren en GitHub Actions con Python 3.9
 ├── outputs/logs/                    Logs y controles de calidad de cada corrida (no versionados)
 └── docs/
     ├── dashboard/                   Dashboard estático (GitHub Pages) y su capa de datos
@@ -329,7 +329,7 @@ git clone https://github.com/gbuhler-itba/TP-Analitica-Descriptiva.git
 cd TP-Analitica-Descriptiva
 python3 -m venv .venv && source .venv/bin/activate    # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 -m pytest -q                                   # 195 tests, menos de un minuto, sin red
+python3 -m pytest -q                                   # 196 tests, menos de un minuto, sin red
 ```
 
 **Todos los datasets vienen versionados**, así que los notebooks se pueden abrir y ejecutar directamente con el
