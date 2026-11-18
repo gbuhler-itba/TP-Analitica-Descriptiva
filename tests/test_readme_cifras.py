@@ -168,4 +168,4 @@ def test_la_diferencia_simple_de_la_pileta_sale_del_dataset_limpio():
     assert f"Prima de la pileta: {_pct(dif)}% a simple vista" in presentacion
     assert f"hasta=pilModo==='parece'?{dif:.1f}:{prima_modelo}" in presentacion
     assert f"se publica {round(dif):.0f}% más caro" in presentacion
-    assert f"parece valer más de {int(dif // prima_modelo)} veces lo que vale" in presentacion
+    assert f"a simple vista un departamento con pileta se publica {round(dif):.0f}% más caro" in presentacion   # nota del orador
