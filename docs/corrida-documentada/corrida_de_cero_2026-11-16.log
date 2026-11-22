@@ -1,4 +1,4 @@
-# Corrida de cero del 16/11/2026 (commit c1f2162), en un worktree limpio del repo, macOS, Python 3.9 (.venv)
+# Corrida de cero del 16/11/2026 (commit 7ceaf58), en un worktree limpio del repo, macOS, Python 3.9 (.venv)
 # Secuencia de docs/pipeline.md, sección 4: fuentes externas, permisos de obra, etapa 5, seguimiento, etapa 6,
 # exportador del dashboard, notebooks 01 a 07 (Run All) y la suite de tests. Resultado: todos los archivos de
 # data/processed, data/interim y docs/dashboard/data quedaron byte a byte iguales a los versionados (solo cambia
@@ -6,8 +6,8 @@
 # y 195 tests pasan. Después de esta corrida solo se reejecutó el notebook 04 por un cambio de nombres de columnas
 # en la tabla de cobertura (celda 27) y por textos; no escribe datos. Se quitaron las advertencias de urllib3 y las
 # rutas absolutas se reemplazaron por <repo>.
-Preparing worktree (detached HEAD c1f2162)
-HEAD is now at c1f2162 Notebook 04: interpretación del umbral por segmento (10.1)
+Preparing worktree (detached HEAD 7ceaf58)
+HEAD is now at 7ceaf58 Notebook 04: interpretación del umbral por segmento (10.1)
 === 21:27:10 fuentes_externas
 <repo>/.venv/lib/python3.9/site-packages/shapely/measurement.py:72: RuntimeWarning: invalid value encountered in distance
   return lib.distance(a, b, **kwargs)

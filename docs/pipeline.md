@@ -44,7 +44,7 @@ en la [sección 8](#8-corrida-documentada-de-punta-a-punta).
 
 ### Etapas 5 y 6 y scripts auxiliares
 
-Los números son los de la regeneración del 02/11/2026 en la Mac de referencia (commit 963d072).
+Los números son los de la regeneración del 02/11/2026 en la Mac de referencia (commit 06e43e8).
 
 | # | Qué entra | Qué transformación se aplica | Qué control se ejecuta | Qué archivo sale |
 |---|---|---|---|---|
@@ -442,7 +442,7 @@ servicios reales está documentada en la sección siguiente.
 
 Para las etapas 5 y 6, el exportador del dashboard, los notebooks y los tests,
 la evidencia es `docs/corrida-documentada/corrida_de_cero_2026-11-16.log`: una
-corrida de cero en un worktree limpio del commit `c1f2162` que reprodujo byte a
+corrida de cero en un worktree limpio del commit `7ceaf58` que reprodujo byte a
 byte todos los archivos versionados de `data/processed/`, `data/interim/` y
 `docs/dashboard/data/` y los siete notebooks, con los 195 tests de ese momento. El
 17/11 la capa del dashboard (`docs/dashboard/data/`) y el chequeo de comparables se
@@ -468,7 +468,7 @@ python3 run_pipeline.py --incluir-scraping
 
 Esta sección cubre las etapas 1 a 4. Las etapas 5 y 6 y los scripts auxiliares se
 regeneraron por última vez el 02/11/2026 en la Mac de referencia (Python 3.9.6, commit
-963d072), con los controles en `outputs/logs/qc_05_limpieza.json` y `qc_06_analisis.json`;
+06e43e8), con los controles en `outputs/logs/qc_05_limpieza.json` y `qc_06_analisis.json`;
 sus números están en la tabla de la sección 1.
 
 ### 8.1. Etapa 1, scraping
